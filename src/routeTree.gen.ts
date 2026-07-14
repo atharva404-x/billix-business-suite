@@ -10,7 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SuppliersRouteImport } from './routes/suppliers'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ProductsRouteImport } from './routes/products'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InvoicesRouteImport } from './routes/invoices'
@@ -20,6 +23,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CustomersRouteImport } from './routes/customers'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as BusinessProfilesRouteImport } from './routes/business-profiles'
+import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as InvoicesNewRouteImport } from './routes/invoices.new'
 import { Route as InvoicesIdRouteImport } from './routes/invoices.$id'
@@ -29,9 +33,24 @@ const SuppliersRoute = SuppliersRouteImport.update({
   path: '/suppliers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductsRoute = ProductsRouteImport.update({
@@ -79,6 +98,11 @@ const BusinessProfilesRoute = BusinessProfilesRouteImport.update({
   path: '/business-profiles',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AnalyticsRoute = AnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -97,6 +121,7 @@ const InvoicesIdRoute = InvoicesIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/analytics': typeof AnalyticsRoute
   '/business-profiles': typeof BusinessProfilesRoute
   '/categories': typeof CategoriesRoute
   '/customers': typeof CustomersRoute
@@ -106,13 +131,17 @@ export interface FileRoutesByFullPath {
   '/invoices': typeof InvoicesRouteWithChildren
   '/login': typeof LoginRoute
   '/products': typeof ProductsRoute
+  '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
+  '/reports': typeof ReportsRoute
+  '/settings': typeof SettingsRoute
   '/suppliers': typeof SuppliersRoute
   '/invoices/$id': typeof InvoicesIdRoute
   '/invoices/new': typeof InvoicesNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/analytics': typeof AnalyticsRoute
   '/business-profiles': typeof BusinessProfilesRoute
   '/categories': typeof CategoriesRoute
   '/customers': typeof CustomersRoute
@@ -122,7 +151,10 @@ export interface FileRoutesByTo {
   '/invoices': typeof InvoicesRouteWithChildren
   '/login': typeof LoginRoute
   '/products': typeof ProductsRoute
+  '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
+  '/reports': typeof ReportsRoute
+  '/settings': typeof SettingsRoute
   '/suppliers': typeof SuppliersRoute
   '/invoices/$id': typeof InvoicesIdRoute
   '/invoices/new': typeof InvoicesNewRoute
@@ -130,6 +162,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/analytics': typeof AnalyticsRoute
   '/business-profiles': typeof BusinessProfilesRoute
   '/categories': typeof CategoriesRoute
   '/customers': typeof CustomersRoute
@@ -139,7 +172,10 @@ export interface FileRoutesById {
   '/invoices': typeof InvoicesRouteWithChildren
   '/login': typeof LoginRoute
   '/products': typeof ProductsRoute
+  '/profile': typeof ProfileRoute
   '/register': typeof RegisterRoute
+  '/reports': typeof ReportsRoute
+  '/settings': typeof SettingsRoute
   '/suppliers': typeof SuppliersRoute
   '/invoices/$id': typeof InvoicesIdRoute
   '/invoices/new': typeof InvoicesNewRoute
@@ -148,6 +184,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/analytics'
     | '/business-profiles'
     | '/categories'
     | '/customers'
@@ -157,13 +194,17 @@ export interface FileRouteTypes {
     | '/invoices'
     | '/login'
     | '/products'
+    | '/profile'
     | '/register'
+    | '/reports'
+    | '/settings'
     | '/suppliers'
     | '/invoices/$id'
     | '/invoices/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/analytics'
     | '/business-profiles'
     | '/categories'
     | '/customers'
@@ -173,13 +214,17 @@ export interface FileRouteTypes {
     | '/invoices'
     | '/login'
     | '/products'
+    | '/profile'
     | '/register'
+    | '/reports'
+    | '/settings'
     | '/suppliers'
     | '/invoices/$id'
     | '/invoices/new'
   id:
     | '__root__'
     | '/'
+    | '/analytics'
     | '/business-profiles'
     | '/categories'
     | '/customers'
@@ -189,7 +234,10 @@ export interface FileRouteTypes {
     | '/invoices'
     | '/login'
     | '/products'
+    | '/profile'
     | '/register'
+    | '/reports'
+    | '/settings'
     | '/suppliers'
     | '/invoices/$id'
     | '/invoices/new'
@@ -197,6 +245,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnalyticsRoute: typeof AnalyticsRoute
   BusinessProfilesRoute: typeof BusinessProfilesRoute
   CategoriesRoute: typeof CategoriesRoute
   CustomersRoute: typeof CustomersRoute
@@ -206,7 +255,10 @@ export interface RootRouteChildren {
   InvoicesRoute: typeof InvoicesRouteWithChildren
   LoginRoute: typeof LoginRoute
   ProductsRoute: typeof ProductsRoute
+  ProfileRoute: typeof ProfileRoute
   RegisterRoute: typeof RegisterRoute
+  ReportsRoute: typeof ReportsRoute
+  SettingsRoute: typeof SettingsRoute
   SuppliersRoute: typeof SuppliersRoute
 }
 
@@ -219,11 +271,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuppliersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register': {
       id: '/register'
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/products': {
@@ -289,6 +362,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BusinessProfilesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/analytics': {
+      id: '/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -329,6 +409,7 @@ const InvoicesRouteWithChildren = InvoicesRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnalyticsRoute: AnalyticsRoute,
   BusinessProfilesRoute: BusinessProfilesRoute,
   CategoriesRoute: CategoriesRoute,
   CustomersRoute: CustomersRoute,
@@ -338,7 +419,10 @@ const rootRouteChildren: RootRouteChildren = {
   InvoicesRoute: InvoicesRouteWithChildren,
   LoginRoute: LoginRoute,
   ProductsRoute: ProductsRoute,
+  ProfileRoute: ProfileRoute,
   RegisterRoute: RegisterRoute,
+  ReportsRoute: ReportsRoute,
+  SettingsRoute: SettingsRoute,
   SuppliersRoute: SuppliersRoute,
 }
 export const routeTree = rootRouteImport
