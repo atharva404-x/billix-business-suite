@@ -88,6 +88,50 @@ AUTH-005
 
 -----------------------------------------
 
+-----------------------------------------
+
+Ticket ID:
+AUTH-002
+
+Title:
+Backend Clerk Integration
+
+Status:
+Completed
+
+Completion Date:
+2026-07-18
+
+Files Created:
+- app/auth/clerk_client.py
+- app/auth/exceptions.py
+- app/auth/helpers.py
+- app/auth/jwt_utils.py
+- app/core/__init__.py
+- app/core/config.py
+- tests/__init__.py
+- tests/unit/__init__.py
+- tests/unit/test_auth.py
+
+Files Modified:
+- .gitignore
+- docs/CHANGELOG.md
+
+Summary:
+Implemented the backend integration layer for Clerk. Created settings configurations, custom authentication exceptions, a thread-safe and expiration-aware cached JWKS manager, an async Clerk Backend API client, and reusable token-extraction helper functions. Additionally, added a comprehensive 15-test suite for complete backend authentication coverage.
+
+Notes:
+- Uses `base64.urlsafe_b64decode` to properly parse URL-safe base64 payloads from Clerk's publishable keys.
+- Completely mocked out network calls during testing using custom Async Mock clients, preventing any external dependencies on test runs.
+- Adheres to async-first conventions for FastAPI, utilizing httpx.AsyncClient and asyncio.Lock.
+
+Future Dependencies:
+AUTH-003
+AUTH-004
+AUTH-005
+
+-----------------------------------------
+
 ---
 
 ## Upcoming Tickets
