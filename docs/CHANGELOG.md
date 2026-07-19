@@ -88,6 +88,224 @@ AUTH-005
 
 -----------------------------------------
 
+-----------------------------------------
+
+Ticket ID:
+AUTH-002
+
+Title:
+Backend Clerk Integration
+
+Status:
+Completed
+
+Completion Date:
+2026-07-18
+
+Files Created:
+- app/auth/clerk_client.py
+- app/auth/exceptions.py
+- app/auth/helpers.py
+- app/auth/jwt_utils.py
+- app/core/__init__.py
+- app/core/config.py
+- tests/__init__.py
+- tests/unit/__init__.py
+- tests/unit/test_auth.py
+
+Files Modified:
+- .gitignore
+- docs/CHANGELOG.md
+
+Summary:
+Implemented the backend integration layer for Clerk. Created settings configurations, custom authentication exceptions, a thread-safe and expiration-aware cached JWKS manager, an async Clerk Backend API client, and reusable token-extraction helper functions. Additionally, added a comprehensive 15-test suite for complete backend authentication coverage.
+
+Notes:
+- Uses `base64.urlsafe_b64decode` to properly parse URL-safe base64 payloads from Clerk's publishable keys.
+- Completely mocked out network calls during testing using custom Async Mock clients, preventing any external dependencies on test runs.
+- Adheres to async-first conventions for FastAPI, utilizing httpx.AsyncClient and asyncio.Lock.
+
+Future Dependencies:
+AUTH-003
+AUTH-004
+AUTH-005
+
+-----------------------------------------
+
+-----------------------------------------
+
+Ticket ID:
+AUTH-004
+
+Title:
+Authentication Middleware
+
+Status:
+Completed
+
+Completion Date:
+2026-07-18
+
+Files Created:
+- app/middleware/__init__.py
+- app/middleware/auth.py
+- tests/unit/test_middleware.py
+
+Files Modified:
+- docs/CHANGELOG.md
+
+Summary:
+Implemented the FastAPI authentication middleware layer (`AuthMiddleware`). It intercepts incoming requests, enforces Clerk JWT verification on all non-public routes, handles public routes pass-through, and attaches authenticated user identity to the request state (`request.state.user` and `request.state.user_id`). Included a comprehensive unit test suite with 6 passing tests using FastAPI's TestClient.
+
+Notes:
+- Inherits from Starlette's `BaseHTTPMiddleware` to process incoming requests and outgoing responses asynchronously.
+- Core public paths such as `/`, `/docs`, `/openapi.json`, `/health`, and `/ready` are bypassed by default.
+- Returns explicit JSONResponse with 401 Unauthorized on invalid/missing/expired tokens.
+
+Future Dependencies:
+AUTH-005
+
+-----------------------------------------
+
+-----------------------------------------
+
+Ticket ID:
+AUTH-005
+
+Title:
+Current User Dependency
+
+Status:
+Completed
+
+Completion Date:
+2026-07-18
+
+Files Created:
+- app/core/database.py
+- app/models/__init__.py
+- app/models/base.py
+- app/models/user.py
+- app/auth/dependencies.py
+- tests/unit/test_dependencies.py
+
+Files Modified:
+- app/core/config.py
+- docs/CHANGELOG.md
+
+Summary:
+Set up core database connections, baseline declarative schemas, and BaseModelMixin, then created the get_current_user() FastAPI dependency. It reads the authenticated clerk user id from the request state, checks the user profile in the database, and injects the User object.
+
+Notes:
+- Async execution is handled natively using SQLAlchemy 2.0.
+- Standardizes in-memory SQLite (aiosqlite) as a fast, zero-config local testing and development database.
+
+Future Dependencies:
+AUTH-006
+AUTH-007
+
+-----------------------------------------
+
+-----------------------------------------
+
+Ticket ID:
+AUTH-006
+
+Title:
+Role Foundation
+
+Status:
+Completed
+
+Completion Date:
+2026-07-18
+
+Files Created:
+- app/models/roles.py
+- app/auth/role_helpers.py
+
+Files Modified:
+- app/models/user.py
+- docs/CHANGELOG.md
+
+Summary:
+Created the backend role foundation with OWNER, ADMIN, MANAGER, STAFF, and VIEWER roles using an Enum in `app/models/roles.py`. Implemented comparison hierarchy utilities and a reusable FastAPI dependency class `RoleChecker` in `app/auth/role_helpers.py`.
+
+Notes:
+- The role hierarchy indexes OWNER as the most privileged and VIEWER as the least privileged.
+- Enforces role checks in endpoints asynchronously with complete exception handling (returning 403 Forbidden).
+
+Future Dependencies:
+AUTH-007
+
+-----------------------------------------
+
+-----------------------------------------
+
+Ticket ID:
+AUTH-007
+
+Title:
+Protected Routes
+
+Status:
+Completed
+
+Completion Date:
+2026-07-18
+
+Files Created:
+- app/main.py
+- tests/unit/test_roles.py
+
+Files Modified:
+- docs/CHANGELOG.md
+
+Summary:
+Configured and registered AuthMiddleware globals and created public health and readiness check routes alongside authenticated and role-restricted API endpoints. Fully protected routes using get_current_user and RoleChecker dependencies.
+
+Notes:
+- Wrote integration tests covering public endpoints, unauthenticated rejections, and correct role permissions/denials via FastAPI's TestClient.
+
+Future Dependencies:
+AUTH-008
+
+-----------------------------------------
+
+-----------------------------------------
+
+Ticket ID:
+AUTH-008
+
+Title:
+Authentication Testing
+
+Status:
+Completed
+
+Completion Date:
+2026-07-18
+
+Files Created:
+- tests/unit/test_auth.py
+- tests/unit/test_dependencies.py
+- tests/unit/test_middleware.py
+- tests/unit/test_roles.py
+
+Files Modified:
+- docs/CHANGELOG.md
+
+Summary:
+Wrote and compiled a comprehensive 34-test suite validating end-to-end backend authentication security and reliability. The tests cover JWT signature validation, thread-safe public key caching with double-checked lock, middleware extraction, route exceptions, DB lookups, role validation logic, and role protection on routing endpoints.
+
+Notes:
+- Replaced custom test runner loops in dependencies test with native async generators via pytest_asyncio.fixture to allow perfect async execution.
+
+Future Dependencies:
+None
+
+-----------------------------------------
+
 ---
 
 ## Upcoming Tickets

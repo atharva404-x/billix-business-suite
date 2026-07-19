@@ -31,3 +31,11 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
