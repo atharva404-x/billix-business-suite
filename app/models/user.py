@@ -2,6 +2,7 @@ from typing import Optional
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 from app.models.base import Base, BaseModelMixin
+from app.models.roles import UserRole
 
 
 class User(Base, BaseModelMixin):
@@ -37,4 +38,10 @@ class User(Base, BaseModelMixin):
     avatar_url: Mapped[Optional[str]] = mapped_column(
         String(1024),
         nullable=True
+    )
+
+    role: Mapped[UserRole] = mapped_column(
+        String(50),
+        default=UserRole.VIEWER,
+        nullable=False
     )

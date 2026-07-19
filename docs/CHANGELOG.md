@@ -167,6 +167,111 @@ AUTH-005
 
 -----------------------------------------
 
+-----------------------------------------
+
+Ticket ID:
+AUTH-005
+
+Title:
+Current User Dependency
+
+Status:
+Completed
+
+Completion Date:
+2026-07-18
+
+Files Created:
+- app/core/database.py
+- app/models/__init__.py
+- app/models/base.py
+- app/models/user.py
+- app/auth/dependencies.py
+- tests/unit/test_dependencies.py
+
+Files Modified:
+- app/core/config.py
+- docs/CHANGELOG.md
+
+Summary:
+Set up core database connections, baseline declarative schemas, and BaseModelMixin, then created the get_current_user() FastAPI dependency. It reads the authenticated clerk user id from the request state, checks the user profile in the database, and injects the User object.
+
+Notes:
+- Async execution is handled natively using SQLAlchemy 2.0.
+- Standardizes in-memory SQLite (aiosqlite) as a fast, zero-config local testing and development database.
+
+Future Dependencies:
+AUTH-006
+AUTH-007
+
+-----------------------------------------
+
+-----------------------------------------
+
+Ticket ID:
+AUTH-006
+
+Title:
+Role Foundation
+
+Status:
+Completed
+
+Completion Date:
+2026-07-18
+
+Files Created:
+- app/models/roles.py
+- app/auth/role_helpers.py
+
+Files Modified:
+- app/models/user.py
+- docs/CHANGELOG.md
+
+Summary:
+Created the backend role foundation with OWNER, ADMIN, MANAGER, STAFF, and VIEWER roles using an Enum in `app/models/roles.py`. Implemented comparison hierarchy utilities and a reusable FastAPI dependency class `RoleChecker` in `app/auth/role_helpers.py`.
+
+Notes:
+- The role hierarchy indexes OWNER as the most privileged and VIEWER as the least privileged.
+- Enforces role checks in endpoints asynchronously with complete exception handling (returning 403 Forbidden).
+
+Future Dependencies:
+AUTH-007
+
+-----------------------------------------
+
+-----------------------------------------
+
+Ticket ID:
+AUTH-007
+
+Title:
+Protected Routes
+
+Status:
+Completed
+
+Completion Date:
+2026-07-18
+
+Files Created:
+- app/main.py
+- tests/unit/test_roles.py
+
+Files Modified:
+- docs/CHANGELOG.md
+
+Summary:
+Configured and registered AuthMiddleware globals and created public health and readiness check routes alongside authenticated and role-restricted API endpoints. Fully protected routes using get_current_user and RoleChecker dependencies.
+
+Notes:
+- Wrote integration tests covering public endpoints, unauthenticated rejections, and correct role permissions/denials via FastAPI's TestClient.
+
+Future Dependencies:
+AUTH-008
+
+-----------------------------------------
+
 ---
 
 ## Upcoming Tickets
