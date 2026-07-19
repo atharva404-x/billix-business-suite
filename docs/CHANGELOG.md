@@ -306,6 +306,42 @@ None
 
 -----------------------------------------
 
+-----------------------------------------
+
+Ticket ID:
+BUS-001
+
+Title:
+Business & Membership Data Model
+
+Status:
+Completed
+
+Completion Date:
+2026-07-18
+
+Files Created:
+- app/models/business.py
+- app/models/membership.py
+- tests/unit/test_tenant_models.py
+
+Files Modified:
+- app/models/user.py
+- docs/CHANGELOG.md
+
+Summary:
+Designed and created the core business profile and membership database models establishing Billix's multi-tenant foundation. Set up SQL-level cascades, unique constraint indexes (gstin, pan), relationship back-population parameters, and explicit foreign key mapping configurations.
+
+Notes:
+- Explicitly defined 'foreign_keys="[Membership.user_id]"' on User relationships to prevent mapping conflicts when querying memberships with multiple User foreign key fields.
+- Reusable BaseModelMixin was successfully applied across both models.
+
+Future Dependencies:
+TENANT-03
+TENANT-04
+
+-----------------------------------------
+
 ---
 
 ## Upcoming Tickets
