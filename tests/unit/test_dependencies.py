@@ -1,5 +1,5 @@
-import asyncio
 import pytest
+import pytest_asyncio
 from unittest.mock import MagicMock
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
@@ -9,33 +9,21 @@ from app.models.user import User
 from app.auth.dependencies import get_current_user
 
 
-@pytest.fixture
-def async_db():
-    # Explicitly manage a private event loop for this fixture's setup and teardown
-    loop = asyncio.new_event_loop()
-
+@pytest_asyncio.fixture
+async def async_db():
     # Set up async in-memory SQLite database
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
 
     # Materialize schemas
-    async def create_tables():
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-
-    loop.run_until_complete(create_tables())
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
     AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
-    session = AsyncSessionLocal()
 
-    yield session
+    async with AsyncSessionLocal() as session:
+        yield session
 
-    # Teardown the session and database resources on the same loop
-    async def teardown():
-        await session.close()
-        await engine.dispose()
-
-    loop.run_until_complete(teardown())
-    loop.close()
+    await engine.dispose()
 
 
 @pytest.mark.asyncio

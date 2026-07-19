@@ -272,6 +272,40 @@ AUTH-008
 
 -----------------------------------------
 
+-----------------------------------------
+
+Ticket ID:
+AUTH-008
+
+Title:
+Authentication Testing
+
+Status:
+Completed
+
+Completion Date:
+2026-07-18
+
+Files Created:
+- tests/unit/test_auth.py
+- tests/unit/test_dependencies.py
+- tests/unit/test_middleware.py
+- tests/unit/test_roles.py
+
+Files Modified:
+- docs/CHANGELOG.md
+
+Summary:
+Wrote and compiled a comprehensive 34-test suite validating end-to-end backend authentication security and reliability. The tests cover JWT signature validation, thread-safe public key caching with double-checked lock, middleware extraction, route exceptions, DB lookups, role validation logic, and role protection on routing endpoints.
+
+Notes:
+- Replaced custom test runner loops in dependencies test with native async generators via pytest_asyncio.fixture to allow perfect async execution.
+
+Future Dependencies:
+None
+
+-----------------------------------------
+
 ---
 
 ## Upcoming Tickets
