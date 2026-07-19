@@ -7,6 +7,9 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Billix"
     ENV: str = "development"
 
+    # Database Configuration
+    DATABASE_URL: str = Field(default="sqlite+aiosqlite:///:memory:", validation_alias="DATABASE_URL")
+
     # Clerk Configuration
     CLERK_PUBLISHABLE_KEY: str = Field(default="", validation_alias="CLERK_PUBLISHABLE_KEY")
     CLERK_SECRET_KEY: str = Field(default="", validation_alias="CLERK_SECRET_KEY")
