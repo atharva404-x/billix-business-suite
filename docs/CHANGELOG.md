@@ -132,6 +132,41 @@ AUTH-005
 
 -----------------------------------------
 
+-----------------------------------------
+
+Ticket ID:
+AUTH-004
+
+Title:
+Authentication Middleware
+
+Status:
+Completed
+
+Completion Date:
+2026-07-18
+
+Files Created:
+- app/middleware/__init__.py
+- app/middleware/auth.py
+- tests/unit/test_middleware.py
+
+Files Modified:
+- docs/CHANGELOG.md
+
+Summary:
+Implemented the FastAPI authentication middleware layer (`AuthMiddleware`). It intercepts incoming requests, enforces Clerk JWT verification on all non-public routes, handles public routes pass-through, and attaches authenticated user identity to the request state (`request.state.user` and `request.state.user_id`). Included a comprehensive unit test suite with 6 passing tests using FastAPI's TestClient.
+
+Notes:
+- Inherits from Starlette's `BaseHTTPMiddleware` to process incoming requests and outgoing responses asynchronously.
+- Core public paths such as `/`, `/docs`, `/openapi.json`, `/health`, and `/ready` are bypassed by default.
+- Returns explicit JSONResponse with 401 Unauthorized on invalid/missing/expired tokens.
+
+Future Dependencies:
+AUTH-005
+
+-----------------------------------------
+
 ---
 
 ## Upcoming Tickets

@@ -48,7 +48,17 @@ class JWKSKeyManager:
         self.cache_ttl = cache_ttl
         self._keys: Dict[str, jwt.PyJWK] = {}
         self._expires_at: float = 0.0
-        self._lock = asyncio.Lock()
+        self._lock: Optional[asyncio.Lock] = None
+
+    @property
+    def lock(self) -> asyncio.Lock:
+        """
+        Lazily instantiates the asyncio.Lock to avoid 'no running event loop'
+        RuntimeError at module import time in modern Python versions.
+        """
+        if self._lock is None:
+            self._lock = asyncio.Lock()
+        return self._lock
 
     def get_jwks_url(self) -> str:
         """
@@ -102,7 +112,7 @@ class JWKSKeyManager:
             return self._keys[kid]
 
         # Slow path: acquire lock and refresh keys if needed
-        async with self._lock:
+        async with self.lock:
             # Recheck condition once inside the lock
             if kid in self._keys and current_time < self._expires_at:
                 return self._keys[kid]
