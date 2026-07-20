@@ -342,6 +342,49 @@ TENANT-04
 
 -----------------------------------------
 
+-----------------------------------------
+
+Ticket ID:
+BUS-002
+
+Title:
+Business Management
+
+Status:
+Completed
+
+Completion Date:
+2026-07-18
+
+Files Created:
+- app/schemas/__init__.py
+- app/schemas/business.py
+- app/repositories/__init__.py
+- app/repositories/business.py
+- app/services/__init__.py
+- app/services/business.py
+- app/api/__init__.py
+- app/api/v1/__init__.py
+- app/api/v1/businesses.py
+- tests/unit/test_business_services.py
+
+Files Modified:
+- app/main.py
+- docs/CHANGELOG.md
+
+Summary:
+Implemented the complete Business Service Layer and REST API endpoints supporting full CRUD operations on business profiles. Configured automatic creator membership linkage, duplicate GSTIN validation checks, and strict OWNER-only deactivation/updating policies.
+
+Notes:
+- Integrated a high-quality soft-deleted business filter inside list_by_user_id to exclude inactive businesses.
+- Thoroughly tested direct BusinessService methods and REST endpoints via TestClient.
+
+Future Dependencies:
+TENANT-03
+TENANT-04
+
+-----------------------------------------
+
 ---
 
 ## Upcoming Tickets

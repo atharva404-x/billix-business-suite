@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends
 
 from app.core.config import settings
 from app.middleware.auth import AuthMiddleware
+from app.api.v1.businesses import router as business_router
 from app.auth.dependencies import get_current_user
 from app.auth.role_helpers import RoleChecker
 from app.models.user import User
@@ -13,6 +14,9 @@ app = FastAPI(
     description="Billix GST Billing, Inventory & Business Management SaaS API",
     version="1.0.0"
 )
+
+# Register API Routers
+app.include_router(business_router, prefix="/api/v1")
 
 # Configure the global AuthMiddleware
 # Core metadata and health endpoints are designated as public (unauthenticated) paths
