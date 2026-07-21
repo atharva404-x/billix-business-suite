@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     CLERK_JWKS_URL: str = Field(default="", validation_alias="CLERK_JWKS_URL")
     CLERK_API_URL: str = Field(default="https://api.clerk.com/v1", validation_alias="CLERK_API_URL")
 
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

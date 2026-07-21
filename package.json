@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
+    "start:backend": "powershell -ExecutionPolicy Bypass -File scripts\\start-backend.ps1",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
