@@ -3,6 +3,12 @@ from app.models.roles import UserRole
 from app.models.user import User
 from app.models.business import BusinessProfile, BusinessMember
 from app.models.customer import Customer, CustomerType
+from app.models.supplier import Supplier, SupplierType
+from app.models.unit import Unit
+from app.models.category import Category
+from app.models.product import Product
+from app.models.inventory import StockMovement, InventoryTransaction
+from app.models.invoice import Invoice, InvoiceItem, InvoiceStatus, PaymentStatus, PaymentMethod, Payment
 
 __all__ = [
     "Base",
@@ -12,6 +18,19 @@ __all__ = [
     "BusinessProfile",
     "BusinessMember",
     "Customer",
-    "CustomerType"
+    "CustomerType",
+    "Supplier",
+    "SupplierType",
+    "Unit",
+    "Category",
+    "Product",
+    "StockMovement",
+    "InventoryTransaction",
+    "Invoice",
+    "InvoiceItem",
+    "InvoiceStatus",
+    "PaymentStatus",
+    "PaymentMethod",
+    "Payment"
 ]
 

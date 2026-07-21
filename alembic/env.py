@@ -10,6 +10,12 @@ from app.models.base import Base
 from app.models.user import User  # noqa: F401
 from app.models.business import BusinessProfile, BusinessMember  # noqa: F401
 from app.models.customer import Customer  # noqa: F401
+from app.models.supplier import Supplier  # noqa: F401
+from app.models.unit import Unit  # noqa: F401
+from app.models.category import Category  # noqa: F401
+from app.models.product import Product  # noqa: F401
+from app.models.inventory import InventoryTransaction  # noqa: F401
+from app.models.invoice import Invoice, InvoiceItem  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

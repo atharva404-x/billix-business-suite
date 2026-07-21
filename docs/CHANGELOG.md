@@ -410,6 +410,239 @@ None
 
 -----------------------------------------
 
+-----------------------------------------
+
+Ticket ID:
+SUP-001
+
+Title:
+Supplier Management Module
+
+Status:
+Completed
+
+Completion Date:
+2026-07-21
+
+Files Created:
+- app/utils/__init__.py
+- app/utils/validation.py
+- app/models/supplier.py
+- app/schemas/supplier.py
+- app/repositories/supplier.py
+- app/services/supplier.py
+- app/api/v1/suppliers.py
+- alembic/versions/20260721_add_suppliers_table.py
+
+Files Modified:
+- app/services/customer.py
+- app/models/__init__.py
+- app/schemas/__init__.py
+- app/repositories/__init__.py
+- app/services/__init__.py
+- app/api/v1/__init__.py
+
+Summary:
+Implemented the complete Supplier Management module:
+- Added Supplier model with business_id, supplier_code, name, type, gstin, contact info, address, credit limit, outstanding balance, and BaseModelMixin
+- Created Supplier schemas (Create, Update, Response, ListResponse)
+- Implemented SupplierRepository with search, filter, sort, pagination, and business isolation
+- Implemented SupplierService with CRUD, validation (GSTIN, duplicates), and business access checks
+- Added supplier API endpoints for all CRUD operations
+- Refactored validate_gstin into a shared utility in app/utils/validation.py
+- Updated alembic/env.py (we'll do that now)
+
+Notes:
+- Reused existing architecture from Customer module
+- Reused BaseModel, BaseRepository, validation, and business isolation
+- Future-compatible with Purchase Orders, Inventory, Expenses, Vendor Payments, Reports
+
+Future Dependencies:
+None
+
+-----------------------------------------
+
+-----------------------------------------
+
+Ticket ID:
+PROD-001
+
+Title:
+Product Catalog Management
+
+Status:
+Completed
+
+Completion Date:
+2026-07-21
+
+Files Created:
+- app/utils/__init__.py
+- app/utils/validation.py
+- app/models/unit.py
+- app/models/category.py
+- app/models/product.py
+- app/schemas/unit.py
+- app/schemas/category.py
+- app/schemas/product.py
+- app/repositories/unit.py
+- app/repositories/category.py
+- app/repositories/product.py
+- app/services/unit.py
+- app/services/category.py
+- app/services/product.py
+- app/api/v1/units.py
+- app/api/v1/categories.py
+- app/api/v1/products.py
+- alembic/versions/20260721_add_products_categories_units.py
+
+Files Modified:
+- app/models/__init__.py
+- app/schemas/__init__.py
+- app/repositories/__init__.py
+- app/services/__init__.py
+- app/api/v1/__init__.py
+- alembic/env.py
+- docs/CHANGELOG.md
+- app/utils/validation.py
+
+Summary:
+Implemented complete Product Catalog Management:
+- Units management (custom units for products)
+- Category management (hierarchical categories)
+- Product management with all required fields (sku, barcode, hsn/sac, gst rate, pricing, stock, etc.)
+- Search, filter, sort, pagination for all three
+- Validation (hsn/sac, duplicate sku/barcode)
+- Business isolation for all operations
+- Soft delete
+- Future-compatible with inventory, PO, invoices, etc.
+
+Notes:
+- Reused existing architecture from Customer/Supplier modules
+- Moved validate_gstin and added validate_hsn_sac to shared utils
+- Product current_stock initialized from opening_stock on creation
+
+Future Dependencies:
+None
+
+-----------------------------------------
+
+-----------------------------------------
+
+Ticket ID:
+INV-001
+
+Title:
+Inventory & Stock Management
+
+Status:
+Completed
+
+Completion Date:
+2026-07-21
+
+Files Created:
+- app/models/inventory.py
+- app/schemas/inventory.py
+- app/repositories/inventory.py
+- app/services/inventory.py
+- app/api/v1/inventory.py
+- alembic/versions/20260721_add_inventory_transactions.py
+
+Files Modified:
+- app/models/__init__.py
+- app/schemas/__init__.py
+- app/repositories/__init__.py
+- app/services/__init__.py
+- app/api/v1/__init__.py
+- alembic/env.py
+- docs/CHANGELOG.md
+
+Summary:
+Implemented complete Inventory Management module:
+- StockMovement enum (OPENING_STOCK, PURCHASE, SALE, SALES_RETURN, PURCHASE_RETURN, ADJUSTMENT_IN, ADJUSTMENT_OUT, MANUAL_UPDATE)
+- InventoryTransaction model with ledger support
+- InventoryService with stock_in, stock_out, adjust_stock, get_current_stock, get_inventory_history, validate_stock_availability
+- API endpoints: POST /stock-in, POST /stock-out, POST /adjustment, GET /product/{id}, GET /history/{product_id}
+- Reusable alert helpers (check_low_stock, check_out_of_stock, check_overstock)
+- Business isolation, soft delete, search/filter/pagination/sorting for history
+- Future-compatible with warehouses, batch/expiry tracking, PO, invoices, returns
+
+Notes:
+- Never directly update product.current_stock; always use InventoryService
+- Transactions record previous/new stock for audit trail
+- Stock availability validation prevents negative stock by default
+
+Future Dependencies:
+- Purchase Orders (uses reference_type/reference_id for PO links)
+- Sales Invoices (uses SALE transaction type, reference for invoices)
+- Returns (uses SALES_RETURN/PURCHASE_RETURN)
+- Warehouses (add warehouse_id to InventoryTransaction later)
+- Batch/Expiry Tracking (add batch_id, expiry_date later)
+
+-----------------------------------------
+
+-----------------------------------------
+
+Ticket ID:
+INVC-001
+
+Title:
+Sales Invoice Engine
+
+Status:
+Completed
+
+Completion Date:
+2026-07-21
+
+Files Created:
+- app/models/invoice.py
+- app/schemas/invoice.py
+- app/repositories/invoice.py
+- app/services/invoice.py
+- app/api/v1/invoices.py
+- alembic/versions/20260721_add_invoice_payment_tables.py
+
+Files Modified:
+- app/models/__init__.py
+- app/schemas/__init__.py
+- app/repositories/__init__.py
+- app/services/__init__.py
+- app/api/v1/__init__.py
+- alembic/env.py
+- docs/CHANGELOG.md
+
+Summary:
+Implemented complete Sales Invoice Engine with Payments:
+- Invoice and InvoiceItem models with proper relationships
+- Payment model and PaymentMethod enum
+- InvoiceService with automatic calculations (subtotal, GST, grand total, round-off)
+- Outstanding balance tracking
+- Payment recording with partial/full payment handling
+- Stock deduction via InventoryService on invoice creation
+- Unique invoice number generation per business
+- Search/filter/sort for invoices
+- Invoice statuses (draft, paid, unpaid, overdue, cancelled)
+- Payment statuses (unpaid, partially paid, paid)
+- Business isolation for all operations
+- CRUD operations for invoices and payments
+
+Notes:
+- Stock is automatically deducted when invoice is created
+- TODO: Reverse inventory on invoice cancellation
+- TODO: Add business-specific invoice prefix support
+- TODO: Implement IGST based on business/customer location
+- TODO: Recalculate totals when invoice discount updated
+
+Future Dependencies:
+- PDF Generation
+- Recurring Invoices
+- Online Payment Gateway Integration
+- Credit Notes
+
+-----------------------------------------
+
 ---
 
 ## Upcoming Tickets

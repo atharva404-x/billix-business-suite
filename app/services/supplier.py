@@ -3,16 +3,16 @@ import uuid
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
-from app.models.customer import Customer, CustomerType
-from app.schemas.customer import CustomerCreate, CustomerUpdate
-from app.repositories.customer import CustomerRepository
+from app.models.supplier import Supplier, SupplierType
+from app.schemas.supplier import SupplierCreate, SupplierUpdate
+from app.repositories.supplier import SupplierRepository
 from app.repositories.business import BusinessMemberRepository
 from app.utils.validation import validate_gstin
 
 
-class CustomerService:
+class SupplierService:
     def __init__(self, session: AsyncSession):
-        self.customer_repo = CustomerRepository(session)
+        self.supplier_repo = SupplierRepository(session)
         self.member_repo = BusinessMemberRepository(session)
 
     async def _ensure_business_access(
@@ -27,44 +27,44 @@ class CustomerService:
                 detail="You do not have access to this business"
             )
 
-    async def create_customer(
-        self, user_id: uuid.UUID, business_id: uuid.UUID, customer_data: CustomerCreate
-    ) -> Customer:
+    async def create_supplier(
+        self, user_id: uuid.UUID, business_id: uuid.UUID, supplier_data: SupplierCreate
+    ) -> Supplier:
         await self._ensure_business_access(user_id, business_id)
-        if customer_data.gstin:
-            if not validate_gstin(customer_data.gstin):
+        if supplier_data.gstin:
+            if not validate_gstin(supplier_data.gstin):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Invalid GSTIN format"
                 )
-            existing = await self.customer_repo.get_by_business_and_gstin(
-                business_id, customer_data.gstin
+            existing = await self.supplier_repo.get_by_business_and_gstin(
+                business_id, supplier_data.gstin
             )
             if existing:
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
-                    detail="Customer with this GSTIN already exists"
+                    detail="Supplier with this GSTIN already exists"
                 )
-        return await self.customer_repo.create(
-            business_id=business_id, **customer_data.model_dump(),
+        return await self.supplier_repo.create(
+            business_id=business_id, **supplier_data.model_dump(),
             outstanding_balance=0.0
         )
 
-    async def get_customer(
-        self, user_id: uuid.UUID, business_id: uuid.UUID, customer_id: uuid.UUID, include_inactive: bool = False
-    ) -> Customer:
+    async def get_supplier(
+        self, user_id: uuid.UUID, business_id: uuid.UUID, supplier_id: uuid.UUID, include_inactive: bool = False
+    ) -> Supplier:
         await self._ensure_business_access(user_id, business_id)
-        customer = await self.customer_repo.get_by_business_and_id(
-            business_id, customer_id, include_inactive=include_inactive
+        supplier = await self.supplier_repo.get_by_business_and_id(
+            business_id, supplier_id, include_inactive=include_inactive
         )
-        if not customer:
+        if not supplier:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Customer not found"
+                detail="Supplier not found"
             )
-        return customer
+        return supplier
 
-    async def list_customers(
+    async def list_suppliers(
         self, 
         user_id: uuid.UUID, 
         business_id: uuid.UUID, 
@@ -72,52 +72,52 @@ class CustomerService:
         limit: int = 100,
         search_query: Optional[str] = None,
         is_active: Optional[bool] = None,
-        customer_type: Optional[CustomerType] = None,
+        supplier_type: Optional[SupplierType] = None,
         city: Optional[str] = None,
         state: Optional[str] = None,
         sort_by: Optional[str] = None,
         sort_order: str = "asc"
-    ) -> tuple[List[Customer], int]:
+    ) -> tuple[List[Supplier], int]:
         await self._ensure_business_access(user_id, business_id)
-        customers, total = await self.customer_repo.list_by_business(
+        suppliers, total = await self.supplier_repo.list_by_business(
             business_id, 
             skip=skip, 
             limit=limit, 
             search_query=search_query, 
             is_active=is_active, 
-            customer_type=customer_type, 
+            supplier_type=supplier_type, 
             city=city, 
             state=state, 
             sort_by=sort_by, 
             sort_order=sort_order
         )
-        return customers, total
+        return suppliers, total
 
-    async def update_customer(
-        self, user_id: uuid.UUID, business_id: uuid.UUID, customer_id: uuid.UUID,
-        update_data: CustomerUpdate
-    ) -> Customer:
-        customer = await self.get_customer(user_id, business_id, customer_id)
+    async def update_supplier(
+        self, user_id: uuid.UUID, business_id: uuid.UUID, supplier_id: uuid.UUID,
+        update_data: SupplierUpdate
+    ) -> Supplier:
+        supplier = await self.get_supplier(user_id, business_id, supplier_id)
         if update_data.gstin:
             if not validate_gstin(update_data.gstin):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Invalid GSTIN format"
                 )
-            existing = await self.customer_repo.get_by_business_and_gstin(
+            existing = await self.supplier_repo.get_by_business_and_gstin(
                 business_id, update_data.gstin
             )
-            if existing and existing.id != customer_id:
+            if existing and existing.id != supplier_id:
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
-                    detail="Customer with this GSTIN already exists"
+                    detail="Supplier with this GSTIN already exists"
                 )
-        return await self.customer_repo.update(
-            customer, **update_data.model_dump(exclude_unset=True)
+        return await self.supplier_repo.update(
+            supplier, **update_data.model_dump(exclude_unset=True)
         )
 
-    async def deactivate_customer(
-        self, user_id: uuid.UUID, business_id: uuid.UUID, customer_id: uuid.UUID
-    ) -> Customer:
-        customer = await self.get_customer(user_id, business_id, customer_id)
-        return await self.customer_repo.deactivate(customer)
+    async def deactivate_supplier(
+        self, user_id: uuid.UUID, business_id: uuid.UUID, supplier_id: uuid.UUID
+    ) -> Supplier:
+        supplier = await self.get_supplier(user_id, business_id, supplier_id)
+        return await self.supplier_repo.deactivate(supplier)
