@@ -57,6 +57,26 @@ from app.schemas.invoice import (
     PaymentResponse,
     PaymentListResponse
 )
+from app.schemas.reports import (
+    DashboardSummary,
+    TopSellingProductItem,
+    RecentInvoiceItem,
+    DashboardResponse,
+    SalesReportItem,
+    SalesReportResponse,
+    TopCustomerItem,
+    OutstandingCustomerItem,
+    CustomerPurchaseHistoryItem,
+    CustomerReportsResponse,
+    ProductSalesItem,
+    StockValueItem,
+    ProductReportsResponse,
+    PaymentMethodDistributionItem,
+    PaymentReportsResponse,
+    InventoryValuationItem,
+    StockMovementReportItem,
+    InventoryReportsResponse
+)
 
 __all__ = [
     "BusinessProfileCreate",
@@ -100,5 +120,23 @@ __all__ = [
     "InvoiceItemResponse",
     "PaymentCreate",
     "PaymentResponse",
-    "PaymentListResponse"
+    "PaymentListResponse",
+    "DashboardSummary",
+    "TopSellingProductItem",
+    "RecentInvoiceItem",
+    "DashboardResponse",
+    "SalesReportItem",
+    "SalesReportResponse",
+    "TopCustomerItem",
+    "OutstandingCustomerItem",
+    "CustomerPurchaseHistoryItem",
+    "CustomerReportsResponse",
+    "ProductSalesItem",
+    "StockValueItem",
+    "ProductReportsResponse",
+    "PaymentMethodDistributionItem",
+    "PaymentReportsResponse",
+    "InventoryValuationItem",
+    "StockMovementReportItem",
+    "InventoryReportsResponse"
 ]

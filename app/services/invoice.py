@@ -1,17 +1,23 @@
 
 import uuid
 from typing import List, Tuple, Optional
-from datetime import datetime
+from datetime import datetime, timezone
+from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from fastapi import HTTPException, status
 from app.models.invoice import Invoice, InvoiceItem, InvoiceStatus, PaymentStatus, Payment, PaymentMethod
-from app.schemas.invoice import InvoiceCreate, InvoiceUpdate, InvoiceItemCreate, PaymentCreate
+from app.models.business import BusinessProfile
+from app.models.customer import Customer
+from app.models.inventory import StockMovement, InventoryTransaction
+from app.schemas.invoice import InvoiceCreate, InvoiceUpdate, InvoiceItemCreate, PaymentCreate, InvoiceCancel
 from app.repositories.invoice import InvoiceRepository, PaymentRepository
 from app.repositories.customer import CustomerRepository
 from app.repositories.product import ProductRepository
-from app.repositories.business import BusinessMemberRepository
+from app.repositories.business import BusinessMemberRepository, BusinessProfileRepository
 from app.services.inventory import InventoryService
 from app.schemas.inventory import StockOut
+from app.utils.invoice_calculator import InvoiceCalculator
 
 
 class InvoiceService:
@@ -21,6 +27,7 @@ class InvoiceService:
         self.customer_repo = CustomerRepository(session)
         self.product_repo = ProductRepository(session)
         self.member_repo = BusinessMemberRepository(session)
+        self.business_repo = BusinessProfileRepository(session)
         self.inventory_service = InventoryService(session)
         self.session = session
 
@@ -34,9 +41,16 @@ class InvoiceService:
                 detail="You do not have access to this business"
             )
 
-    async def _validate_customer(
+    async def _get_business_and_customer(
         self, business_id: uuid.UUID, customer_id: uuid.UUID
-    ) -> None:
+    ) -> Tuple[BusinessProfile, Customer]:
+        business = await self.business_repo.get_by_id(business_id)
+        if not business:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Business not found"
+            )
+
         customer = await self.customer_repo.get_by_business_and_id(business_id, customer_id)
         if not customer:
             raise HTTPException(
@@ -44,92 +58,101 @@ class InvoiceService:
                 detail="Customer not found"
             )
 
-    async def _calculate_item(
-        self, business_id: uuid.UUID, item_data: InvoiceItemCreate
-    ) -> Tuple[dict, float]:
-        # Validate product
-        product = await self.product_repo.get_by_business_and_id(business_id, item_data.product_id)
-        if not product:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Product {item_data.product_id} not found"
-            )
+        return business, customer
 
-        # Use product's gst rate if not provided
-        gst_rate = item_data.gst_rate or product.gst_rate or 0.0
-
-        # Calculate item values
-        line_total = item_data.quantity * item_data.unit_price
-        discount = item_data.discount or 0.0
-        taxable_amount = line_total - discount
-        tax_amount = (taxable_amount * gst_rate) / 100 if gst_rate else 0.0
-        total = taxable_amount + tax_amount
-
-        item_dict = {
-            "product_id": item_data.product_id,
-            "quantity": item_data.quantity,
-            "unit_price": item_data.unit_price,
-            "discount": discount,
-            "gst_rate": gst_rate,
-            "taxable_amount": taxable_amount,
-            "tax_amount": tax_amount,
-            "total": total
-        }
-
-        return item_dict, tax_amount
-
-    async def _calculate_invoice(
-        self, business_id: uuid.UUID, items_data: List[InvoiceItemCreate], discount_amount: Optional[float] = None
-    ) -> dict:
-        subtotal = 0.0
-        total_tax = 0.0
-        calculated_items = []
-
+    async def _prepare_items_for_calculation(
+        self, business_id: uuid.UUID, items_data: List[InvoiceItemCreate]
+    ) -> List[dict]:
+        prepared_items = []
         for item_data in items_data:
-            item_dict, item_tax = await self._calculate_item(business_id, item_data)
-            calculated_items.append(item_dict)
-            subtotal += item_dict["taxable_amount"] + (item_dict["discount"] or 0.0)
-            total_tax += item_tax
+            # Validate product
+            product = await self.product_repo.get_by_business_and_id(business_id, item_data.product_id)
+            if not product:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Product {item_data.product_id} not found"
+                )
 
-        # Apply invoice-level discount
-        discount_amount = discount_amount or 0.0
-        taxable_amount = subtotal - discount_amount
-        # For now, assume GST is already calculated on items, so CGST/SGST/IGST is split equally if needed
-        # For simplicity, let's split total_tax into CGST and SGST each half
-        cgst_amount = total_tax / 2 if total_tax > 0 else None
-        sgst_amount = total_tax / 2 if total_tax > 0 else None
-        igst_amount = None  # TODO: Implement based on business and customer location
+            # Use product's gst rate if not provided
+            gst_rate = item_data.gst_rate or product.gst_rate or 0.0
 
-        # Calculate grand total and round off
-        total_before_round = taxable_amount + total_tax
-        grand_total = round(total_before_round, 2)
-        round_off = grand_total - total_before_round
+            prepared_items.append({
+                "product_id": str(item_data.product_id),
+                "quantity": item_data.quantity,
+                "unit_price": item_data.unit_price,
+                "discount": item_data.discount or 0.0,
+                "gst_rate": gst_rate
+            })
+        return prepared_items
 
-        return {
-            "subtotal": subtotal,
-            "discount_amount": discount_amount,
-            "taxable_amount": taxable_amount,
-            "cgst_amount": cgst_amount,
-            "sgst_amount": sgst_amount,
-            "igst_amount": igst_amount,
-            "total_tax": total_tax,
-            "round_off": round_off,
-            "grand_total": grand_total,
-            "items": calculated_items
-        }
+    async def _generate_invoice_number(
+        self, business_id: uuid.UUID
+    ) -> str:
+        # Concurrency-safe invoice number generation
+        # Get the latest invoice number with FOR UPDATE to prevent race conditions
+        last_invoice = await self.invoice_repo.get_latest_invoice_for_update(business_id)
+        
+        if not last_invoice:
+            return "INV-00001"
+        
+        # Extract numeric part
+        try:
+            parts = last_invoice.invoice_number.split("-")
+            last_num = int(parts[-1])
+            new_num = last_num + 1
+            return f"INV-{new_num:05d}"
+        except Exception:
+            return "INV-00001"
+
+    async def _reverse_invoice_stock(
+        self,
+        invoice: Invoice,
+        user_id: uuid.UUID,
+        business_id: uuid.UUID
+    ) -> None:
+        # Reverse stock for each invoice item
+        for item in invoice.items:
+            # Get product with FOR UPDATE
+            product = await self.inventory_service.get_product_and_validate_access(
+                user_id, business_id, item.product_id, for_update=True
+            )
+            previous_stock = product.current_stock
+            new_stock = previous_stock + item.quantity
+
+            # Create SALES_RETURN transaction
+            transaction = InventoryTransaction(
+                business_id=business_id,
+                product_id=item.product_id,
+                transaction_type=StockMovement.SALES_RETURN,
+                quantity=item.quantity,
+                previous_stock=previous_stock,
+                new_stock=new_stock,
+                reference_type="invoice_cancellation",
+                reference_id=invoice.id,
+                remarks=f"Invoice {invoice.invoice_number} cancelled",
+                created_by=user_id
+            )
+            self.session.add(transaction)
+            product.current_stock = new_stock
 
     async def create_invoice(
         self, user_id: uuid.UUID, business_id: uuid.UUID, invoice_data: InvoiceCreate
     ) -> Invoice:
         await self._ensure_business_access(user_id, business_id)
-        await self._validate_customer(business_id, invoice_data.customer_id)
+        business, customer = await self._get_business_and_customer(business_id, invoice_data.customer_id)
 
-        # Generate invoice number
-        invoice_number = await self.invoice_repo.get_next_invoice_number(business_id)
+        # Generate invoice number (concurrency-safe)
+        invoice_number = await self._generate_invoice_number(business_id)
 
-        # Calculate invoice totals
-        invoice_calc = await self._calculate_invoice(
-            business_id, invoice_data.items, invoice_data.discount_amount
+        # Prepare items for calculation
+        prepared_items = await self._prepare_items_for_calculation(business_id, invoice_data.items)
+
+        # Calculate invoice totals using InvoiceCalculator
+        invoice_calc = InvoiceCalculator.calculate_invoice(
+            items_data=prepared_items,
+            discount_amount=Decimal(str(invoice_data.discount_amount)) if invoice_data.discount_amount else None,
+            business_state=business.state,
+            customer_state=customer.state
         )
 
         # Create invoice
@@ -139,18 +162,18 @@ class InvoiceService:
             invoice_number=invoice_number,
             invoice_date=invoice_data.invoice_date,
             due_date=invoice_data.due_date,
-            subtotal=invoice_calc["subtotal"],
-            discount_amount=invoice_calc["discount_amount"],
-            taxable_amount=invoice_calc["taxable_amount"],
-            cgst_amount=invoice_calc["cgst_amount"],
-            sgst_amount=invoice_calc["sgst_amount"],
-            igst_amount=invoice_calc["igst_amount"],
-            total_tax=invoice_calc["total_tax"],
-            round_off=invoice_calc["round_off"],
-            grand_total=invoice_calc["grand_total"],
-            outstanding_balance=invoice_calc["grand_total"],
+            subtotal=float(invoice_calc.subtotal),
+            discount_amount=float(invoice_calc.discount_amount) if invoice_calc.discount_amount else None,
+            taxable_amount=float(invoice_calc.taxable_amount),
+            cgst_amount=float(invoice_calc.cgst_amount) if invoice_calc.cgst_amount else None,
+            sgst_amount=float(invoice_calc.sgst_amount) if invoice_calc.sgst_amount else None,
+            igst_amount=float(invoice_calc.igst_amount) if invoice_calc.igst_amount else None,
+            total_tax=float(invoice_calc.total_tax),
+            round_off=float(invoice_calc.round_off) if invoice_calc.round_off else None,
+            grand_total=float(invoice_calc.grand_total),
+            outstanding_balance=float(invoice_calc.grand_total),
             payment_status=PaymentStatus.UNPAID,
-            status=InvoiceStatus.UNPAID,
+            status=InvoiceStatus.ISSUED,
             notes=invoice_data.notes,
             created_by=user_id
         )
@@ -159,29 +182,37 @@ class InvoiceService:
         await self.session.flush()
 
         # Create invoice items
-        for item_dict in invoice_calc["items"]:
+        for calc_item in invoice_calc.items:
             invoice_item = InvoiceItem(
                 invoice_id=invoice.id,
-                **item_dict
+                product_id=uuid.UUID(calc_item.product_id),
+                quantity=float(calc_item.quantity),
+                unit_price=float(calc_item.unit_price),
+                discount=float(calc_item.discount) if calc_item.discount else None,
+                gst_rate=float(calc_item.gst_rate) if calc_item.gst_rate else None,
+                taxable_amount=float(calc_item.taxable_amount),
+                tax_amount=float(calc_item.tax_amount) if calc_item.tax_amount else None,
+                total=float(calc_item.total)
             )
             self.session.add(invoice_item)
 
-            # Deduct inventory
+        await self.session.commit()
+
+        # Deduct inventory after invoice is committed (to avoid partial commits)
+        for item in invoice.items:
             await self.inventory_service.stock_out(
                 user_id=user_id,
                 business_id=business_id,
                 data=StockOut(
-                    product_id=item_dict["product_id"],
-                    quantity=item_dict["quantity"],
+                    product_id=item.product_id,
+                    quantity=item.quantity,
                     reference_type="invoice",
                     reference_id=invoice.id,
                     remarks=f"Invoice {invoice_number}"
                 )
             )
 
-        await self.session.commit()
-        await self.session.refresh(invoice, ["items"])
-
+        await self.session.refresh(invoice, ["items", "payments"])
         return invoice
 
     async def get_invoice(
@@ -225,37 +256,57 @@ class InvoiceService:
         await self._ensure_business_access(user_id, business_id)
         invoice = await self.get_invoice(user_id, business_id, invoice_id)
 
-        if invoice.status == InvoiceStatus.CANCELLED:
+        if invoice.status in [InvoiceStatus.CANCELLED, InvoiceStatus.VOID]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot update a cancelled invoice"
+                detail="Cannot update a cancelled or void invoice"
             )
 
-        # Validate customer if updated
-        if update_data.customer_id:
-            await self._validate_customer(business_id, update_data.customer_id)
+        business, customer = await self._get_business_and_customer(business_id, invoice.customer_id)
 
         # If items are updated, recalculate everything
         if update_data.items:
-            invoice_calc = await self._calculate_invoice(
-                business_id, update_data.items, update_data.discount_amount or invoice.discount_amount
+            # Get new customer if changed
+            if update_data.customer_id:
+                business, customer = await self._get_business_and_customer(business_id, update_data.customer_id)
+            
+            prepared_items = await self._prepare_items_for_calculation(business_id, update_data.items)
+            invoice_calc = InvoiceCalculator.calculate_invoice(
+                items_data=prepared_items,
+                discount_amount=Decimal(str(update_data.discount_amount)) if update_data.discount_amount is not None else Decimal(str(invoice.discount_amount)) if invoice.discount_amount else None,
+                business_state=business.state,
+                customer_state=customer.state
             )
 
             # Update invoice fields
-            for key, value in invoice_calc.items():
-                if key != "items":
-                    setattr(invoice, key, value)
-            invoice.outstanding_balance = invoice_calc["grand_total"]  # Reset outstanding balance when items updated
+            invoice.subtotal = float(invoice_calc.subtotal)
+            invoice.discount_amount = float(invoice_calc.discount_amount) if invoice_calc.discount_amount else None
+            invoice.taxable_amount = float(invoice_calc.taxable_amount)
+            invoice.cgst_amount = float(invoice_calc.cgst_amount) if invoice_calc.cgst_amount else None
+            invoice.sgst_amount = float(invoice_calc.sgst_amount) if invoice_calc.sgst_amount else None
+            invoice.igst_amount = float(invoice_calc.igst_amount) if invoice_calc.igst_amount else None
+            invoice.total_tax = float(invoice_calc.total_tax)
+            invoice.round_off = float(invoice_calc.round_off) if invoice_calc.round_off else None
+            invoice.grand_total = float(invoice_calc.grand_total)
+            invoice.outstanding_balance = float(invoice_calc.grand_total)
+            invoice.updated_by = user_id
 
             # Remove old items
             for item in invoice.items:
                 await self.session.delete(item)
 
             # Add new items
-            for item_dict in invoice_calc["items"]:
+            for calc_item in invoice_calc.items:
                 invoice_item = InvoiceItem(
                     invoice_id=invoice.id,
-                    **item_dict
+                    product_id=uuid.UUID(calc_item.product_id),
+                    quantity=float(calc_item.quantity),
+                    unit_price=float(calc_item.unit_price),
+                    discount=float(calc_item.discount) if calc_item.discount else None,
+                    gst_rate=float(calc_item.gst_rate) if calc_item.gst_rate else None,
+                    taxable_amount=float(calc_item.taxable_amount),
+                    tax_amount=float(calc_item.tax_amount) if calc_item.tax_amount else None,
+                    total=float(calc_item.total)
                 )
                 self.session.add(invoice_item)
         else:
@@ -267,35 +318,65 @@ class InvoiceService:
             if update_data.due_date:
                 invoice.due_date = update_data.due_date
             if update_data.discount_amount is not None:
-                # TODO: Recalculate everything if discount changes
-                invoice.discount_amount = update_data.discount_amount
+                # Recalculate everything if discount changes
+                prepared_items = [
+                    {
+                        "product_id": str(item.product_id),
+                        "quantity": item.quantity,
+                        "unit_price": item.unit_price,
+                        "discount": item.discount or 0.0,
+                        "gst_rate": item.gst_rate or 0.0
+                    } for item in invoice.items
+                ]
+                invoice_calc = InvoiceCalculator.calculate_invoice(
+                    items_data=prepared_items,
+                    discount_amount=Decimal(str(update_data.discount_amount)),
+                    business_state=business.state,
+                    customer_state=customer.state
+                )
+                invoice.subtotal = float(invoice_calc.subtotal)
+                invoice.discount_amount = float(invoice_calc.discount_amount) if invoice_calc.discount_amount else None
+                invoice.taxable_amount = float(invoice_calc.taxable_amount)
+                invoice.cgst_amount = float(invoice_calc.cgst_amount) if invoice_calc.cgst_amount else None
+                invoice.sgst_amount = float(invoice_calc.sgst_amount) if invoice_calc.sgst_amount else None
+                invoice.igst_amount = float(invoice_calc.igst_amount) if invoice_calc.igst_amount else None
+                invoice.total_tax = float(invoice_calc.total_tax)
+                invoice.round_off = float(invoice_calc.round_off) if invoice_calc.round_off else None
+                invoice.grand_total = float(invoice_calc.grand_total)
+                invoice.outstanding_balance = float(invoice_calc.grand_total)
             if update_data.notes is not None:
                 invoice.notes = update_data.notes
+            invoice.updated_by = user_id
 
         await self.session.commit()
-        await self.session.refresh(invoice, ["items"])
+        await self.session.refresh(invoice, ["items", "payments"])
 
         return invoice
 
     async def cancel_invoice(
-        self, user_id: uuid.UUID, business_id: uuid.UUID, invoice_id: uuid.UUID
+        self, user_id: uuid.UUID, business_id: uuid.UUID, invoice_id: uuid.UUID, cancel_data: InvoiceCancel
     ) -> Invoice:
         await self._ensure_business_access(user_id, business_id)
         invoice = await self.get_invoice(user_id, business_id, invoice_id)
 
-        if invoice.status == InvoiceStatus.CANCELLED:
+        if invoice.status in [InvoiceStatus.CANCELLED, InvoiceStatus.VOID]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invoice is already cancelled"
+                detail="Invoice is already cancelled or void"
             )
 
-        # TODO: Reverse inventory transactions
-        # For now, just mark as cancelled
+        # Reverse inventory
+        await self._reverse_invoice_stock(invoice, user_id, business_id)
+
+        # Update invoice status
         invoice.status = InvoiceStatus.CANCELLED
-        invoice.payment_status = PaymentStatus.UNPAID
+        invoice.cancelled_by = user_id
+        invoice.cancelled_at = datetime.now(timezone.utc)
+        invoice.cancellation_reason = cancel_data.reason
+        invoice.updated_by = user_id
 
         await self.session.commit()
-        await self.session.refresh(invoice, ["items"])
+        await self.session.refresh(invoice, ["items", "payments"])
 
         return invoice
 
@@ -305,10 +386,10 @@ class InvoiceService:
         await self._ensure_business_access(user_id, business_id)
         invoice = await self.get_invoice(user_id, business_id, payment_data.invoice_id)
 
-        if invoice.status == InvoiceStatus.CANCELLED:
+        if invoice.status in [InvoiceStatus.CANCELLED, InvoiceStatus.VOID]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot record payment for a cancelled invoice"
+                detail="Cannot record payment for a cancelled or void invoice"
             )
 
         if invoice.outstanding_balance <= 0:
@@ -335,12 +416,13 @@ class InvoiceService:
         # Update invoice outstanding balance
         invoice.outstanding_balance -= payment_amount
 
-        # Update payment status
+        # Update payment status and invoice status
         if invoice.outstanding_balance <= 0:
             invoice.payment_status = PaymentStatus.PAID
             invoice.status = InvoiceStatus.PAID
         else:
             invoice.payment_status = PaymentStatus.PARTIALLY_PAID
+            invoice.status = InvoiceStatus.PARTIALLY_PAID
 
         await self.session.commit()
         await self.session.refresh(payment)

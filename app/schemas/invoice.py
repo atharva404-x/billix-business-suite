@@ -56,6 +56,10 @@ class InvoiceUpdate(BaseModel):
     items: Optional[List[InvoiceItemCreate]] = Field(None, min_length=1)
 
 
+class InvoiceCancel(BaseModel):
+    reason: str = Field(..., max_length=1000)
+
+
 class InvoiceResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: uuid.UUID
@@ -78,6 +82,10 @@ class InvoiceResponse(BaseModel):
     status: InvoiceStatus
     notes: Optional[str]
     created_by: uuid.UUID
+    updated_by: Optional[uuid.UUID]
+    cancelled_by: Optional[uuid.UUID]
+    cancelled_at: Optional[datetime]
+    cancellation_reason: Optional[str]
     created_at: datetime
     updated_at: datetime
     items: List[InvoiceItemResponse]

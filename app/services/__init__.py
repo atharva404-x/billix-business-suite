@@ -7,6 +7,7 @@ from app.services.category import CategoryService
 from app.services.product import ProductService
 from app.services.inventory import InventoryService
 from app.services.invoice import InvoiceService
+from app.services.reports import ReportingService
 
 __all__ = [
     "BusinessProfileService",
@@ -17,5 +18,6 @@ __all__ = [
     "CategoryService",
     "ProductService",
     "InventoryService",
-    "InvoiceService"
+    "InvoiceService",
+    "ReportingService"
 ]

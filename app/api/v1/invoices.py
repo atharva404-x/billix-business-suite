@@ -10,6 +10,7 @@ from app.models.user import User
 from app.schemas.invoice import (
     InvoiceCreate,
     InvoiceUpdate,
+    InvoiceCancel,
     InvoiceResponse,
     InvoiceListResponse,
     PaymentCreate,
@@ -88,11 +89,12 @@ async def update_invoice(
 async def cancel_invoice(
     business_id: uuid.UUID,
     invoice_id: uuid.UUID,
+    cancel_data: InvoiceCancel,
     current_user: Annotated[User, Depends(get_current_user)],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = InvoiceService(session)
-    return await service.cancel_invoice(current_user.id, business_id, invoice_id)
+    return await service.cancel_invoice(current_user.id, business_id, invoice_id, cancel_data)
 
 
 @router.post("/payments", response_model=PaymentResponse, status_code=201)

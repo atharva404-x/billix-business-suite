@@ -643,6 +643,105 @@ Future Dependencies:
 
 -----------------------------------------
 
+-----------------------------------------
+
+Ticket ID:
+INVC-009
+
+Title:
+Invoice Engine Production Hardening
+
+Status:
+Completed
+
+Completion Date:
+2026-07-21
+
+Files Created:
+- app/utils/invoice_calculator.py
+- alembic/versions/20260721_harden_invoice_engine.py
+
+Files Modified:
+- app/models/invoice.py
+- app/schemas/invoice.py
+- app/repositories/invoice.py
+- app/services/invoice.py
+- app/api/v1/invoices.py
+- docs/CHANGELOG.md
+
+Summary:
+Hardened invoice engine for production with the following improvements:
+1. Implemented automatic GST calculation (CGST/SGST for intrastate, IGST for interstate based on business and customer states)
+2. Created reusable InvoiceCalculator component that handles all invoice calculations
+3. Added concurrency-safe invoice number generation using SELECT FOR UPDATE
+4. Enhanced invoice statuses to include ISSUED, PARTIALLY_PAID, and VOID
+5. Added complete audit trail fields: updated_by, cancelled_by, cancelled_at, cancellation_reason
+6. Expanded PaymentMethod enum to include CHEQUE, NEFT, RTGS
+7. Implemented proper invoice cancellation with inventory reversal (using SALES_RETURN transactions)
+8. Recalculate invoice totals whenever items or discount is updated
+9. All invoice calculations now go through the InvoiceCalculator ensuring consistency
+
+Notes:
+- Stock is automatically reversed when invoice is cancelled
+- Invoice numbers are generated in a concurrency-safe way
+- GST type is automatically determined based on business and customer states
+
+Future Dependencies:
+- PDF Generation
+- Recurring Invoices
+- Online Payment Gateway Integration
+- Credit Notes
+
+-----------------------------------------
+
+-----------------------------------------
+
+Ticket ID:
+RPT-001
+
+Title:
+Reporting and Analytics Engine
+
+Status:
+Completed
+
+Completion Date:
+2026-07-21
+
+Files Created:
+- app/schemas/reports.py
+- app/services/reports.py
+- app/api/v1/reports.py
+
+Files Modified:
+- app/schemas/__init__.py
+- app/services/__init__.py
+- app/api/v1/__init__.py
+- docs/CHANGELOG.md
+
+Summary:
+Implemented complete production-ready reporting and analytics engine for the Billix platform:
+1. Dashboard Summary Endpoint (`/v1/reports/dashboard`) with sales metrics, outstanding receivables, product inventory, invoice statuses, top selling products, and recent invoices.
+2. Sales Reports (`/v1/reports/sales`) with daily/weekly/monthly/yearly grouping, custom date ranges, and aggregate metrics.
+3. Customer Reports (`/v1/reports/customers`) with top customers, highest spending, outstanding customers, and purchase history.
+4. Product Reports (`/v1/reports/products`) with top/least selling, inactive products, stock value, and stock movement.
+5. Payment Reports (`/v1/reports/payments`) with received/pending/overdue payments and payment method distribution.
+6. Inventory Reports (`/v1/reports/inventory`) with inventory valuation, low stock, out of stock, and stock movement reports.
+
+Notes:
+- Uses existing repository/service architecture for consistency
+- All queries are strictly business-scoped (multi-tenant safe)
+- No frontend/chart/export functionality implemented as per requirements
+- All reports use optimized aggregate SQL queries to avoid N+1 issues
+
+Future Dependencies:
+- CSV/Excel export
+- Charting/visualization
+- Scheduled reports
+- AI analytics
+
+-----------------------------------------
+
 ---
 
 ## Upcoming Tickets

@@ -10,10 +10,12 @@ import enum
 
 class InvoiceStatus(str, enum.Enum):
     DRAFT = "draft"
+    ISSUED = "issued"
+    PARTIALLY_PAID = "partially_paid"
     PAID = "paid"
-    UNPAID = "unpaid"
     OVERDUE = "overdue"
     CANCELLED = "cancelled"
+    VOID = "void"
 
 
 class PaymentStatus(str, enum.Enum):
@@ -24,9 +26,12 @@ class PaymentStatus(str, enum.Enum):
 
 class PaymentMethod(str, enum.Enum):
     CASH = "cash"
-    BANK_TRANSFER = "bank_transfer"
-    CARD = "card"
     UPI = "upi"
+    CARD = "card"
+    CHEQUE = "cheque"
+    NEFT = "neft"
+    RTGS = "rtgs"
+    BANK_TRANSFER = "bank_transfer"
     OTHER = "other"
 
 
@@ -82,13 +87,25 @@ class Invoice(Base, BaseModelMixin):
         String(50), default=PaymentStatus.UNPAID, nullable=False, index=True
     )
     status: Mapped[InvoiceStatus] = mapped_column(
-        String(50), default=InvoiceStatus.UNPAID, nullable=False, index=True
+        String(50), default=InvoiceStatus.DRAFT, nullable=False, index=True
     )
     notes: Mapped[Optional[str]] = mapped_column(
         String(2000), nullable=True
     )
     created_by: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
+    )
+    updated_by: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
+    )
+    cancelled_by: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True
+    )
+    cancelled_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    cancellation_reason: Mapped[Optional[str]] = mapped_column(
+        String(1000), nullable=True
     )
 
     items: Mapped[List["InvoiceItem"]] = relationship(

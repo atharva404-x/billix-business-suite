@@ -108,6 +108,17 @@ class InvoiceRepository(BaseRepository):
         )
         return result.scalars().first()
 
+    async def get_latest_invoice_for_update(
+        self, business_id: uuid.UUID
+    ) -> Optional[Invoice]:
+        # Get latest invoice with FOR UPDATE to prevent race conditions
+        result = await self.session.execute(
+            select(Invoice).where(
+                Invoice.business_id == business_id
+            ).order_by(desc(Invoice.created_at)).limit(1).with_for_update()
+        )
+        return result.scalars().first()
+
     async def get_next_invoice_number(self, business_id: uuid.UUID) -> str:
         # Simple implementation: get last invoice number, increment
         # TODO: Add business-specific prefix from business profile later
