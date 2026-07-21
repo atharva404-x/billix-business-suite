@@ -385,6 +385,42 @@ TENANT-04
 
 -----------------------------------------
 
+-----------------------------------------
+
+Ticket ID:
+BUS-003
+
+Title:
+Membership, Authorization & Business Context
+
+Status:
+Completed
+
+Completion Date:
+2026-07-18
+
+Files Created:
+- app/schemas/membership.py
+- app/repositories/membership.py
+- app/services/membership.py
+- app/auth/business_context.py
+- tests/unit/test_memberships.py
+
+Files Modified:
+- app/api/v1/businesses.py
+- docs/CHANGELOG.md
+
+Summary:
+Implemented the multi-tenant access layer, team memberships, and business selection context dependencies. Enabled active tenant resolution via 'X-Business-ID' custom header injections, and created class-based role authorization dependencies ('RequireBusinessRole') to protect downstream resources.
+
+Notes:
+- Designed membership CRUD endpoints with strict OWNER-only modification permissions, and wrote integration tests covering all role checking and deactivation scenarios.
+
+Future Dependencies:
+None
+
+-----------------------------------------
+
 ---
 
 ## Upcoming Tickets
