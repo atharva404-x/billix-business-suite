@@ -6,6 +6,7 @@ from app.auth.dependencies import get_current_user
 from app.auth.role_helpers import RoleChecker
 from app.models.user import User
 from app.models.roles import UserRole
+from app.api import api_router
 
 # Initialize FastAPI application
 app = FastAPI(
@@ -70,7 +71,7 @@ async def get_me(current_user: User = Depends(get_current_user)):
 
 
 @app.get("/admin/system-status")
-async def get_admin_status(admin_user: User = Depends(RoleChecker(UserRole.ADMIN))):
+async def get_admin_status(admin_user: User = Depends(RoleChecker(UserRole.ADMIN)):
     """
     Protected and Role-restricted route retrieving system operational status.
 
@@ -81,3 +82,7 @@ async def get_admin_status(admin_user: User = Depends(RoleChecker(UserRole.ADMIN
         "accessed_by": admin_user.email,
         "role": admin_user.role
     }
+
+
+# Include all API routes
+app.include_router(api_router, prefix="/api")

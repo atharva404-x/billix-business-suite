@@ -306,6 +306,110 @@ None
 
 -----------------------------------------
 
+-----------------------------------------
+
+Ticket ID:
+TENANT-01, TENANT-02, CUST-01, CUST-02, CUST-03, CUST-04
+
+Title:
+Implement Multi-Tenant Business Profiles and Customer Module
+
+Status:
+Completed
+
+Completion Date:
+2026-07-21
+
+Files Created:
+- app/models/business.py
+- app/models/customer.py
+- app/schemas/__init__.py
+- app/schemas/business.py
+- app/schemas/customer.py
+- app/repositories/__init__.py
+- app/repositories/base.py
+- app/repositories/business.py
+- app/repositories/customer.py
+- app/services/__init__.py
+- app/services/business.py
+- app/services/customer.py
+- app/api/__init__.py
+- app/api/v1/__init__.py
+- app/api/v1/business.py
+- app/api/v1/customers.py
+- alembic/versions/20260720_add_business_and_customers.py
+
+Files Modified:
+- app/models/__init__.py
+- alembic/env.py
+- app/main.py
+
+Summary:
+Implemented the complete multi-tenant foundation with business profiles and customer management module including:
+- BusinessProfile and BusinessMember models and migrations
+- Customer model and migrations
+- Pydantic schemas for business profiles and customers
+- Repository and service layers for business profiles and customers
+- REST API endpoints for CRUD operations on business profiles and customers
+- Business isolation, authentication, GST validation, and duplicate customer checks
+
+Notes:
+- Uses BaseModelMixin with soft deletes and timestamps
+- Uses SQLAlchemy async ORM and Alembic migrations
+- Business access is checked via BusinessMemberRepository
+- GST validation is basic format checking
+- Customers are scoped by active business
+
+Future Dependencies:
+None
+
+-----------------------------------------
+
+-----------------------------------------
+
+Ticket ID:
+CUS-003
+
+Title:
+Customer Intelligence (Search, Filter, Sort, Pagination)
+
+Status:
+Completed
+
+Completion Date:
+2026-07-21
+
+Files Created:
+- alembic/versions/20260721_add_customer_code_and_indexes.py
+
+Files Modified:
+- app/models/customer.py
+- app/schemas/customer.py
+- app/repositories/customer.py
+- app/services/customer.py
+- app/api/v1/customers.py
+
+Summary:
+Implemented Customer Intelligence features:
+- Added customer_code field to Customer model
+- Added search by name, gstin, phone, customer_code
+- Added filtering by active/inactive, customer type, city, state
+- Added sorting by name, created_at, updated_at
+- Optimized SQL queries with indexes on frequently filtered columns
+- Updated list_customers to return tuple of (customers, total)
+- Improved count query with SQLAlchemy func.count()
+
+Notes:
+- All queries are strictly business-scoped
+- Soft delete is already handled by BaseModelMixin
+- Default sort is name ascending
+- Default filter is only active customers
+
+Future Dependencies:
+None
+
+-----------------------------------------
+
 ---
 
 ## Upcoming Tickets
