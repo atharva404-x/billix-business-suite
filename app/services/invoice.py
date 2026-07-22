@@ -162,16 +162,16 @@ class InvoiceService:
             invoice_number=invoice_number,
             invoice_date=invoice_data.invoice_date,
             due_date=invoice_data.due_date,
-            subtotal=float(invoice_calc.subtotal),
-            discount_amount=float(invoice_calc.discount_amount) if invoice_calc.discount_amount else None,
-            taxable_amount=float(invoice_calc.taxable_amount),
-            cgst_amount=float(invoice_calc.cgst_amount) if invoice_calc.cgst_amount else None,
-            sgst_amount=float(invoice_calc.sgst_amount) if invoice_calc.sgst_amount else None,
-            igst_amount=float(invoice_calc.igst_amount) if invoice_calc.igst_amount else None,
-            total_tax=float(invoice_calc.total_tax),
-            round_off=float(invoice_calc.round_off) if invoice_calc.round_off else None,
-            grand_total=float(invoice_calc.grand_total),
-            outstanding_balance=float(invoice_calc.grand_total),
+            subtotal=invoice_calc.subtotal,
+            discount_amount=invoice_calc.discount_amount or None,
+            taxable_amount=invoice_calc.taxable_amount,
+            cgst_amount=invoice_calc.cgst_amount,
+            sgst_amount=invoice_calc.sgst_amount,
+            igst_amount=invoice_calc.igst_amount,
+            total_tax=invoice_calc.total_tax,
+            round_off=invoice_calc.round_off or None,
+            grand_total=invoice_calc.grand_total,
+            outstanding_balance=invoice_calc.grand_total,
             payment_status=PaymentStatus.UNPAID,
             status=InvoiceStatus.ISSUED,
             notes=invoice_data.notes,
@@ -186,25 +186,21 @@ class InvoiceService:
             invoice_item = InvoiceItem(
                 invoice_id=invoice.id,
                 product_id=uuid.UUID(calc_item.product_id),
-                quantity=float(calc_item.quantity),
-                unit_price=float(calc_item.unit_price),
-                discount=float(calc_item.discount) if calc_item.discount else None,
-                gst_rate=float(calc_item.gst_rate) if calc_item.gst_rate else None,
-                taxable_amount=float(calc_item.taxable_amount),
-                tax_amount=float(calc_item.tax_amount) if calc_item.tax_amount else None,
-                total=float(calc_item.total)
+                quantity=calc_item.quantity, unit_price=calc_item.unit_price,
+                discount=calc_item.discount or None, gst_rate=calc_item.gst_rate or None,
+                taxable_amount=calc_item.taxable_amount, tax_amount=calc_item.tax_amount or None,
+                total=calc_item.total
             )
             self.session.add(invoice_item)
 
-        await self.session.commit()
-
-        # Deduct inventory after invoice is committed (to avoid partial commits)
-        for item in invoice.items:
+        # Inventory and invoice are flushed within the request transaction; a
+        # stock failure rolls back the invoice and its items together.
+        for item in invoice_calc.items:
             await self.inventory_service.stock_out(
                 user_id=user_id,
                 business_id=business_id,
                 data=StockOut(
-                    product_id=item.product_id,
+                    product_id=uuid.UUID(item.product_id),
                     quantity=item.quantity,
                     reference_type="invoice",
                     reference_id=invoice.id,
@@ -212,6 +208,7 @@ class InvoiceService:
                 )
             )
 
+        await self.session.flush()
         await self.session.refresh(invoice, ["items", "payments"])
         return invoice
 
@@ -279,16 +276,16 @@ class InvoiceService:
             )
 
             # Update invoice fields
-            invoice.subtotal = float(invoice_calc.subtotal)
-            invoice.discount_amount = float(invoice_calc.discount_amount) if invoice_calc.discount_amount else None
-            invoice.taxable_amount = float(invoice_calc.taxable_amount)
-            invoice.cgst_amount = float(invoice_calc.cgst_amount) if invoice_calc.cgst_amount else None
-            invoice.sgst_amount = float(invoice_calc.sgst_amount) if invoice_calc.sgst_amount else None
-            invoice.igst_amount = float(invoice_calc.igst_amount) if invoice_calc.igst_amount else None
-            invoice.total_tax = float(invoice_calc.total_tax)
-            invoice.round_off = float(invoice_calc.round_off) if invoice_calc.round_off else None
-            invoice.grand_total = float(invoice_calc.grand_total)
-            invoice.outstanding_balance = float(invoice_calc.grand_total)
+            invoice.subtotal = invoice_calc.subtotal
+            invoice.discount_amount = invoice_calc.discount_amount or None
+            invoice.taxable_amount = invoice_calc.taxable_amount
+            invoice.cgst_amount = invoice_calc.cgst_amount
+            invoice.sgst_amount = invoice_calc.sgst_amount
+            invoice.igst_amount = invoice_calc.igst_amount
+            invoice.total_tax = invoice_calc.total_tax
+            invoice.round_off = invoice_calc.round_off or None
+            invoice.grand_total = invoice_calc.grand_total
+            invoice.outstanding_balance = invoice_calc.grand_total
             invoice.updated_by = user_id
 
             # Remove old items
@@ -300,13 +297,10 @@ class InvoiceService:
                 invoice_item = InvoiceItem(
                     invoice_id=invoice.id,
                     product_id=uuid.UUID(calc_item.product_id),
-                    quantity=float(calc_item.quantity),
-                    unit_price=float(calc_item.unit_price),
-                    discount=float(calc_item.discount) if calc_item.discount else None,
-                    gst_rate=float(calc_item.gst_rate) if calc_item.gst_rate else None,
-                    taxable_amount=float(calc_item.taxable_amount),
-                    tax_amount=float(calc_item.tax_amount) if calc_item.tax_amount else None,
-                    total=float(calc_item.total)
+                    quantity=calc_item.quantity, unit_price=calc_item.unit_price,
+                    discount=calc_item.discount or None, gst_rate=calc_item.gst_rate or None,
+                    taxable_amount=calc_item.taxable_amount, tax_amount=calc_item.tax_amount or None,
+                    total=calc_item.total
                 )
                 self.session.add(invoice_item)
         else:
@@ -334,21 +328,21 @@ class InvoiceService:
                     business_state=business.state,
                     customer_state=customer.state
                 )
-                invoice.subtotal = float(invoice_calc.subtotal)
-                invoice.discount_amount = float(invoice_calc.discount_amount) if invoice_calc.discount_amount else None
-                invoice.taxable_amount = float(invoice_calc.taxable_amount)
-                invoice.cgst_amount = float(invoice_calc.cgst_amount) if invoice_calc.cgst_amount else None
-                invoice.sgst_amount = float(invoice_calc.sgst_amount) if invoice_calc.sgst_amount else None
-                invoice.igst_amount = float(invoice_calc.igst_amount) if invoice_calc.igst_amount else None
-                invoice.total_tax = float(invoice_calc.total_tax)
-                invoice.round_off = float(invoice_calc.round_off) if invoice_calc.round_off else None
-                invoice.grand_total = float(invoice_calc.grand_total)
-                invoice.outstanding_balance = float(invoice_calc.grand_total)
+                invoice.subtotal = invoice_calc.subtotal
+                invoice.discount_amount = invoice_calc.discount_amount or None
+                invoice.taxable_amount = invoice_calc.taxable_amount
+                invoice.cgst_amount = invoice_calc.cgst_amount
+                invoice.sgst_amount = invoice_calc.sgst_amount
+                invoice.igst_amount = invoice_calc.igst_amount
+                invoice.total_tax = invoice_calc.total_tax
+                invoice.round_off = invoice_calc.round_off or None
+                invoice.grand_total = invoice_calc.grand_total
+                invoice.outstanding_balance = invoice_calc.grand_total
             if update_data.notes is not None:
                 invoice.notes = update_data.notes
             invoice.updated_by = user_id
 
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(invoice, ["items", "payments"])
 
         return invoice
@@ -375,7 +369,7 @@ class InvoiceService:
         invoice.cancellation_reason = cancel_data.reason
         invoice.updated_by = user_id
 
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(invoice, ["items", "payments"])
 
         return invoice
@@ -398,7 +392,9 @@ class InvoiceService:
                 detail="Invoice is already fully paid"
             )
 
-        payment_amount = min(payment_data.amount, invoice.outstanding_balance)
+        payment_amount = Decimal(str(payment_data.amount))
+        if payment_amount > invoice.outstanding_balance:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Payment exceeds outstanding balance")
 
         # Create payment record
         payment = Payment(
@@ -424,7 +420,7 @@ class InvoiceService:
             invoice.payment_status = PaymentStatus.PARTIALLY_PAID
             invoice.status = InvoiceStatus.PARTIALLY_PAID
 
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(payment)
 
         return payment

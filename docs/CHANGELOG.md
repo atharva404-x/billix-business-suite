@@ -54,6 +54,44 @@ Future Dependencies:
 -----------------------------------------
 
 Ticket ID:
+CORE-HARDEN-001
+
+Title:
+Production Architecture Hardening
+
+Status:
+Completed
+
+Completion Date:
+2026-07-22
+
+Files Created:
+- alembic/versions/20260722_harden_core_integrity.py
+
+Files Modified:
+- app/core/database.py
+- app/repositories/base.py
+- app/services/inventory.py
+- app/services/invoice.py
+- app/core/config.py
+- app/auth/jwt_utils.py
+- app/auth/dependencies.py
+- docs/CHANGELOG.md
+
+Summary:
+Made request transactions the unit of work, removed repository commits, fixed the router database dependency compatibility issue, hardened core tenant/invoice constraints, retained Decimal invoice calculations, repaired inventory stock lookup, and added safe Clerk first-login provisioning.
+
+Notes:
+- Configure CLERK_JWT_AUDIENCE in production to enforce audience validation.
+
+Future Dependencies:
+None
+
+-----------------------------------------
+
+-----------------------------------------
+
+Ticket ID:
 AUTH-001
 
 Title:

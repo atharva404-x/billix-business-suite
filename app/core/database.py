@@ -32,9 +32,15 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:
         try:
             yield session
+            await session.commit()
         except Exception as e:
             logger.error(f"Database session exception, rolling back: {e}")
             await session.rollback()
             raise
         finally:
             await session.close()
+
+
+# Backwards-compatible dependency name used by the API routers.  A request owns
+# one session and one transaction; repositories deliberately never commit.
+get_db_session = get_db

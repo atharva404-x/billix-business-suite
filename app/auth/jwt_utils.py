@@ -184,7 +184,8 @@ async def verify_clerk_token(token: str) -> Dict[str, Any]:
             public_key,
             algorithms=["RS256"],
             issuer=expected_issuer,
-            options={"verify_aud": False}  # Clerk session JWTs might not set 'aud' or it might match frontend
+            audience=settings.CLERK_JWT_AUDIENCE or None,
+            options={"verify_aud": bool(settings.CLERK_JWT_AUDIENCE)}
         )
         return payload
     except jwt.ExpiredSignatureError as e:

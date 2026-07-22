@@ -6,6 +6,7 @@ from sqlalchemy import select
 
 from app.core.database import get_db
 from app.models.user import User
+from app.auth.clerk_client import clerk_client
 
 logger = logging.getLogger("app.auth.dependencies")
 
@@ -44,9 +45,20 @@ async def get_current_user(
         )
 
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authenticated user profile not found or inactive."
-        )
+        # Clerk remains the identity source of truth.  Provision a local profile
+        # only after the middleware has verified the Clerk JWT.
+        try:
+            profile = await clerk_client.get_user(user_id)
+            emails = profile.get("email_addresses", [])
+            primary = next((item.get("email_address") for item in emails if item.get("id") == profile.get("primary_email_address_id")), None)
+            email = primary or (emails[0].get("email_address") if emails else None)
+            if not email:
+                raise ValueError("Clerk profile has no email")
+            user = User(clerk_id=user_id, email=email, first_name=profile.get("first_name"), last_name=profile.get("last_name"), avatar_url=profile.get("image_url"))
+            db.add(user)
+            await db.flush()
+        except Exception as exc:
+            logger.error("Unable to provision authenticated Clerk user: %s", exc)
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authenticated user profile could not be provisioned.")
 
     return user

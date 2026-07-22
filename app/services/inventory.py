@@ -106,7 +106,7 @@ class InventoryService:
             remarks=data.remarks
         )
         product = await self._update_product_stock(product, new_stock)
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(transaction)
         await self.session.refresh(product)
         return transaction, product
@@ -134,7 +134,7 @@ class InventoryService:
             remarks=data.remarks
         )
         product = await self._update_product_stock(product, new_stock)
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(transaction)
         await self.session.refresh(product)
         return transaction, product
@@ -168,7 +168,7 @@ class InventoryService:
             remarks=data.remarks
         )
         product = await self._update_product_stock(product, new_stock)
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(transaction)
         await self.session.refresh(product)
         return transaction, product
@@ -232,7 +232,7 @@ class InventoryService:
         product_id: uuid.UUID
     ) -> float:
         await self._ensure_business_access(user_id, business_id)
-        product = await self.product_repo.get_by_business_and_id(business_id, product_id)
+        product = await self.get_product_and_validate_access(user_id, business_id, product_id)
         if not product:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     CLERK_SECRET_KEY: str = Field(default="", validation_alias="CLERK_SECRET_KEY")
     CLERK_JWKS_URL: str = Field(default="", validation_alias="CLERK_JWKS_URL")
     CLERK_API_URL: str = Field(default="https://api.clerk.com/v1", validation_alias="CLERK_API_URL")
+    CLERK_JWT_AUDIENCE: str = Field(default="", validation_alias="CLERK_JWT_AUDIENCE")
 
 
     model_config = SettingsConfigDict(

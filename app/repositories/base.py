@@ -1,5 +1,6 @@
 
 import uuid
+from datetime import datetime, timezone
 from typing import Type, TypeVar, List, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,8 +16,7 @@ class BaseRepository:
     async def create(self, **kwargs) -> T:
         instance = self.model(**kwargs)
         self.session.add(instance)
-        await self.session.commit()
-        await self.session.refresh(instance)
+        await self.session.flush()
         return instance
 
     async def get_by_id(self, id: uuid.UUID) -> Optional[T]:
@@ -29,12 +29,11 @@ class BaseRepository:
         for key, value in kwargs.items():
             if value is not None:
                 setattr(instance, key, value)
-        await self.session.commit()
-        await self.session.refresh(instance)
+        await self.session.flush()
         return instance
 
     async def deactivate(self, instance: T) -> T:
         instance.is_active = False
-        await self.session.commit()
-        await self.session.refresh(instance)
+        instance.deleted_at = datetime.now(timezone.utc)
+        await self.session.flush()
         return instance
