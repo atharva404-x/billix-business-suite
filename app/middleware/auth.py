@@ -24,7 +24,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
             "/redoc",
             "/openapi.json",
             "/health",
-            "/ready"
+            "/ready",
+            "/metrics"
         }
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:

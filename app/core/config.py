@@ -17,6 +17,12 @@ class Settings(BaseSettings):
     CLERK_API_URL: str = Field(default="https://api.clerk.com/v1", validation_alias="CLERK_API_URL")
     CLERK_JWT_AUDIENCE: str = Field(default="", validation_alias="CLERK_JWT_AUDIENCE")
 
+    # Logging & Observability Configuration
+    LOG_LEVEL: str = Field(default="INFO", validation_alias="LOG_LEVEL")
+    LOG_FORMAT: str = Field(default="json", validation_alias="LOG_FORMAT") # Options: json, text
+    SENTRY_DSN: str = Field(default="", validation_alias="SENTRY_DSN")
+    SENTRY_TRACES_SAMPLE_RATE: float = Field(default=0.1, validation_alias="SENTRY_TRACES_SAMPLE_RATE")
+
 
     model_config = SettingsConfigDict(
         env_file=".env",
