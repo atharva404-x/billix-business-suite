@@ -27,14 +27,55 @@ from app.api import api_router
 setup_logging()
 init_sentry()
 
+from fastapi.openapi.utils import get_openapi
+
 logger = logging.getLogger("app.main")
 
 # Initialize FastAPI application
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description="Billix GST Billing, Inventory & Business Management SaaS API",
-    version="1.0.0"
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
 )
+
+
+def custom_openapi():
+    """
+    Custom OpenAPI schema generator configuring Clerk HTTP Bearer JWT security schemes.
+    """
+    if app.openapi_schema:
+        return app.openapi_schema
+
+    openapi_schema = get_openapi(
+        title=settings.PROJECT_NAME,
+        version="1.0.0",
+        description=(
+            "Production API for Billix — GST Billing, Inventory & Business Management SaaS.\n\n"
+            "**Authentication**: Requests require a valid Clerk Bearer JWT token in the `Authorization` header."
+        ),
+        routes=app.routes,
+    )
+
+    openapi_schema["components"] = openapi_schema.get("components", {})
+    openapi_schema["components"]["securitySchemes"] = {
+        "ClerkBearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+            "description": "Enter Clerk JWT token (Bearer <token>)",
+        }
+    }
+
+    # Apply global security scheme for endpoints requiring authentication
+    openapi_schema["security"] = [{"ClerkBearerAuth": []}]
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
 
 # Middleware Pipeline Assembly (Registered outermost to innermost)
 # Outermost middlewares execute first on requests and last on responses

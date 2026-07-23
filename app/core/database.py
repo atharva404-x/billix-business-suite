@@ -12,6 +12,10 @@ engine_kwargs = {"echo": False}
 if settings.DATABASE_URL.startswith("sqlite"):
     connect_args["check_same_thread"] = False
 else:
+    # Neon PostgreSQL and cloud database SSL connection support for asyncpg
+    if "sslmode=require" in settings.DATABASE_URL or "neon.tech" in settings.DATABASE_URL:
+        connect_args["ssl"] = "require"
+
     engine_kwargs.update({
         "pool_size": settings.DB_POOL_SIZE,
         "max_overflow": settings.DB_MAX_OVERFLOW,

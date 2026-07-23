@@ -41,6 +41,11 @@ def _sync_migration_url(db_url: str) -> str:
     if db_url.startswith("postgresql+asyncpg://"):
         db_url = db_url.replace("postgresql+asyncpg://", "postgresql+psycopg2://", 1)
 
+    # Convert async SQLite driver to synchronous — aiosqlite cannot run in the
+    # synchronous migration context and raises MissingGreenlet otherwise.
+    if db_url.startswith("sqlite+aiosqlite://"):
+        db_url = db_url.replace("sqlite+aiosqlite://", "sqlite://", 1)
+
     parts = urlsplit(db_url)
     if parts.scheme.startswith("postgresql") and parts.query:
         query = dict(parse_qsl(parts.query, keep_blank_values=True))

@@ -1,0 +1,42 @@
+services:
+  # --- Backend Web Service ---
+  - type: web
+    name: billix-backend
+    env: python
+    region: singapore
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: chmod +x ./scripts/start-production.sh && ./scripts/start-production.sh
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: ENV
+        value: production
+      - key: PROJECT_NAME
+        value: Billix
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: billix-redis
+          property: connectionString
+      - key: CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: CLERK_JWKS_URL
+        value: https://api.clerk.com/v1/.well-known/jwks.json
+      - key: CLERK_API_URL
+        value: https://api.clerk.com/v1
+      - key: LOG_LEVEL
+        value: INFO
+      - key: LOG_FORMAT
+        value: json
+
+  # --- Redis Service ---
+  - type: redis
+    name: billix-redis
+    region: singapore
+    plan: starter
+    maxmemoryPolicy: allkeys-lru

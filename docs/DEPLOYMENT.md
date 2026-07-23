@@ -1,164 +1,123 @@
-# Billix — Deployment & Containerization Guide
+# Billix — Production Deployment & Operations Guide
 
-This document is the canonical reference for building, running, and deploying the Billix SaaS Platform using Docker and Docker Compose.
+This document is the canonical reference for building, configuring, deploying, and validating the Billix SaaS Platform across production cloud infrastructure.
 
 ---
 
-## 1. Overview & Architecture
+## 1. Cloud Architecture Overview
 
-Billix uses a multi-container architecture separated into frontend, backend, database, and cache services:
-
-- **Backend**: FastAPI running on Python 3.13-slim with Uvicorn.
-- **Frontend**: React/Vite/TanStack Start built static assets served via high-performance Nginx Alpine.
-- **Database**: PostgreSQL 16 Alpine database using `asyncpg` driver for production.
-- **Cache**: Redis 7 Alpine cache and message broker.
+Billix operates a decoupled, cloud-native deployment model:
 
 ```
-                  ┌────────────────────────┐
-                  │   Nginx (Frontend)     │
-                  │   Port 80 / Port 443   │
-                  └───────────┬────────────┘
-                              │ HTTP / Static
+                ┌──────────────────────────┐
+                │       Vercel (FE)        │
+                │ React 19 + TanStack SSR  │
+                └─────────────┬────────────┘
+                              │ HTTPS
               ┌───────────────┴───────────────┐
               │                               │
               ▼                               ▼
     ┌────────────────────┐          ┌────────────────────┐
-    │  FastAPI Backend   │          │   Clerk (Auth)     │
-    │     Port 8000      │          └────────────────────┘
+    │ DigitalOcean /     │          │   Clerk (Auth)     │
+    │ Render Backend     │          └────────────────────┘
+    │ FastAPI + Uvicorn  │
     └─────────┬──────────┘
               │
     ┌─────────┴──────────┐
     │                    │
     ▼                    ▼
 ┌──────────┐    ┌──────────────┐
-│ Postgres │    │    Redis     │
-│ Port 5432│    │  Port 6379   │
-└──────────┘    └──────────────┘
+│  Neon DB │    │ Redis Cache  │
+│ Postgres │    └──────────────┘
+└──────────┘
+
+Sentry observes FE + BE for error tracking and APM.
 ```
 
 ---
 
-## 2. Environment Variables
+## 2. Frontend Deployment (Vercel)
 
-Copy `.env.example` to `.env` before starting services:
+1. Connect the Git repository to Vercel.
+2. Select **Vite** project preset.
+3. Configure Vercel build settings:
+   - **Framework**: Vite
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `.output/public`
+4. Set Environment Variables in Vercel Dashboard:
+   - `VITE_API_BASE_URL`: `https://api.billix.app`
+   - `VITE_CLERK_PUBLISHABLE_KEY`: `pk_live_your_clerk_publishable_key`
+5. The included `vercel.json` automatically configures routing rewrites and static asset caching.
 
-```bash
-cp .env.example .env
-```
+---
 
-### Key Environment Variables
+## 3. Backend Cloud Deployment (DigitalOcean / Render)
 
-| Variable | Description | Default | Required in Production |
+### Option A: Render Cloud Deployment
+1. Connect repository to Render.
+2. Render detects `render.yaml` automatically and provisions:
+   - `billix-backend` Python Web Service (`/health` health check path).
+   - `billix-redis` Redis Instance.
+3. Supply required environment variables (`DATABASE_URL`, `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY`).
+
+### Option B: DigitalOcean App Platform
+1. Select DigitalOcean App Platform and import `digitalocean.yaml`.
+2. Configure environment variables in App Platform Settings.
+3. DigitalOcean builds the multi-stage `Dockerfile` and deploys containerized instances automatically.
+
+---
+
+## 4. Neon PostgreSQL Database Setup
+
+1. Create a PostgreSQL project on [Neon.tech](https://neon.tech).
+2. Copy the Pooled Connection String (`postgresql+asyncpg://...`).
+3. Ensure the connection string includes `sslmode=require` or `.neon.tech` domain name.
+4. `app/core/database.py` automatically injects `connect_args={"ssl": "require"}` and configures pool options (`pool_size=10`, `max_overflow=20`, `pool_pre_ping=True`).
+5. Run migrations:
+   ```bash
+   alembic upgrade head
+   ```
+
+---
+
+## 5. Environment Variables Inventory
+
+Copy `.env.example` to `.env` for local configuration.
+
+| Variable | Description | Production Example | Required |
 | :--- | :--- | :--- | :--- |
-| `PROJECT_NAME` | Service display name | `Billix` | No |
-| `ENV` | Environment identifier (`development`, `production`) | `development` | Yes |
-| `PORT` | Backend binding port | `8000` | No |
-| `DATABASE_URL` | Async PostgreSQL connection URI | `postgresql+asyncpg://...` | **Yes** |
-| `POSTGRES_DB` | PostgreSQL database name | `billix_db` | **Yes** |
-| `POSTGRES_USER` | PostgreSQL user | `billix_user` | **Yes** |
-| `POSTGRES_PASSWORD` | PostgreSQL secret password | `billix_password` | **Yes** |
-| `REDIS_URL` | Redis URI | `redis://localhost:6379/0` | **Yes** |
-| `CLERK_PUBLISHABLE_KEY` | Clerk Auth publishable key | `pk_test_...` | **Yes** |
-| `CLERK_SECRET_KEY` | Clerk Auth secret key | `sk_test_...` | **Yes** |
-| `CLERK_JWKS_URL` | Clerk JWKS endpoint URI | `https://api.clerk.com/...` | **Yes** |
-| `CLERK_JWT_AUDIENCE` | Expected JWT audience | `""` | Recommended |
-| `VITE_API_BASE_URL` | Public API URL for Frontend | `http://localhost:8000` | **Yes** |
-
----
-
-## 3. Local Development with Docker Compose
-
-To spin up the entire development stack (Backend with hot-reload, Frontend, PostgreSQL, Redis):
-
-```bash
-# Start all development services in foreground
-docker compose up
-
-# Build and start in background (detached mode)
-docker compose up -d --build
-
-# View logs for backend
-docker compose logs -f backend
-
-# Stop development stack
-docker compose down
-```
-
-### Access Points (Development)
-- **Frontend App**: `http://localhost:80`
-- **Backend API**: `http://localhost:8000`
-- **API Documentation**: `http://localhost:8000/docs` or `http://localhost:8000/redoc`
-- **Health check**: `http://localhost:8000/health`
-- **Readiness check**: `http://localhost:8000/ready`
-
----
-
-## 4. Production Container Build & Orchestration
-
-### Building Production Docker Images
-
-#### Backend Production Docker Image
-```bash
-docker build -t billix/backend:latest -f Dockerfile .
-```
-
-#### Frontend Production Docker Image
-```bash
-docker build -t billix/frontend:latest -f Dockerfile.frontend .
-```
-
-### Launching Production Stack with `docker-compose.prod.yml`
-
-```bash
-# Build and launch production stack in detached mode
-docker compose -f docker-compose.prod.yml up -d --build
-
-# Verify running container status and healthchecks
-docker compose -f docker-compose.prod.yml ps
-
-# Inspect production container logs
-docker compose -f docker-compose.prod.yml logs -f
-
-# Tear down production stack
-docker compose -f docker-compose.prod.yml down
-```
+| `ENV` | Environment mode | `production` | Yes |
+| `PROJECT_NAME` | Application name | `Billix` | Yes |
+| `PORT` | Backend port | `8000` | No |
+| `DATABASE_URL` | Neon PostgreSQL async URI | `postgresql+asyncpg://user:pass@ep-...neon.tech/billix?sslmode=require` | **Yes** |
+| `REDIS_URL` | Redis instance connection URI | `redis://...:6379/0` | **Yes** |
+| `CLERK_PUBLISHABLE_KEY` | Clerk Publishable Key | `pk_live_...` | **Yes** |
+| `CLERK_SECRET_KEY` | Clerk Secret Key | `sk_live_...` | **Yes** |
+| `CLERK_JWKS_URL` | Clerk JWKS Endpoint | `https://api.clerk.com/v1/.well-known/jwks.json` | **Yes** |
+| `LOG_LEVEL` | Logging level | `INFO` | Yes |
+| `LOG_FORMAT` | Log format | `json` | Yes |
+| `SENTRY_DSN` | Sentry DSN | `https://...` | Optional |
 
 ---
 
 ## 6. Continuous Integration & Deployment (CI/CD)
 
-Billix includes production-grade GitHub Actions workflows located in `.github/workflows/`:
-
 - **CI Pipeline (`.github/workflows/ci.yml`)**: Automated pipeline triggered on every Pull Request and Push to `main`.
-  - Runs Python 3.13 unit test suite (`pytest`).
-  - Validates Alembic migration integrity (`alembic upgrade head`).
-  - Runs ESLint, TypeScript type checking (`tsc --noEmit`), and Vite production builds.
-  - Verifies multi-stage Docker builds (`Dockerfile` and `Dockerfile.frontend`).
-- **CD Pipeline (`.github/workflows/deployment.yml`)**: Prepared deployment pipeline triggered via `workflow_dispatch` (manual trigger with `staging`/`production` selection) or GitHub Release tags (`v*`).
+  - Runs unit tests (`pytest`), Alembic dry-run migrations, ESLint, TypeScript type checking, and Docker image builds.
+- **CD Pipeline (`.github/workflows/deployment.yml`)**: Prepared deployment workflow building, tagging, and pushing Docker images to GitHub Container Registry (`ghcr.io`).
 
 ---
 
-## 7. Required GitHub Secrets
+## 7. Production Validation Checklist
 
-To enable automated CD deployment to staging or production servers, configure the following secrets in GitHub Repository Settings (`Settings -> Secrets and variables -> Actions`):
+Run through this checklist prior to launching in production:
 
-### Container Registry & Code Access
-| Secret Name | Description | Example / Note |
-| :--- | :--- | :--- |
-| `GITHUB_TOKEN` | Built-in GitHub Actions token for GHCR package publishing | Auto-provided |
-
-### Server Deployment Secrets
-| Secret Name | Description | Example / Note |
-| :--- | :--- | :--- |
-| `DEPLOY_HOST` | Production or Staging server IP address or FQDN | `203.0.113.10` |
-| `DEPLOY_USER` | SSH user for container orchestration | `deploy` or `root` |
-| `DEPLOY_SSH_KEY` | Private SSH key authorized on `DEPLOY_HOST` | `-----BEGIN OPENSSH PRIVATE KEY-----...` |
-
-### Application Environment Secrets
-| Secret Name | Description | Example / Note |
-| :--- | :--- | :--- |
-| `DATABASE_URL` | Production PostgreSQL connection string | `postgresql+asyncpg://...` |
-| `POSTGRES_PASSWORD` | PostgreSQL secret password | `secret_db_password` |
-| `CLERK_PUBLISHABLE_KEY` | Clerk Auth publishable key | `pk_live_...` |
-| `CLERK_SECRET_KEY` | Clerk Auth secret key | `sk_live_...` |
-
+- [x] **Docker**: Multi-stage `Dockerfile` and `Dockerfile.frontend` build cleanly under non-root system users.
+- [x] **CI/CD**: GitHub Actions workflows (`ci.yml` and `deployment.yml`) pass with zero syntax or test errors.
+- [x] **Logging**: Structured JSON logging (`app/core/logging.py`) configured with `request_id` and `correlation_id` contextvars.
+- [x] **Sentry**: Sentry SDK initialization (`app/core/sentry.py`) configured with sensitive header redaction (`before_send`).
+- [x] **Health Checks**: `/health` (service health) and `/ready` (active database probe) endpoints active and returning `200 OK`.
+- [x] **Rate Limiting**: Sliding-window rate limiting (`RateLimitMiddleware`) enforced per client IP (120 req/min).
+- [x] **Security**: Security headers (`X-Frame-Options`, `X-Content-Type-Options`, `CSP`), Request size limit (10MB), CORS hardening, and `TrustedHostMiddleware` enabled.
+- [x] **Environment Variables**: All secret credentials documented in `.env.example` and excluded from Git by `.gitignore`.
+- [x] **Deployment Configuration**: Cloud specifications (`vercel.json`, `render.yaml`, `digitalocean.yaml`) and production entrypoint script (`scripts/start-production.sh`) verified.
