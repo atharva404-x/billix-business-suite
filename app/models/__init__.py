@@ -9,6 +9,7 @@ from app.models.category import Category
 from app.models.product import Product
 from app.models.inventory import StockMovement, InventoryTransaction
 from app.models.invoice import Invoice, InvoiceItem, InvoiceStatus, PaymentStatus, PaymentMethod, Payment
+from app.models.settings import BusinessSettings, BusinessPreferences
 
 __all__ = [
     "Base",
@@ -31,6 +32,8 @@ __all__ = [
     "InvoiceStatus",
     "PaymentStatus",
     "PaymentMethod",
-    "Payment"
+    "Payment",
+    "BusinessSettings",
+    "BusinessPreferences"
 ]
 

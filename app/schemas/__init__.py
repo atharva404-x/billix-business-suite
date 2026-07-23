@@ -57,6 +57,14 @@ from app.schemas.invoice import (
     PaymentResponse,
     PaymentListResponse
 )
+from app.schemas.settings import (
+    BusinessSettingsCreate,
+    BusinessSettingsUpdate,
+    BusinessSettingsResponse,
+    BusinessPreferencesCreate,
+    BusinessPreferencesUpdate,
+    BusinessPreferencesResponse,
+)
 from app.schemas.reports import (
     DashboardSummary,
     TopSellingProductItem,
@@ -138,5 +146,11 @@ __all__ = [
     "PaymentReportsResponse",
     "InventoryValuationItem",
     "StockMovementReportItem",
-    "InventoryReportsResponse"
+    "InventoryReportsResponse",
+    "BusinessSettingsCreate",
+    "BusinessSettingsUpdate",
+    "BusinessSettingsResponse",
+    "BusinessPreferencesCreate",
+    "BusinessPreferencesUpdate",
+    "BusinessPreferencesResponse",
 ]

@@ -780,6 +780,50 @@ Future Dependencies:
 
 -----------------------------------------
 
+-----------------------------------------
+
+Ticket ID:
+ADMIN-001
+
+Title:
+Production Administration Module — Phase 1 (Business Settings & Preferences)
+
+Status:
+Completed
+
+Completion Date:
+2026-07-23
+
+Files Created:
+- app/models/settings.py
+- app/schemas/settings.py
+- app/repositories/settings.py
+- app/services/settings.py
+- app/api/v1/settings.py
+- alembic/versions/20260723_add_business_settings_and_preferences.py
+
+Files Modified:
+- app/models/__init__.py
+- app/schemas/__init__.py
+- app/repositories/__init__.py
+- app/services/__init__.py
+- app/api/v1/__init__.py
+- docs/CHANGELOG.md
+
+Summary:
+Implemented Phase 1 of the Production Administration Module, comprising two sub-modules. Module 1 (BusinessSettings) delivers tenant-specific company identity, GST/PAN details, invoice numbering format, financial year, locale (currency, timezone, date format), invoice defaults, and an Appwrite-ready logo abstraction. Module 2 (BusinessPreferences) delivers notification preferences, decimal precision, low-stock threshold, default tax mode, inventory behaviour flags, and an extensible JSON report_preferences column. Both modules follow the project's Repository → Service → Router layering strictly, reuse BaseModelMixin and BaseRepository, enforce tenant isolation via BusinessMemberRepository access checks, and auto-provision a record on first GET (upsert-on-read pattern). RBAC, Audit Logs, Notifications, and Backup Abstraction were explicitly excluded per scope.
+
+Notes:
+- Each business profile has at most one settings record and one preferences record (enforced by UNIQUE constraint on business_id in both tables).
+- logo_file_id stores an Appwrite file ID, not a raw URL — resolution to a signed URL should be handled at the API gateway or frontend layer.
+- report_preferences is a schema-less JSON column, allowing future preference keys to be added without migrations.
+- Run `alembic upgrade head` to apply the migration.
+
+Future Dependencies:
+None
+
+-----------------------------------------
+
 ---
 
 ## Upcoming Tickets

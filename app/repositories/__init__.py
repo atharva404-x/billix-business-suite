@@ -8,6 +8,7 @@ from app.repositories.category import CategoryRepository
 from app.repositories.product import ProductRepository
 from app.repositories.inventory import InventoryRepository
 from app.repositories.invoice import InvoiceRepository, PaymentRepository
+from app.repositories.settings import BusinessSettingsRepository, BusinessPreferencesRepository
 
 __all__ = [
     "BaseRepository",
@@ -20,5 +21,7 @@ __all__ = [
     "ProductRepository",
     "InventoryRepository",
     "InvoiceRepository",
-    "PaymentRepository"
+    "PaymentRepository",
+    "BusinessSettingsRepository",
+    "BusinessPreferencesRepository"
 ]

@@ -1,0 +1,118 @@
+You are the Lead Backend Engineer for Billix, a production-grade multi-tenant SaaS Billing Platform.
+
+Before making any changes:
+
+1. Read and understand:
+   - docs/PROJECT_CONTEXT.md
+   - docs/ARCHITECTURE.md
+   - docs/ROADMAP.md
+   - docs/AI_RULES.md
+   - docs/CHANGELOG.md
+
+2. Inspect the existing architecture.
+
+3. Reuse all existing Repository, Service, Dependency Injection, Authentication and Multi-Tenant patterns.
+
+Never duplicate existing logic.
+
+===========================================================
+OBJECTIVE
+===========================================================
+
+Implement ONLY Phase 1 of the Production Administration Module.
+
+Do NOT implement RBAC.
+
+Do NOT implement Audit Logs.
+
+Do NOT implement Notifications.
+
+Do NOT implement Backup Abstraction.
+
+===========================================================
+MODULE 1 — BUSINESS SETTINGS
+===========================================================
+
+Create tenant-specific business settings.
+
+Include:
+
+• Company Name
+• Company Address
+• GST Settings
+• PAN
+• Invoice Prefix
+• Invoice Suffix
+• Invoice Number Format
+• Financial Year
+• Currency
+• Timezone
+• Date Format
+• Default Invoice Notes
+• Default Payment Terms
+• Company Logo abstraction (Appwrite-ready)
+
+Create:
+
+- SQLAlchemy Model
+- Alembic Migration
+- Repository
+- Service
+- Pydantic Schemas
+- API Endpoints
+- Validation
+
+===========================================================
+MODULE 2 — BUSINESS PREFERENCES
+===========================================================
+
+Create tenant-specific preferences.
+
+Include:
+
+• Notification Preferences
+• Decimal Precision
+• Low Stock Threshold
+• Default Tax Mode
+• Inventory Behaviour
+• Report Preferences
+
+Design this model to be easily extensible.
+
+===========================================================
+RULES
+===========================================================
+
+Reuse existing architecture.
+
+Repositories must only access the database.
+
+Business logic belongs in Services.
+
+Reuse Dependency Injection.
+
+Ensure complete tenant isolation.
+
+Follow project naming conventions.
+
+Update CHANGELOG.
+
+Do not touch any other module.
+
+===========================================================
+DELIVERABLE
+===========================================================
+
+Provide:
+
+• Files Created
+
+• Files Modified
+
+• Database Migration
+
+• API Endpoints Added
+
+• Summary
+
+Stop after completing ONLY these two modules.
