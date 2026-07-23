@@ -10,6 +10,18 @@ from app.services.invoice import InvoiceService
 from app.services.reports import ReportingService
 from app.services.settings import BusinessSettingsService, BusinessPreferencesService
 from app.services.audit_log import AuditLogService
+from app.services.notification import (
+    NotificationService,
+    NotificationManager,
+    NotificationProvider,
+)
+from app.services.backup import (
+    BackupManager,
+    BackupProvider,
+    DatabaseBackupProvider,
+    FileBackupProvider,
+    CloudBackupProvider,
+)
 
 __all__ = [
     "BusinessProfileService",
@@ -24,5 +36,13 @@ __all__ = [
     "ReportingService",
     "BusinessSettingsService",
     "BusinessPreferencesService",
-    "AuditLogService"
+    "AuditLogService",
+    "NotificationService",
+    "NotificationManager",
+    "NotificationProvider",
+    "BackupManager",
+    "BackupProvider",
+    "DatabaseBackupProvider",
+    "FileBackupProvider",
+    "CloudBackupProvider",
 ]

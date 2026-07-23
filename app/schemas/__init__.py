@@ -90,6 +90,12 @@ from app.schemas.audit_log import (
     AuditLogResponse,
     AuditLogListResponse
 )
+from app.schemas.notification import (
+    NotificationCreate,
+    NotificationUpdate,
+    NotificationResponse,
+    NotificationListResponse,
+)
 
 __all__ = [
     "BusinessProfileCreate",
@@ -161,4 +167,8 @@ __all__ = [
     "AuditLogCreate",
     "AuditLogResponse",
     "AuditLogListResponse",
+    "NotificationCreate",
+    "NotificationUpdate",
+    "NotificationResponse",
+    "NotificationListResponse",
 ]

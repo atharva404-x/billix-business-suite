@@ -79,6 +79,16 @@ class Permission(str, Enum):
     # Reports & analytics
     REPORT_READ = "report:read"
 
+    # Notifications
+    NOTIFICATION_READ = "notification:read"
+    NOTIFICATION_CREATE = "notification:create"
+    NOTIFICATION_UPDATE = "notification:update"
+
+    # Backups
+    BACKUP_READ = "backup:read"
+    BACKUP_CREATE = "backup:create"
+    BACKUP_DELETE = "backup:delete"
+
 
 # ---------------------------------------------------------------------------
 # Role → Permission mapping
@@ -116,6 +126,11 @@ ROLE_PERMISSIONS: Dict[BusinessRole, Set[Permission]] = {
         Permission.PAYMENT_READ,
         Permission.PAYMENT_CREATE,
         Permission.REPORT_READ,
+        Permission.NOTIFICATION_READ,
+        Permission.NOTIFICATION_CREATE,
+        Permission.NOTIFICATION_UPDATE,
+        Permission.BACKUP_READ,
+        Permission.BACKUP_CREATE,
     },
 
     BusinessRole.ACCOUNTANT: {
@@ -131,6 +146,8 @@ ROLE_PERMISSIONS: Dict[BusinessRole, Set[Permission]] = {
         Permission.PAYMENT_READ,
         Permission.PAYMENT_CREATE,
         Permission.REPORT_READ,
+        Permission.NOTIFICATION_READ,
+        Permission.BACKUP_READ,
     },
 
     BusinessRole.SALES: {
@@ -144,6 +161,7 @@ ROLE_PERMISSIONS: Dict[BusinessRole, Set[Permission]] = {
         Permission.INVOICE_UPDATE,
         Permission.PAYMENT_READ,
         Permission.PAYMENT_CREATE,
+        Permission.NOTIFICATION_READ,
     },
 
     BusinessRole.INVENTORY: {
@@ -156,6 +174,7 @@ ROLE_PERMISSIONS: Dict[BusinessRole, Set[Permission]] = {
         Permission.PRODUCT_UPDATE,
         Permission.INVENTORY_READ,
         Permission.INVENTORY_WRITE,
+        Permission.NOTIFICATION_READ,
     },
 
     BusinessRole.VIEWER: {
@@ -167,6 +186,8 @@ ROLE_PERMISSIONS: Dict[BusinessRole, Set[Permission]] = {
         Permission.INVOICE_READ,
         Permission.PAYMENT_READ,
         Permission.REPORT_READ,
+        Permission.NOTIFICATION_READ,
+        Permission.BACKUP_READ,
     },
 }
 

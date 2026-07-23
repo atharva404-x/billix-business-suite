@@ -18,6 +18,7 @@ from app.models.inventory import InventoryTransaction  # noqa: F401
 from app.models.invoice import Invoice, InvoiceItem  # noqa: F401
 from app.models.settings import BusinessSettings, BusinessPreferences  # noqa: F401
 from app.models.audit_log import AuditLog  # noqa: F401
+from app.models.notification import Notification  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

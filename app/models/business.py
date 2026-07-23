@@ -57,6 +57,11 @@ class BusinessProfile(Base, BaseModelMixin):
         back_populates="business",
         cascade="all, delete-orphan"
     )
+    notifications: Mapped[List["Notification"]] = relationship(
+        "Notification",
+        back_populates="business",
+        cascade="all, delete-orphan"
+    )
 
 
 class BusinessMember(Base, BaseModelMixin):

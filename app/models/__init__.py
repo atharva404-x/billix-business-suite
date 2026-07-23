@@ -11,6 +11,12 @@ from app.models.inventory import StockMovement, InventoryTransaction
 from app.models.invoice import Invoice, InvoiceItem, InvoiceStatus, PaymentStatus, PaymentMethod, Payment
 from app.models.settings import BusinessSettings, BusinessPreferences
 from app.models.audit_log import AuditLog, AuditAction
+from app.models.notification import (
+    Notification,
+    NotificationType,
+    NotificationStatus,
+    NotificationChannel,
+)
 
 __all__ = [
     "Base",
@@ -39,4 +45,8 @@ __all__ = [
     "BusinessPreferences",
     "AuditLog",
     "AuditAction",
+    "Notification",
+    "NotificationType",
+    "NotificationStatus",
+    "NotificationChannel",
 ]

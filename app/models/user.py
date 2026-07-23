@@ -45,3 +45,8 @@ class User(Base, BaseModelMixin):
         default=UserRole.VIEWER,
         nullable=False
     )
+    notifications: Mapped[List["Notification"]] = relationship(
+        "Notification",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )

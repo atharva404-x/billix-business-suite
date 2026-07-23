@@ -10,6 +10,7 @@ from app.repositories.inventory import InventoryRepository
 from app.repositories.invoice import InvoiceRepository, PaymentRepository
 from app.repositories.settings import BusinessSettingsRepository, BusinessPreferencesRepository
 from app.repositories.audit_log import AuditLogRepository
+from app.repositories.notification import NotificationRepository
 
 __all__ = [
     "BaseRepository",
@@ -24,5 +25,7 @@ __all__ = [
     "InvoiceRepository",
     "PaymentRepository",
     "BusinessSettingsRepository",
-    "BusinessPreferencesRepository"
+    "BusinessPreferencesRepository",
+    "AuditLogRepository",
+    "NotificationRepository",
 ]
