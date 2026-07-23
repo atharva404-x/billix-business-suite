@@ -125,9 +125,40 @@ docker compose -f docker-compose.prod.yml down
 
 ---
 
-## 5. Security & Best Practices
+## 6. Continuous Integration & Deployment (CI/CD)
 
-1. **Non-Root Execution**: The backend runtime container executes under unprivileged system user `billix:10001`.
-2. **Multi-Stage Builds**: Build-time tools (compilers, git, dev dependencies) are stripped out of final runtime images.
-3. **Healthchecks**: Built-in HTTP and CLI healthchecks enable automated container restarts and zero-downtime orchestration.
-4. **Secret Protection**: All credentials are supplied dynamically through `.env` and are strictly excluded from repository commits by `.gitignore`.
+Billix includes production-grade GitHub Actions workflows located in `.github/workflows/`:
+
+- **CI Pipeline (`.github/workflows/ci.yml`)**: Automated pipeline triggered on every Pull Request and Push to `main`.
+  - Runs Python 3.13 unit test suite (`pytest`).
+  - Validates Alembic migration integrity (`alembic upgrade head`).
+  - Runs ESLint, TypeScript type checking (`tsc --noEmit`), and Vite production builds.
+  - Verifies multi-stage Docker builds (`Dockerfile` and `Dockerfile.frontend`).
+- **CD Pipeline (`.github/workflows/deployment.yml`)**: Prepared deployment pipeline triggered via `workflow_dispatch` (manual trigger with `staging`/`production` selection) or GitHub Release tags (`v*`).
+
+---
+
+## 7. Required GitHub Secrets
+
+To enable automated CD deployment to staging or production servers, configure the following secrets in GitHub Repository Settings (`Settings -> Secrets and variables -> Actions`):
+
+### Container Registry & Code Access
+| Secret Name | Description | Example / Note |
+| :--- | :--- | :--- |
+| `GITHUB_TOKEN` | Built-in GitHub Actions token for GHCR package publishing | Auto-provided |
+
+### Server Deployment Secrets
+| Secret Name | Description | Example / Note |
+| :--- | :--- | :--- |
+| `DEPLOY_HOST` | Production or Staging server IP address or FQDN | `203.0.113.10` |
+| `DEPLOY_USER` | SSH user for container orchestration | `deploy` or `root` |
+| `DEPLOY_SSH_KEY` | Private SSH key authorized on `DEPLOY_HOST` | `-----BEGIN OPENSSH PRIVATE KEY-----...` |
+
+### Application Environment Secrets
+| Secret Name | Description | Example / Note |
+| :--- | :--- | :--- |
+| `DATABASE_URL` | Production PostgreSQL connection string | `postgresql+asyncpg://...` |
+| `POSTGRES_PASSWORD` | PostgreSQL secret password | `secret_db_password` |
+| `CLERK_PUBLISHABLE_KEY` | Clerk Auth publishable key | `pk_live_...` |
+| `CLERK_SECRET_KEY` | Clerk Auth secret key | `sk_live_...` |
+
