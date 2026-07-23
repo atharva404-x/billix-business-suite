@@ -1,7 +1,8 @@
 
 import uuid
 from typing import Optional
-from sqlalchemy import String, ForeignKey, UUID, Numeric, Enum
+from enum import Enum
+from sqlalchemy import String, ForeignKey, UUID, Numeric
 from sqlalchemy.orm import Mapped, mapped_column
 from app.models.base import Base, BaseModelMixin
 

@@ -54,6 +54,79 @@ Future Dependencies:
 -----------------------------------------
 
 Ticket ID:
+POLISH-NOTIFICATION-001
+
+Title:
+Notification Repository In-Database Bulk Update and Router Simplification
+
+Status:
+Completed
+
+Completion Date:
+2026-07-23
+
+Files Created:
+None
+
+Files Modified:
+- app/repositories/notification.py
+- app/api/v1/notifications.py
+
+Summary:
+Optimized NotificationRepository.mark_all_as_read by replacing in-memory entity loading with an in-database SQLAlchemy update() statement, preserving tenant isolation, user filters, audit logging, and row counts. Simplified the notification router by returning ORM models directly, adhering to the project's standard response pattern while keeping all 76 unit tests green.
+
+Notes:
+None
+
+Future Dependencies:
+None
+
+-----------------------------------------
+
+Ticket ID:
+ALIGN-NOTIFICATION-BACKUP-001
+
+Title:
+Notification Framework and Backup Abstraction Production Architecture Alignment
+
+Status:
+Completed
+
+Completion Date:
+2026-07-23
+
+Files Created:
+- tests/unit/test_backup.py
+- tests/conftest.py
+
+Files Modified:
+- app/models/user.py
+- app/models/customer.py
+- app/models/supplier.py
+- app/models/audit_log.py
+- app/models/notification.py
+- app/schemas/notification.py
+- app/repositories/base.py
+- app/repositories/notification.py
+- app/repositories/audit_log.py
+- app/services/notification.py
+- app/auth/dependencies.py
+- app/api/v1/notifications.py
+- app/api/v1/audit_logs.py
+- tests/unit/test_notification.py
+
+Summary:
+Aligned the Notification Framework and Backup Abstraction with standard Billix production architectural guidelines. Fixed Pydantic schema generation issues, corrected database model metadata attribute shadowing, and implemented skip/limit pagination, strict tenant isolation validation, and multi-tenant security verification. Wrote full test suites covering backup and notification systems, resolving all validation, route, and permission checks.
+
+Notes:
+None
+
+Future Dependencies:
+None
+
+-----------------------------------------
+
+Ticket ID:
 CORE-HARDEN-001
 
 Title:

@@ -71,7 +71,7 @@ async def get_me(current_user: User = Depends(get_current_user)):
 
 
 @app.get("/admin/system-status")
-async def get_admin_status(admin_user: User = Depends(RoleChecker(UserRole.ADMIN)):
+async def get_admin_status(admin_user: User = Depends(RoleChecker(UserRole.ADMIN))):
     """
     Protected and Role-restricted route retrieving system operational status.
 

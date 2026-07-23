@@ -1,14 +1,14 @@
 
 import uuid
 from datetime import datetime, timezone
-from typing import Type, TypeVar, List, Optional
+from typing import Type, TypeVar, List, Optional, Generic
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 T = TypeVar("T")
 
 
-class BaseRepository:
+class BaseRepository(Generic[T]):
     def __init__(self, session: AsyncSession, model: Type[T]):
         self.session = session
         self.model = model
@@ -30,10 +30,12 @@ class BaseRepository:
             if value is not None:
                 setattr(instance, key, value)
         await self.session.flush()
+        await self.session.refresh(instance)
         return instance
 
     async def deactivate(self, instance: T) -> T:
         instance.is_active = False
         instance.deleted_at = datetime.now(timezone.utc)
         await self.session.flush()
+        await self.session.refresh(instance)
         return instance

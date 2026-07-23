@@ -1,5 +1,5 @@
 import uuid
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Any
 from datetime import datetime
 from sqlalchemy import select, and_, or_, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,19 +18,23 @@ class AuditLogRepository(BaseRepository[AuditLog]):
         entity_type: str,
         entity_id: uuid.UUID,
         action: AuditAction,
-        before_values: Optional[str] = None,
-        after_values: Optional[str] = None,
+        before_values: Optional[Any] = None,
+        after_values: Optional[Any] = None,
         ip_address: Optional[str] = None,
         user_agent: Optional[str] = None
     ) -> AuditLog:
+        import json
+        before_str = json.dumps(before_values) if isinstance(before_values, (dict, list)) else before_values
+        after_str = json.dumps(after_values) if isinstance(after_values, (dict, list)) else after_values
+
         audit_log = AuditLog(
             user_id=user_id,
             business_id=business_id,
             entity_type=entity_type,
             entity_id=entity_id,
             action=action,
-            before_values=before_values,
-            after_values=after_values,
+            before_values=before_str,
+            after_values=after_str,
             ip_address=ip_address,
             user_agent=user_agent
         )

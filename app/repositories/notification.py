@@ -3,7 +3,7 @@ import uuid
 from typing import Optional, List, Tuple
 from datetime import datetime, timezone
 
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.base import BaseRepository
@@ -28,8 +28,8 @@ class NotificationRepository(BaseRepository[Notification]):
         type: Optional[NotificationType] = None,
         status: Optional[NotificationStatus] = None,
         channel: Optional[NotificationChannel] = None,
-        page: int = 1,
-        page_size: int = 20,
+        skip: int = 0,
+        limit: int = 100,
     ) -> Tuple[List[Notification], int]:
         """List notifications for a business with filters and pagination."""
         # Base query
@@ -56,8 +56,7 @@ class NotificationRepository(BaseRepository[Notification]):
         total = total_result.scalar_one()
 
         # Apply pagination
-        offset = (page - 1) * page_size
-        query = query.order_by(Notification.created_at.desc()).offset(offset).limit(page_size)
+        query = query.order_by(Notification.created_at.desc()).offset(skip).limit(limit)
 
         result = await self.session.execute(query)
         notifications = list(result.scalars().all())
@@ -87,28 +86,28 @@ class NotificationRepository(BaseRepository[Notification]):
             notification.status = NotificationStatus.READ
             notification.read_at = datetime.now(timezone.utc)
             await self.session.flush()
+            await self.session.refresh(notification)
             return notification
         return None
 
     async def mark_all_as_read(self, business_id: uuid.UUID, user_id: Optional[uuid.UUID] = None) -> int:
         """Mark all notifications as read for a business (and optional user)."""
-        query = select(Notification).where(
-            and_(
-                Notification.business_id == business_id,
-                Notification.is_active == True,
-                Notification.status != NotificationStatus.READ
+        now = datetime.now(timezone.utc)
+        stmt = (
+            update(Notification)
+            .where(
+                and_(
+                    Notification.business_id == business_id,
+                    Notification.is_active == True,
+                    Notification.status != NotificationStatus.READ
+                )
             )
+            .values(status=NotificationStatus.READ, read_at=now)
         )
         if user_id:
-            query = query.where(Notification.user_id == user_id)
+            stmt = stmt.where(Notification.user_id == user_id)
         
-        result = await self.session.execute(query)
-        notifications = result.scalars().all()
-        now = datetime.now(timezone.utc)
-        for notification in notifications:
-            notification.status = NotificationStatus.READ
-            notification.read_at = now
-        
+        result = await self.session.execute(stmt)
         await self.session.flush()
-        return len(notifications)
+        return result.rowcount
 

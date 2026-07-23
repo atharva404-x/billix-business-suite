@@ -1,11 +1,10 @@
 import uuid
-from typing import Optional
+from typing import Annotated, Optional
 from datetime import datetime
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.database import get_db
-from app.auth.dependencies import get_current_user
-from app.auth.permissions import PermissionChecker
+from app.core.database import get_db_session
+from app.auth.permissions import PermissionChecker, Permission
 from app.models.audit_log import AuditAction
 from app.schemas.audit_log import AuditLogListResponse
 from app.services.audit_log import AuditLogService
@@ -17,6 +16,8 @@ router = APIRouter()
 @router.get("/", response_model=AuditLogListResponse)
 async def list_audit_logs(
     business_id: uuid.UUID,
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.REPORT_READ))],
+    session: AsyncSession = Depends(get_db_session),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     entity_type: Optional[str] = Query(None),
@@ -26,15 +27,12 @@ async def list_audit_logs(
     start_date: Optional[datetime] = Query(None),
     end_date: Optional[datetime] = Query(None),
     sort_by: Optional[str] = Query("created_at"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$"),
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-    _: None = Depends(PermissionChecker("audit", "view"))
+    sort_order: str = Query("desc", pattern="^(asc|desc)$"),
 ):
     """
     List audit logs for a business with filtering and pagination.
     """
-    audit_service = AuditLogService(db)
+    audit_service = AuditLogService(session)
     return await audit_service.get_audit_logs(
         user_id=current_user.id,
         business_id=business_id,
@@ -56,16 +54,15 @@ async def get_entity_audit_history(
     business_id: uuid.UUID,
     entity_type: str,
     entity_id: uuid.UUID,
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.REPORT_READ))],
+    session: AsyncSession = Depends(get_db_session),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-    _: None = Depends(PermissionChecker("audit", "view"))
 ):
     """
     Get audit history for a specific entity.
     """
-    audit_service = AuditLogService(db)
+    audit_service = AuditLogService(session)
     return await audit_service.get_entity_history(
         user_id=current_user.id,
         business_id=business_id,

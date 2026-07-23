@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Optional, List
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, BaseModelMixin
 from app.models.roles import UserRole
 

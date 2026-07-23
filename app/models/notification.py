@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Optional
 from enum import Enum
 
-from sqlalchemy import UUID, Boolean, DateTime, Enum as SQLEnum, ForeignKey, String, Text, func
+from sqlalchemy import UUID, Boolean, DateTime, Enum as SQLEnum, ForeignKey, String, Text, func, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, BaseModelMixin
@@ -64,7 +64,7 @@ class Notification(Base, BaseModelMixin):
         SQLEnum(NotificationChannel, create_constraint=True, native_enum=False), nullable=False, index=True)
     status: Mapped[NotificationStatus] = mapped_column(
         SQLEnum(NotificationStatus, create_constraint=True, native_enum=False), nullable=False, default=NotificationStatus.PENDING, index=True)
-    metadata: Mapped[Optional[dict]] = mapped_column(nullable=True)
+    notification_metadata: Mapped[Optional[dict]] = mapped_column("metadata", JSON, nullable=True)
     sent_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     read_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 

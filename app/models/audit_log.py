@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional
 from sqlalchemy import UUID, String, DateTime, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
-from app.models.base import BaseModelMixin
+from app.models.base import Base, BaseModelMixin
 
 
 class AuditAction(str, Enum):
@@ -13,7 +13,7 @@ class AuditAction(str, Enum):
     VIEW = "VIEW"
 
 
-class AuditLog(BaseModelMixin):
+class AuditLog(Base, BaseModelMixin):
     """
     Audit log model for tracking all changes to business entities.
     Captures who changed what, when, and the before/after states.

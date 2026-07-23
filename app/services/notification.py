@@ -1,6 +1,6 @@
 
 import uuid
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 
@@ -16,11 +16,11 @@ from app.models.notification import (
 from app.schemas.notification import (
     NotificationCreate,
     NotificationUpdate,
-    NotificationResponse,
-    NotificationListResponse,
 )
 from app.repositories.notification import NotificationRepository
 from app.repositories.business import BusinessMemberRepository
+from app.services.audit_log import AuditLogService
+from app.models.audit_log import AuditAction
 
 
 # ------------------------------------------------------
@@ -44,6 +44,7 @@ class NotificationService:
     def __init__(self, session: AsyncSession):
         self.notification_repo = NotificationRepository(session)
         self.member_repo = BusinessMemberRepository(session)
+        self.audit_service = AuditLogService(session)
 
     async def _ensure_business_access(
         self, user_id: uuid.UUID, business_id: uuid.UUID
@@ -61,9 +62,20 @@ class NotificationService:
         user_id: uuid.UUID,
         business_id: uuid.UUID,
         notification_data: NotificationCreate,
-    ) -> NotificationResponse:
+    ) -> Notification:
         """Create a new notification."""
         await self._ensure_business_access(user_id, business_id)
+
+        # Validate recipient user membership
+        if notification_data.user_id:
+            recipient_membership = await self.member_repo.get_by_user_and_business(
+                notification_data.user_id, business_id
+            )
+            if not recipient_membership:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Recipient is not a member of this business"
+                )
 
         notification = await self.notification_repo.create(
             business_id=business_id,
@@ -73,17 +85,27 @@ class NotificationService:
             message=notification_data.message,
             channel=notification_data.channel,
             status=NotificationStatus.PENDING,
-            metadata=notification_data.metadata,
+            notification_metadata=notification_data.metadata,
         )
 
-        return NotificationResponse.model_validate(notification)
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="Notification",
+            entity_id=notification.id,
+            action=AuditAction.CREATE,
+            after_values=notification_data.model_dump(),
+        )
+
+        return notification
 
     async def get_notification(
         self,
         user_id: uuid.UUID,
         business_id: uuid.UUID,
         notification_id: uuid.UUID,
-    ) -> NotificationResponse:
+    ) -> Notification:
         """Get a notification by ID."""
         await self._ensure_business_access(user_id, business_id)
 
@@ -96,7 +118,7 @@ class NotificationService:
                 detail="Notification not found"
             )
 
-        return NotificationResponse.model_validate(notification)
+        return notification
 
     async def list_notifications(
         self,
@@ -106,9 +128,9 @@ class NotificationService:
         type: Optional[NotificationType] = None,
         status: Optional[NotificationStatus] = None,
         channel: Optional[NotificationChannel] = None,
-        page: int = 1,
-        page_size: int = 20,
-    ) -> NotificationListResponse:
+        skip: int = 0,
+        limit: int = 100,
+    ) -> tuple[List[Notification], int]:
         """List notifications for a business with filters and pagination."""
         await self._ensure_business_access(user_id, business_id)
 
@@ -118,23 +140,18 @@ class NotificationService:
             type=type,
             status=status,
             channel=channel,
-            page=page,
-            page_size=page_size,
+            skip=skip,
+            limit=limit,
         )
 
-        return NotificationListResponse(
-            data=[NotificationResponse.model_validate(n) for n in notifications],
-            total=total,
-            page=page,
-            page_size=page_size,
-        )
+        return notifications, total
 
     async def mark_as_read(
         self,
         user_id: uuid.UUID,
         business_id: uuid.UUID,
         notification_id: uuid.UUID,
-    ) -> NotificationResponse:
+    ) -> Notification:
         """Mark a notification as read."""
         await self._ensure_business_access(user_id, business_id)
 
@@ -147,7 +164,18 @@ class NotificationService:
                 detail="Notification not found"
             )
 
-        return NotificationResponse.model_validate(notification)
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="Notification",
+            entity_id=notification_id,
+            action=AuditAction.UPDATE,
+            before_values={"status": "unread"},
+            after_values={"status": "read"},
+        )
+
+        return notification
 
     async def mark_all_as_read(
         self,
@@ -162,7 +190,51 @@ class NotificationService:
             business_id, user_id_filter
         )
 
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="Notification",
+            entity_id=business_id,
+            action=AuditAction.UPDATE,
+            before_values={"status": "unread"},
+            after_values={"status": "read", "count": count},
+        )
+
         return {"marked_as_read": count}
+
+    async def deactivate_notification(
+        self,
+        user_id: uuid.UUID,
+        business_id: uuid.UUID,
+        notification_id: uuid.UUID,
+    ) -> Notification:
+        """Deactivate (soft delete) a notification."""
+        await self._ensure_business_access(user_id, business_id)
+
+        notification = await self.notification_repo.get_by_id_and_business(
+            notification_id, business_id
+        )
+        if not notification:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Notification not found"
+            )
+
+        deactivated = await self.notification_repo.deactivate(notification)
+
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="Notification",
+            entity_id=notification_id,
+            action=AuditAction.DELETE,
+            before_values={"is_active": True},
+            after_values={"is_active": False},
+        )
+
+        return deactivated
 
 
 # ------------------------------------------------------
@@ -185,10 +257,13 @@ class NotificationManager:
 
     async def send_notification(
         self,
-        notification_id: uuid.UUID
+        notification_id: uuid.UUID,
+        business_id: uuid.UUID
     ) -> Notification:
         """Send a notification using the appropriate provider."""
-        notification = await self.notification_repo.get_by_id(notification_id)
+        notification = await self.notification_repo.get_by_id_and_business(
+            notification_id, business_id
+        )
         if not notification:
             raise ValueError("Notification not found")
 

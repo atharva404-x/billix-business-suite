@@ -34,7 +34,7 @@ async def get_current_user(
 
     # Query the user from the database by clerk_id
     try:
-        query = select(User).where(User.clerk_id == user_id, User.is_active == True)
+        query = select(User).where(User.clerk_id == user_id)
         result = await db.execute(query)
         user = result.scalar_one_or_none()
     except Exception as e:
@@ -42,6 +42,12 @@ async def get_current_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication failed during profile check."
+        )
+
+    if user and not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User profile not found or inactive."
         )
 
     if not user:
@@ -59,6 +65,6 @@ async def get_current_user(
             await db.flush()
         except Exception as exc:
             logger.error("Unable to provision authenticated Clerk user: %s", exc)
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authenticated user profile could not be provisioned.")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User profile not found or inactive.")
 
     return user
