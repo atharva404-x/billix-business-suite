@@ -1,10 +1,11 @@
 
 import uuid
-from typing import Annotated
+from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db_session
 from app.auth.dependencies import get_current_user
+from app.auth.permissions import Permission, PermissionChecker
 from app.models.user import User
 from app.schemas.unit import (
     UnitCreate,
@@ -22,7 +23,7 @@ router = APIRouter(prefix="/units", tags=["units"])
 async def create_unit(
     business_id: uuid.UUID,
     unit_data: UnitCreate,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.PRODUCT_CREATE))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = UnitService(session)
@@ -32,7 +33,7 @@ async def create_unit(
 @router.get("", response_model=UnitListResponse)
 async def list_units(
     business_id: uuid.UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.PRODUCT_READ))],
     session: AsyncSession = Depends(get_db_session),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
@@ -52,7 +53,7 @@ async def list_units(
 async def get_unit(
     business_id: uuid.UUID,
     unit_id: uuid.UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.PRODUCT_READ))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = UnitService(session)
@@ -64,7 +65,7 @@ async def update_unit(
     business_id: uuid.UUID,
     unit_id: uuid.UUID,
     update_data: UnitUpdate,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.PRODUCT_UPDATE))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = UnitService(session)
@@ -75,7 +76,7 @@ async def update_unit(
 async def deactivate_unit(
     business_id: uuid.UUID,
     unit_id: uuid.UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.PRODUCT_DELETE))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = UnitService(session)

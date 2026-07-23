@@ -18,11 +18,13 @@ class BusinessProfileService:
     async def create_business(
         self, user_id: uuid.UUID, business_data: BusinessProfileCreate
     ) -> BusinessProfile:
+        from app.models.roles import BusinessRole
         business = await self.repo.create(**business_data.model_dump())
         await self.member_repo.create(
             user_id=user_id,
             business_id=business.id,
-            is_owner=True
+            is_owner=True,
+            role=BusinessRole.OWNER,
         )
         return business
 

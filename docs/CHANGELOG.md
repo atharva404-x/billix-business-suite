@@ -824,6 +824,57 @@ None
 
 -----------------------------------------
 
+-----------------------------------------
+
+Ticket ID:
+RBAC-001
+
+Title:
+Role-Based Access Control (RBAC) — Production Implementation
+
+Status:
+Completed
+
+Completion Date:
+2026-07-23
+
+Files Created:
+- app/auth/permissions.py
+- alembic/versions/20260723_add_member_role.py
+- tests/unit/test_rbac.py
+
+Files Modified:
+- app/models/roles.py
+- app/models/business.py
+- app/models/__init__.py
+- app/services/business.py
+- app/repositories/business.py
+- app/api/v1/business.py
+- app/api/v1/customers.py
+- app/api/v1/suppliers.py
+- app/api/v1/products.py
+- app/api/v1/categories.py
+- app/api/v1/units.py
+- app/api/v1/inventory.py
+- app/api/v1/invoices.py
+- app/api/v1/reports.py
+- app/api/v1/settings.py
+- docs/CHANGELOG.md
+
+Summary:
+Implemented a complete, production-ready Role-Based Access Control system layered on top of the existing BusinessMember membership architecture. Added BusinessRole enum (Owner, Admin, Manager, Accountant, Sales, Inventory, Viewer) as a per-business role stored on BusinessMember.role, backed by an Alembic migration that back-fills existing owner members. Defined a granular Permission enum covering all domains (business, settings, members, customers, suppliers, products, inventory, invoices, payments, reports) and a ROLE_PERMISSIONS mapping that grants each role a precisely scoped permission set. Implemented PermissionChecker — a FastAPI dependency factory that resolves business_id from path or query params, loads the caller's BusinessMember record, and enforces the required Permission, returning 403 on failure. Applied PermissionChecker to every sensitive endpoint across all nine domain routers. The system is zero-duplication: all authorization logic lives exclusively in app/auth/permissions.py. A 30-assertion test suite covers enum completeness, mapping correctness, privilege monotonicity, and PermissionChecker behaviour under all edge cases.
+
+Notes:
+- BusinessRole is a per-business concept stored on BusinessMember.role; UserRole on User remains as the global system role for platform-level operations.
+- POST /business-profiles (create) and GET /business-profiles (list own businesses) intentionally have no per-business permission check — they predate any membership.
+- Run `alembic upgrade head` to apply the migration; existing owner members are back-filled to role='owner' and all others to role='viewer'.
+- The ROLE_PERMISSIONS dict is the single source of truth — to change what a role can do, edit only that dict.
+
+Future Dependencies:
+- Member invitation API (MEMBER_INVITE / MEMBER_REMOVE permissions are defined but the endpoints do not yet exist)
+
+-----------------------------------------
+
 ---
 
 ## Upcoming Tickets

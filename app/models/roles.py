@@ -4,7 +4,9 @@ from typing import List
 
 class UserRole(str, Enum):
     """
-    Standard user roles supported in the Billix system.
+    Global system-level role attached to a User record.
+    Used for platform-level access (e.g. super-admin operations).
+    Per-business access is governed by BusinessRole on BusinessMember.
     """
     OWNER = "owner"
     ADMIN = "admin"
@@ -13,32 +15,62 @@ class UserRole(str, Enum):
     VIEWER = "viewer"
 
 
-# Defines the hierarchy order from most privileged to least privileged.
-# Indexed from 0 (highest: OWNER) to 4 (lowest: VIEWER).
+class BusinessRole(str, Enum):
+    """
+    Per-business membership role stored on BusinessMember.
+    Governs what a user may do within a specific business tenant.
+    """
+    OWNER = "owner"
+    ADMIN = "admin"
+    MANAGER = "manager"
+    ACCOUNTANT = "accountant"
+    SALES = "sales"
+    INVENTORY = "inventory"
+    VIEWER = "viewer"
+
+
+# Hierarchy order for BusinessRole: index 0 = highest privilege.
+BUSINESS_ROLE_ORDER: List[BusinessRole] = [
+    BusinessRole.OWNER,
+    BusinessRole.ADMIN,
+    BusinessRole.MANAGER,
+    BusinessRole.ACCOUNTANT,
+    BusinessRole.SALES,
+    BusinessRole.INVENTORY,
+    BusinessRole.VIEWER,
+]
+
+# Legacy hierarchy kept for backward-compat with UserRole checks.
 ROLE_ORDER: List[UserRole] = [
     UserRole.OWNER,
     UserRole.ADMIN,
     UserRole.MANAGER,
     UserRole.STAFF,
-    UserRole.VIEWER
+    UserRole.VIEWER,
 ]
 
 
 def has_minimum_role(user_role: UserRole, required_role: UserRole) -> bool:
     """
-    Determines if user_role has sufficient privileges to meet or exceed required_role.
-
-    Args:
-        user_role: The role currently assigned to the user.
-        required_role: The minimum role required for the operation.
-
-    Returns:
-        True if the user's role has equal or greater access than required_role, False otherwise.
+    Returns True if user_role meets or exceeds required_role in the global hierarchy.
     """
     try:
         user_index = ROLE_ORDER.index(user_role)
         required_index = ROLE_ORDER.index(required_role)
-        # Higher privilege means lower list index (e.g., OWNER [index 0] <= VIEWER [index 4])
+        return user_index <= required_index
+    except ValueError:
+        return False
+
+
+def has_minimum_business_role(
+    member_role: BusinessRole, required_role: BusinessRole
+) -> bool:
+    """
+    Returns True if member_role meets or exceeds required_role in the business hierarchy.
+    """
+    try:
+        user_index = BUSINESS_ROLE_ORDER.index(member_role)
+        required_index = BUSINESS_ROLE_ORDER.index(required_role)
         return user_index <= required_index
     except ValueError:
         return False

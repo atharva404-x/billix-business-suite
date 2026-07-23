@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db_session
 from app.auth.dependencies import get_current_user
+from app.auth.permissions import Permission, PermissionChecker
 from app.models.user import User
 from app.schemas.inventory import (
     StockIn,
@@ -26,7 +27,7 @@ router = APIRouter(prefix="/inventory", tags=["inventory"])
 async def stock_in_endpoint(
     business_id: uuid.UUID,
     data: StockIn,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.INVENTORY_WRITE))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = InventoryService(session)
@@ -38,7 +39,7 @@ async def stock_in_endpoint(
 async def stock_out_endpoint(
     business_id: uuid.UUID,
     data: StockOut,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.INVENTORY_WRITE))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = InventoryService(session)
@@ -50,7 +51,7 @@ async def stock_out_endpoint(
 async def adjustment_endpoint(
     business_id: uuid.UUID,
     data: Adjustment,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.INVENTORY_WRITE))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = InventoryService(session)
@@ -62,7 +63,7 @@ async def adjustment_endpoint(
 async def get_product_stock(
     business_id: uuid.UUID,
     product_id: uuid.UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.INVENTORY_READ))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = InventoryService(session)
@@ -73,7 +74,7 @@ async def get_product_stock(
 async def get_inventory_history(
     business_id: uuid.UUID,
     product_id: uuid.UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.INVENTORY_READ))],
     session: AsyncSession = Depends(get_db_session),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),

@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db_session
 from app.auth.dependencies import get_current_user
+from app.auth.permissions import Permission, PermissionChecker
 from app.models.user import User
 from app.schemas.category import (
     CategoryCreate,
@@ -22,7 +23,7 @@ router = APIRouter(prefix="/categories", tags=["categories"])
 async def create_category(
     business_id: uuid.UUID,
     category_data: CategoryCreate,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.PRODUCT_CREATE))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = CategoryService(session)
@@ -32,7 +33,7 @@ async def create_category(
 @router.get("", response_model=CategoryListResponse)
 async def list_categories(
     business_id: uuid.UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.PRODUCT_READ))],
     session: AsyncSession = Depends(get_db_session),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
@@ -53,7 +54,7 @@ async def list_categories(
 async def get_category(
     business_id: uuid.UUID,
     category_id: uuid.UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.PRODUCT_READ))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = CategoryService(session)
@@ -65,7 +66,7 @@ async def update_category(
     business_id: uuid.UUID,
     category_id: uuid.UUID,
     update_data: CategoryUpdate,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.PRODUCT_UPDATE))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = CategoryService(session)
@@ -76,7 +77,7 @@ async def update_category(
 async def deactivate_category(
     business_id: uuid.UUID,
     category_id: uuid.UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.PRODUCT_DELETE))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = CategoryService(session)

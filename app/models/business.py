@@ -4,6 +4,7 @@ from typing import Optional, List
 from sqlalchemy import String, ForeignKey, UUID, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, BaseModelMixin
+from app.models.roles import BusinessRole
 
 
 class BusinessProfile(Base, BaseModelMixin):
@@ -78,6 +79,12 @@ class BusinessMember(Base, BaseModelMixin):
     is_owner: Mapped[bool] = mapped_column(
         default=True,
         nullable=False
+    )
+
+    role: Mapped[BusinessRole] = mapped_column(
+        String(20),
+        nullable=False,
+        default=BusinessRole.VIEWER
     )
 
     user: Mapped["User"] = relationship(

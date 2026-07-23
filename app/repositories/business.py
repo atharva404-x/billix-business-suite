@@ -5,6 +5,7 @@ from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories.base import BaseRepository
 from app.models.business import BusinessProfile, BusinessMember
+from app.models.roles import BusinessRole
 from app.models.user import User
 
 

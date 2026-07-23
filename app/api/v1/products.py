@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db_session
 from app.auth.dependencies import get_current_user
+from app.auth.permissions import Permission, PermissionChecker
 from app.models.user import User
 from app.schemas.product import (
     ProductCreate,
@@ -22,7 +23,7 @@ router = APIRouter(prefix="/products", tags=["products"])
 async def create_product(
     business_id: uuid.UUID,
     product_data: ProductCreate,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.PRODUCT_CREATE))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = ProductService(session)
@@ -32,7 +33,7 @@ async def create_product(
 @router.get("", response_model=ProductListResponse)
 async def list_products(
     business_id: uuid.UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.PRODUCT_READ))],
     session: AsyncSession = Depends(get_db_session),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
@@ -54,7 +55,7 @@ async def list_products(
 async def get_product(
     business_id: uuid.UUID,
     product_id: uuid.UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.PRODUCT_READ))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = ProductService(session)
@@ -66,7 +67,7 @@ async def update_product(
     business_id: uuid.UUID,
     product_id: uuid.UUID,
     update_data: ProductUpdate,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.PRODUCT_UPDATE))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = ProductService(session)
@@ -77,7 +78,7 @@ async def update_product(
 async def deactivate_product(
     business_id: uuid.UUID,
     product_id: uuid.UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.PRODUCT_DELETE))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = ProductService(session)

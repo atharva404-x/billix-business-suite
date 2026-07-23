@@ -1,5 +1,5 @@
 from app.models.base import Base, BaseModelMixin
-from app.models.roles import UserRole
+from app.models.roles import UserRole, BusinessRole
 from app.models.user import User
 from app.models.business import BusinessProfile, BusinessMember
 from app.models.customer import Customer, CustomerType
@@ -15,6 +15,7 @@ __all__ = [
     "Base",
     "BaseModelMixin",
     "UserRole",
+    "BusinessRole",
     "User",
     "BusinessProfile",
     "BusinessMember",
@@ -34,6 +35,5 @@ __all__ = [
     "PaymentMethod",
     "Payment",
     "BusinessSettings",
-    "BusinessPreferences"
+    "BusinessPreferences",
 ]
-

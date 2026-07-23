@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db_session
 from app.auth.dependencies import get_current_user
+from app.auth.permissions import Permission, PermissionChecker
 from app.models.user import User
 from app.schemas.invoice import (
     InvoiceCreate,
@@ -29,7 +30,7 @@ router = APIRouter(prefix="/invoices", tags=["invoices"])
 async def create_invoice(
     business_id: uuid.UUID,
     invoice_data: InvoiceCreate,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.INVOICE_CREATE))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = InvoiceService(session)
@@ -39,7 +40,7 @@ async def create_invoice(
 @router.get("", response_model=InvoiceListResponse)
 async def list_invoices(
     business_id: uuid.UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.INVOICE_READ))],
     session: AsyncSession = Depends(get_db_session),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
@@ -66,7 +67,7 @@ async def list_invoices(
 async def get_invoice(
     business_id: uuid.UUID,
     invoice_id: uuid.UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.INVOICE_READ))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = InvoiceService(session)
@@ -78,7 +79,7 @@ async def update_invoice(
     business_id: uuid.UUID,
     invoice_id: uuid.UUID,
     update_data: InvoiceUpdate,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.INVOICE_UPDATE))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = InvoiceService(session)
@@ -90,7 +91,7 @@ async def cancel_invoice(
     business_id: uuid.UUID,
     invoice_id: uuid.UUID,
     cancel_data: InvoiceCancel,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.INVOICE_CANCEL))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = InvoiceService(session)
@@ -101,7 +102,7 @@ async def cancel_invoice(
 async def record_payment(
     business_id: uuid.UUID,
     payment_data: PaymentCreate,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.PAYMENT_CREATE))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = InvoiceService(session)
@@ -112,7 +113,7 @@ async def record_payment(
 async def list_invoice_payments(
     business_id: uuid.UUID,
     invoice_id: uuid.UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.PAYMENT_READ))],
     session: AsyncSession = Depends(get_db_session),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100)

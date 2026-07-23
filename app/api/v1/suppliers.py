@@ -1,10 +1,11 @@
 
 import uuid
-from typing import Annotated
+from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db_session
 from app.auth.dependencies import get_current_user
+from app.auth.permissions import Permission, PermissionChecker
 from app.models.user import User
 from app.schemas.supplier import (
     SupplierCreate,
@@ -22,7 +23,7 @@ router = APIRouter(prefix="/suppliers", tags=["suppliers"])
 async def create_supplier(
     business_id: uuid.UUID,
     supplier_data: SupplierCreate,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.SUPPLIER_CREATE))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = SupplierService(session)
@@ -36,7 +37,7 @@ async def create_supplier(
 @router.get("", response_model=SupplierListResponse)
 async def list_suppliers(
     business_id: uuid.UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.SUPPLIER_READ))],
     session: AsyncSession = Depends(get_db_session),
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
@@ -50,16 +51,16 @@ async def list_suppliers(
 ):
     service = SupplierService(session)
     suppliers, total = await service.list_suppliers(
-        current_user.id, 
-        business_id, 
-        skip=skip, 
-        limit=limit, 
-        search_query=search_query, 
-        is_active=is_active, 
-        supplier_type=supplier_type, 
-        city=city, 
-        state=state, 
-        sort_by=sort_by, 
+        current_user.id,
+        business_id,
+        skip=skip,
+        limit=limit,
+        search_query=search_query,
+        is_active=is_active,
+        supplier_type=supplier_type,
+        city=city,
+        state=state,
+        sort_by=sort_by,
         sort_order=sort_order
     )
     return SupplierListResponse(items=suppliers, total=total)
@@ -69,7 +70,7 @@ async def list_suppliers(
 async def get_supplier(
     business_id: uuid.UUID,
     supplier_id: uuid.UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.SUPPLIER_READ))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = SupplierService(session)
@@ -83,7 +84,7 @@ async def update_supplier(
     business_id: uuid.UUID,
     supplier_id: uuid.UUID,
     update_data: SupplierUpdate,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.SUPPLIER_UPDATE))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = SupplierService(session)
@@ -96,7 +97,7 @@ async def update_supplier(
 async def deactivate_supplier(
     business_id: uuid.UUID,
     supplier_id: uuid.UUID,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.SUPPLIER_DELETE))],
     session: AsyncSession = Depends(get_db_session)
 ):
     service = SupplierService(session)
