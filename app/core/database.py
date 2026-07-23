@@ -5,16 +5,24 @@ from app.core.config import settings
 
 logger = logging.getLogger("app.core.database")
 
-# Create async database engine
-# For SQLite, we set check_same_thread=False
+# Create async database engine with pool optimization
 connect_args = {}
+engine_kwargs = {"echo": False}
+
 if settings.DATABASE_URL.startswith("sqlite"):
     connect_args["check_same_thread"] = False
+else:
+    engine_kwargs.update({
+        "pool_size": settings.DB_POOL_SIZE,
+        "max_overflow": settings.DB_MAX_OVERFLOW,
+        "pool_recycle": settings.DB_POOL_RECYCLE,
+        "pool_pre_ping": True,
+    })
 
 engine = create_async_engine(
     settings.DATABASE_URL,
     connect_args=connect_args,
-    echo=False
+    **engine_kwargs
 )
 
 # Async session factory

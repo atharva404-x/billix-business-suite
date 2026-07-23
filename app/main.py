@@ -1,8 +1,11 @@
 import logging
 from fastapi import FastAPI, Depends, status
 from fastapi.responses import JSONResponse
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from app.core.config import settings
 from app.core.logging import setup_logging
@@ -12,6 +15,8 @@ from app.core.database import get_db_session
 from app.middleware.auth import AuthMiddleware
 from app.middleware.request_id import RequestIDMiddleware
 from app.middleware.error_handler import ErrorHandlerMiddleware
+from app.middleware.security import SecurityHeadersMiddleware, RequestSizeLimitMiddleware
+from app.middleware.rate_limit import RateLimitMiddleware
 from app.auth.dependencies import get_current_user
 from app.auth.role_helpers import RoleChecker
 from app.models.user import User
@@ -31,7 +36,21 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Register Reliability and Auth Middlewares (outermost first)
+# Middleware Pipeline Assembly (Registered outermost to innermost)
+# Outermost middlewares execute first on requests and last on responses
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.ALLOWED_HOSTS)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Request-ID", "X-Correlation-ID"],
+    expose_headers=["X-Request-ID", "X-Correlation-ID"],
+)
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+app.add_middleware(RequestSizeLimitMiddleware, max_bytes=settings.MAX_REQUEST_SIZE_BYTES)
+app.add_middleware(RateLimitMiddleware, requests_per_minute=settings.RATE_LIMIT_PER_MINUTE)
 app.add_middleware(ErrorHandlerMiddleware)
 app.add_middleware(RequestIDMiddleware)
 app.add_middleware(
