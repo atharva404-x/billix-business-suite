@@ -1,0 +1,92 @@
+services:
+  # --- Backend Service (FastAPI Dev Server) ---
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: billix-backend-dev
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENV=development
+      - PROJECT_NAME=Billix
+      - DATABASE_URL=postgresql+asyncpg://billix_user:billix_password@postgres:5432/billix_db
+      - REDIS_URL=redis://redis:6379/0
+      - CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY:-pk_test_placeholder}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY:-sk_test_placeholder}
+      - CLERK_JWKS_URL=${CLERK_JWKS_URL:-https://api.clerk.com/v1/.well-known/jwks.json}
+      - CLERK_API_URL=${CLERK_API_URL:-https://api.clerk.com/v1}
+      - CLERK_JWT_AUDIENCE=${CLERK_JWT_AUDIENCE:-}
+    volumes:
+      - ./app:/app/app:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - billix-dev-network
+
+  # --- Frontend Service (Vite Dev Server) ---
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: billix-frontend-dev
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+      - VITE_CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY:-pk_test_placeholder}
+    depends_on:
+      - backend
+    networks:
+      - billix-dev-network
+
+  # --- PostgreSQL Database (Development) ---
+  postgres:
+    image: postgres:16-alpine
+    container_name: billix-postgres-dev
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=billix_db
+      - POSTGRES_USER=billix_user
+      - POSTGRES_PASSWORD=billix_password
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U billix_user -d billix_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - billix-dev-network
+
+  # --- Redis Cache & Broker (Development) ---
+  redis:
+    image: redis:7-alpine
+    container_name: billix-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - billix-dev-network
+
+networks:
+  billix-dev-network:
+    driver: bridge
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
