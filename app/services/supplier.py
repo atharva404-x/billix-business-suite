@@ -8,12 +8,15 @@ from app.schemas.supplier import SupplierCreate, SupplierUpdate
 from app.repositories.supplier import SupplierRepository
 from app.repositories.business import BusinessMemberRepository
 from app.utils.validation import validate_gstin
+from app.services.audit_log import AuditLogService
+from app.models.audit_log import AuditAction
 
 
 class SupplierService:
     def __init__(self, session: AsyncSession):
         self.supplier_repo = SupplierRepository(session)
         self.member_repo = BusinessMemberRepository(session)
+        self.audit_service = AuditLogService(session)
 
     async def _ensure_business_access(
         self, user_id: uuid.UUID, business_id: uuid.UUID
@@ -45,10 +48,20 @@ class SupplierService:
                     status_code=status.HTTP_409_CONFLICT,
                     detail="Supplier with this GSTIN already exists"
                 )
-        return await self.supplier_repo.create(
+        supplier = await self.supplier_repo.create(
             business_id=business_id, **supplier_data.model_dump(),
             outstanding_balance=0.0
         )
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="Supplier",
+            entity_id=supplier.id,
+            action=AuditAction.CREATE,
+            after_values=supplier_data.model_dump()
+        )
+        return supplier
 
     async def get_supplier(
         self, user_id: uuid.UUID, business_id: uuid.UUID, supplier_id: uuid.UUID, include_inactive: bool = False
@@ -112,12 +125,34 @@ class SupplierService:
                     status_code=status.HTTP_409_CONFLICT,
                     detail="Supplier with this GSTIN already exists"
                 )
-        return await self.supplier_repo.update(
+        updated_supplier = await self.supplier_repo.update(
             supplier, **update_data.model_dump(exclude_unset=True)
         )
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="Supplier",
+            entity_id=supplier_id,
+            action=AuditAction.UPDATE,
+            before_values={"name": supplier.name, "email": supplier.email, "phone": supplier.phone},
+            after_values=update_data.model_dump(exclude_unset=True)
+        )
+        return updated_supplier
 
     async def deactivate_supplier(
         self, user_id: uuid.UUID, business_id: uuid.UUID, supplier_id: uuid.UUID
     ) -> Supplier:
         supplier = await self.get_supplier(user_id, business_id, supplier_id)
-        return await self.supplier_repo.deactivate(supplier)
+        deactivated_supplier = await self.supplier_repo.deactivate(supplier)
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="Supplier",
+            entity_id=supplier_id,
+            action=AuditAction.DELETE,
+            before_values={"name": supplier.name, "is_active": True},
+            after_values={"is_active": False}
+        )
+        return deactivated_supplier

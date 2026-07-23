@@ -893,6 +893,62 @@ See [ROADMAP.md](./ROADMAP.md) for the full milestone roadmap and ticket depende
 
 ---
 
+## Completed Engineering Tickets
+
+-----------------------------------------
+
+Ticket ID:
+AUDIT-001
+
+Title:
+Implement Audit Logging Module
+
+Status:
+Completed
+
+Completion Date:
+2026-07-23
+
+Files Created:
+- app/models/audit_log.py
+- alembic/versions/20260723_add_audit_logs.py
+- app/schemas/audit_log.py
+- app/repositories/audit_log.py
+- app/services/audit_log.py
+- app/api/v1/audit_logs.py
+- tests/unit/test_audit_log.py
+
+Files Modified:
+- app/models/__init__.py
+- app/schemas/__init__.py
+- app/repositories/__init__.py
+- app/services/__init__.py
+- app/api/v1/__init__.py
+- alembic/env.py
+- app/services/business.py
+- app/services/customer.py
+- app/services/supplier.py
+- app/services/product.py
+- app/services/invoice.py
+- app/services/settings.py
+
+Summary:
+Implemented a complete audit logging module to track all CRUD operations on business entities. Created the AuditLog SQLAlchemy model with fields for user_id, business_id, entity_type, entity_id, action, before/after values, IP address, and user agent. Added Alembic migration for the audit_logs table. Implemented Repository, Service, and API layers with filtering capabilities. Integrated audit logging into Business, Customer, Supplier, Product, Invoice, and Settings services to automatically log CREATE, UPDATE, and DELETE actions. Added unit tests for the audit log functionality.
+
+Notes:
+- Audit logs capture before/after values as JSON strings for change tracking
+- IP address and user agent are optional fields for enhanced security tracking
+- Audit logs are scoped by business_id for multi-tenant isolation
+- API endpoints support filtering by entity_type, entity_id, action, user_id, and date range
+- Audit logging is integrated at the service layer to ensure all operations are logged regardless of API entry point
+
+Future Dependencies:
+None
+
+-----------------------------------------
+
+---
+
 ## Known Issues
 
 _None yet._

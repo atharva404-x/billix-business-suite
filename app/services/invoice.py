@@ -29,6 +29,7 @@ class InvoiceService:
         self.member_repo = BusinessMemberRepository(session)
         self.business_repo = BusinessProfileRepository(session)
         self.inventory_service = InventoryService(session)
+        self.audit_service = AuditLogService(session)
         self.session = session
 
     async def _ensure_business_access(
@@ -210,6 +211,15 @@ class InvoiceService:
 
         await self.session.flush()
         await self.session.refresh(invoice, ["items", "payments"])
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="Invoice",
+            entity_id=invoice.id,
+            action=AuditAction.CREATE,
+            after_values={"invoice_number": invoice.invoice_number, "customer_id": str(invoice.customer_id), "grand_total": str(invoice.grand_total)}
+        )
         return invoice
 
     async def get_invoice(
@@ -345,6 +355,17 @@ class InvoiceService:
         await self.session.flush()
         await self.session.refresh(invoice, ["items", "payments"])
 
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="Invoice",
+            entity_id=invoice_id,
+            action=AuditAction.UPDATE,
+            before_values={"invoice_number": invoice.invoice_number, "grand_total": str(invoice.grand_total)},
+            after_values={"invoice_number": invoice.invoice_number, "grand_total": str(invoice.grand_total)}
+        )
+
         return invoice
 
     async def cancel_invoice(
@@ -371,6 +392,17 @@ class InvoiceService:
 
         await self.session.flush()
         await self.session.refresh(invoice, ["items", "payments"])
+
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="Invoice",
+            entity_id=invoice_id,
+            action=AuditAction.DELETE,
+            before_values={"invoice_number": invoice.invoice_number, "status": "ISSUED"},
+            after_values={"invoice_number": invoice.invoice_number, "status": "CANCELLED", "reason": cancel_data.reason}
+        )
 
         return invoice
 
@@ -422,5 +454,13 @@ class InvoiceService:
 
         await self.session.flush()
         await self.session.refresh(payment)
-
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="Payment",
+            entity_id=payment.id,
+            action=AuditAction.CREATE,
+            after_values={"invoice_id": str(payment.invoice_id), "amount": str(payment.amount), "payment_method": payment.payment_method.value}
+        )
         return payment

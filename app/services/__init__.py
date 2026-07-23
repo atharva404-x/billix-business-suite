@@ -9,6 +9,7 @@ from app.services.inventory import InventoryService
 from app.services.invoice import InvoiceService
 from app.services.reports import ReportingService
 from app.services.settings import BusinessSettingsService, BusinessPreferencesService
+from app.services.audit_log import AuditLogService
 
 __all__ = [
     "BusinessProfileService",
@@ -22,5 +23,6 @@ __all__ = [
     "InvoiceService",
     "ReportingService",
     "BusinessSettingsService",
-    "BusinessPreferencesService"
+    "BusinessPreferencesService",
+    "AuditLogService"
 ]

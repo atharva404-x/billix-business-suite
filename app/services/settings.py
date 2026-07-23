@@ -13,12 +13,15 @@ from app.repositories.settings import (
     BusinessPreferencesRepository,
 )
 from app.repositories.business import BusinessMemberRepository
+from app.services.audit_log import AuditLogService
+from app.models.audit_log import AuditAction
 
 
 class BusinessSettingsService:
     def __init__(self, session: AsyncSession):
         self.repo = BusinessSettingsRepository(session)
         self.member_repo = BusinessMemberRepository(session)
+        self.audit_service = AuditLogService(session)
 
     async def _assert_access(self, user_id: uuid.UUID, business_id: uuid.UUID) -> None:
         membership = await self.member_repo.get_by_user_and_business(user_id, business_id)
@@ -44,13 +47,26 @@ class BusinessSettingsService:
         data: BusinessSettingsUpdate,
     ) -> BusinessSettings:
         settings = await self.get_or_create(user_id, business_id)
-        return await self.repo.update(settings, **data.model_dump(exclude_unset=True))
+        before_values = {"company_name": settings.company_name, "gstin": settings.gstin}
+        updated_settings = await self.repo.update(settings, **data.model_dump(exclude_unset=True))
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="BusinessSettings",
+            entity_id=updated_settings.id,
+            action=AuditAction.UPDATE,
+            before_values=before_values,
+            after_values=data.model_dump(exclude_unset=True)
+        )
+        return updated_settings
 
 
 class BusinessPreferencesService:
     def __init__(self, session: AsyncSession):
         self.repo = BusinessPreferencesRepository(session)
         self.member_repo = BusinessMemberRepository(session)
+        self.audit_service = AuditLogService(session)
 
     async def _assert_access(self, user_id: uuid.UUID, business_id: uuid.UUID) -> None:
         membership = await self.member_repo.get_by_user_and_business(user_id, business_id)
@@ -76,4 +92,16 @@ class BusinessPreferencesService:
         data: BusinessPreferencesUpdate,
     ) -> BusinessPreferences:
         prefs = await self.get_or_create(user_id, business_id)
-        return await self.repo.update(prefs, **data.model_dump(exclude_unset=True))
+        before_values = {"decimal_precision": prefs.decimal_precision, "track_inventory": prefs.track_inventory}
+        updated_prefs = await self.repo.update(prefs, **data.model_dump(exclude_unset=True))
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="BusinessPreferences",
+            entity_id=updated_prefs.id,
+            action=AuditAction.UPDATE,
+            before_values=before_values,
+            after_values=data.model_dump(exclude_unset=True)
+        )
+        return updated_prefs

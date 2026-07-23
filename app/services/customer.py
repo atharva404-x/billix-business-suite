@@ -8,12 +8,15 @@ from app.schemas.customer import CustomerCreate, CustomerUpdate
 from app.repositories.customer import CustomerRepository
 from app.repositories.business import BusinessMemberRepository
 from app.utils.validation import validate_gstin
+from app.services.audit_log import AuditLogService
+from app.models.audit_log import AuditAction
 
 
 class CustomerService:
     def __init__(self, session: AsyncSession):
         self.customer_repo = CustomerRepository(session)
         self.member_repo = BusinessMemberRepository(session)
+        self.audit_service = AuditLogService(session)
 
     async def _ensure_business_access(
         self, user_id: uuid.UUID, business_id: uuid.UUID
@@ -45,10 +48,20 @@ class CustomerService:
                     status_code=status.HTTP_409_CONFLICT,
                     detail="Customer with this GSTIN already exists"
                 )
-        return await self.customer_repo.create(
+        customer = await self.customer_repo.create(
             business_id=business_id, **customer_data.model_dump(),
             outstanding_balance=0.0
         )
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="Customer",
+            entity_id=customer.id,
+            action=AuditAction.CREATE,
+            after_values=customer_data.model_dump()
+        )
+        return customer
 
     async def get_customer(
         self, user_id: uuid.UUID, business_id: uuid.UUID, customer_id: uuid.UUID, include_inactive: bool = False
@@ -112,12 +125,34 @@ class CustomerService:
                     status_code=status.HTTP_409_CONFLICT,
                     detail="Customer with this GSTIN already exists"
                 )
-        return await self.customer_repo.update(
+        updated_customer = await self.customer_repo.update(
             customer, **update_data.model_dump(exclude_unset=True)
         )
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="Customer",
+            entity_id=customer_id,
+            action=AuditAction.UPDATE,
+            before_values={"name": customer.name, "email": customer.email, "phone": customer.phone},
+            after_values=update_data.model_dump(exclude_unset=True)
+        )
+        return updated_customer
 
     async def deactivate_customer(
         self, user_id: uuid.UUID, business_id: uuid.UUID, customer_id: uuid.UUID
     ) -> Customer:
         customer = await self.get_customer(user_id, business_id, customer_id)
-        return await self.customer_repo.deactivate(customer)
+        deactivated_customer = await self.customer_repo.deactivate(customer)
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="Customer",
+            entity_id=customer_id,
+            action=AuditAction.DELETE,
+            before_values={"name": customer.name, "is_active": True},
+            after_values={"is_active": False}
+        )
+        return deactivated_customer

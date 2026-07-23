@@ -10,6 +10,8 @@ from app.repositories.business import BusinessMemberRepository
 from app.repositories.category import CategoryRepository
 from app.repositories.unit import UnitRepository
 from app.utils.validation import validate_hsn_sac
+from app.services.audit_log import AuditLogService
+from app.models.audit_log import AuditAction
 
 
 class ProductService:
@@ -18,6 +20,7 @@ class ProductService:
         self.member_repo = BusinessMemberRepository(session)
         self.category_repo = CategoryRepository(session)
         self.unit_repo = UnitRepository(session)
+        self.audit_service = AuditLogService(session)
 
     async def _ensure_business_access(
         self, user_id: uuid.UUID, business_id: uuid.UUID
@@ -74,11 +77,21 @@ class ProductService:
                 )
         # Set current_stock = opening_stock if provided
         current_stock = product_data.opening_stock or 0.0
-        return await self.product_repo.create(
+        product = await self.product_repo.create(
             business_id=business_id,
             **product_data.model_dump(exclude={"opening_stock"}),
             current_stock=current_stock
         )
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="Product",
+            entity_id=product.id,
+            action=AuditAction.CREATE,
+            after_values=product_data.model_dump(exclude={"opening_stock"})
+        )
+        return product
 
     async def get_product(
         self, user_id: uuid.UUID, business_id: uuid.UUID, product_id: uuid.UUID, include_inactive: bool = False
@@ -157,12 +170,34 @@ class ProductService:
                         status_code=status.HTTP_409_CONFLICT,
                         detail="Product with this barcode already exists"
                     )
-        return await self.product_repo.update(
+        updated_product = await self.product_repo.update(
             product, **update_data.model_dump(exclude_unset=True)
         )
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="Product",
+            entity_id=product_id,
+            action=AuditAction.UPDATE,
+            before_values={"name": product.name, "sku": product.sku, "price": product.price},
+            after_values=update_data.model_dump(exclude_unset=True)
+        )
+        return updated_product
 
     async def deactivate_product(
         self, user_id: uuid.UUID, business_id: uuid.UUID, product_id: uuid.UUID
     ) -> Product:
         product = await self.get_product(user_id, business_id, product_id)
-        return await self.product_repo.deactivate(product)
+        deactivated_product = await self.product_repo.deactivate(product)
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="Product",
+            entity_id=product_id,
+            action=AuditAction.DELETE,
+            before_values={"name": product.name, "is_active": True},
+            after_values={"is_active": False}
+        )
+        return deactivated_product
