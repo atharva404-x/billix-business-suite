@@ -54,7 +54,39 @@ Future Dependencies:
 -----------------------------------------
 
 Ticket ID:
+CI-FIX-002
+
+Title:
+Alembic Migration Graph Repair — Merge Three Divergent Heads Into One
+
+Status:
+Completed
+
+Completion Date:
+2026-07-24
+
+Files Created:
+- alembic/versions/20260723_merge_heads.py
+
+Files Modified:
+- docs/CHANGELOG.md
+
+Summary:
+Diagnosed and repaired a multiple-heads failure in the Alembic migration graph. Three migrations (20260723_add_audit_logs, 20260723_add_member_role, 20260723_add_notifications) all declared the same down_revision (20260723_add_business_settings_and_preferences), which created three independent branch heads instead of a single linear chain. GitHub Actions failed with: "Multiple head revisions are present for given argument 'head'". Created a standard Alembic merge migration (20260723_merge_heads.py) whose down_revision is a tuple of all three heads, producing a single definitive head. No migration file was deleted, rewritten, or squashed. All schema changes are preserved.
+
+Notes:
+The merge migration contains no schema changes (upgrade/downgrade are no-ops) — it is a pure merge point as per Alembic best practice.
+
+Future Dependencies:
+None
+
+-----------------------------------------
+
+-----------------------------------------
+
+Ticket ID:
 CI-FIX-001
+
 
 Title:
 GitHub Actions CI Failures — Fix Alembic SQLite MissingGreenlet & Frontend Lockfile Sync
