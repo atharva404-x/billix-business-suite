@@ -20,6 +20,21 @@ jobs:
     name: Backend Tests & Alembic Validation
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: billix_test
+          POSTGRES_USER: billix
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -33,11 +48,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip wheel setuptools
-          pip install -r requirements.txt
+          pip install -r requirements.txt psycopg2-binary
 
-      - name: Validate Alembic migrations integrity (SQLite dry-run)
+      - name: Validate Alembic migrations integrity (PostgreSQL validation)
         env:
-          DATABASE_URL: "sqlite+aiosqlite:///:memory:"
+          DATABASE_URL: "postgresql+asyncpg://billix:password@localhost:5432/billix_test"
           ENV: "testing"
         run: |
           alembic upgrade head
