@@ -6,15 +6,24 @@ import type { ReactNode } from "react";
 export function DataToolbar({
   placeholder = "Search…",
   right,
+  value,
+  onChange,
 }: {
   placeholder?: string;
   right?: ReactNode;
+  value?: string;
+  onChange?: (value: string) => void;
 }) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:justify-between">
       <div className="relative min-w-0 sm:max-w-sm sm:flex-1">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input placeholder={placeholder} className="h-9 pl-9" />
+        <Input
+          placeholder={placeholder}
+          className="h-9 pl-9"
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
+        />
       </div>
       <div className="flex shrink-0 items-center gap-2">
         <Button variant="outline" size="sm" className="gap-1.5">

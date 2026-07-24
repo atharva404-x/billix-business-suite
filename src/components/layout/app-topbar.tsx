@@ -1,11 +1,13 @@
-import { Bell, Search, HelpCircle, Plus, Moon, Sun } from "lucide-react";
+import { Bell, Search, HelpCircle, Plus, Moon, Sun, Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { useUser, useAuth } from "@clerk/clerk-react";
+import { useBusiness } from "@/hooks/use-business";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,11 +20,20 @@ import { Badge } from "@/components/ui/badge";
 
 export function AppTopbar() {
   const [dark, setDark] = useState(false);
+  const { user } = useUser();
+  const { signOut } = useAuth();
+  const { activeBusiness, activeBusinessId, businesses, switchBusiness } = useBusiness();
+
   useEffect(() => {
     const root = document.documentElement;
     if (dark) root.classList.add("dark");
     else root.classList.remove("dark");
   }, [dark]);
+
+  const userInitials =
+    user?.firstName && user?.lastName
+      ? `${user.firstName[0]}${user.lastName[0]}`
+      : user?.primaryEmailAddress?.emailAddress?.slice(0, 2).toUpperCase() || "US";
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur-md md:px-6">
@@ -63,15 +74,18 @@ export function AppTopbar() {
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 rounded-full pl-1 pr-2 py-1 hover:bg-muted">
+            <button className="flex items-center gap-2 rounded-full pl-1 pr-2 py-1 hover:bg-muted outline-none">
               <Avatar className="h-7 w-7">
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                  RS
+                <AvatarImage src={user?.imageUrl} alt={user?.fullName || "User Avatar"} />
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                  {userInitials}
                 </AvatarFallback>
               </Avatar>
               <div className="hidden text-left leading-tight sm:block">
-                <div className="text-xs font-semibold">Rahul Sharma</div>
-                <div className="text-[10px] text-muted-foreground">Sharma Retail</div>
+                <div className="text-xs font-semibold">{user?.fullName || "Rahul Sharma"}</div>
+                <div className="text-[10px] text-muted-foreground truncate max-w-[120px]">
+                  {activeBusiness?.business_name || "No Business"}
+                </div>
               </div>
             </button>
           </DropdownMenuTrigger>
@@ -84,13 +98,30 @@ export function AppTopbar() {
             <DropdownMenuItem asChild>
               <Link to="/settings">Settings</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/business-profiles">Switch Business</Link>
-            </DropdownMenuItem>
+
+            {businesses.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                  Switch Business
+                </DropdownMenuLabel>
+                {businesses.map((b) => (
+                  <DropdownMenuItem
+                    key={b.id}
+                    onClick={() => switchBusiness(b.id)}
+                    className={`flex justify-between items-center text-xs ${
+                      b.id === activeBusinessId ? "font-semibold bg-muted" : ""
+                    }`}
+                  >
+                    <span className="truncate max-w-[160px]">{b.business_name}</span>
+                    {b.id === activeBusinessId && <Check className="h-3.5 w-3.5 text-primary" />}
+                  </DropdownMenuItem>
+                ))}
+              </>
+            )}
+
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link to="/login">Log out</Link>
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => signOut()}>Log out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

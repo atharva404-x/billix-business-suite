@@ -1,4 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useState } from "react";
+import { useSignIn } from "@clerk/clerk-react";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +14,59 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
+  const { isLoaded, signIn, setActive } = useSignIn();
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isLoaded) return;
+    setLoading(true);
+    setError("");
+
+    try {
+      const result = await signIn.create({
+        identifier: email,
+        password,
+      });
+
+      if (result.status === "complete") {
+        await setActive({ session: result.createdSessionId });
+        router.navigate({ to: "/dashboard" });
+      } else {
+        setError("MFA or additional verification required.");
+      }
+    } catch (err: unknown) {
+      const clerkError = err as { errors?: Array<{ message: string }> };
+      setError(
+        clerkError.errors?.[0]?.message || "Failed to sign in. Please check your credentials.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    if (!isLoaded) return;
+    setLoading(true);
+    setError("");
+
+    try {
+      await signIn.authenticateWithRedirect({
+        strategy: "oauth_google",
+        redirectUrl: "/dashboard",
+        redirectUrlComplete: "/dashboard",
+      });
+    } catch (err: unknown) {
+      const clerkError = err as { errors?: Array<{ message: string }> };
+      setError(clerkError.errors?.[0]?.message || "Google Sign-In failed.");
+      setLoading(false);
+    }
+  };
+
   return (
     <AuthLayout
       title="Welcome back"
@@ -25,10 +80,24 @@ function LoginPage() {
         </>
       }
     >
-      <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+      <form className="space-y-4" onSubmit={handleSignIn}>
+        {error && (
+          <div className="rounded-lg bg-destructive/15 p-3 text-xs text-destructive font-medium">
+            {error}
+          </div>
+        )}
         <div className="space-y-2">
-          <Label htmlFor="email">Email or mobile</Label>
-          <Input id="email" type="text" placeholder="you@business.in" autoComplete="email" />
+          <Label htmlFor="email">Email address</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@business.in"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={loading}
+          />
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -45,16 +114,20 @@ function LoginPage() {
             type="password"
             placeholder="••••••••"
             autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            disabled={loading}
           />
         </div>
         <div className="flex items-center gap-2">
-          <Checkbox id="remember" />
+          <Checkbox id="remember" disabled={loading} />
           <Label htmlFor="remember" className="text-sm font-normal text-muted-foreground">
             Keep me signed in for 30 days
           </Label>
         </div>
-        <Button className="w-full" size="lg" asChild>
-          <Link to="/dashboard">Sign in</Link>
+        <Button className="w-full" size="lg" type="submit" disabled={loading}>
+          {loading ? "Signing in..." : "Sign in"}
         </Button>
         <div className="relative py-2">
           <Separator />
@@ -62,7 +135,13 @@ function LoginPage() {
             OR
           </span>
         </div>
-        <Button type="button" variant="outline" className="w-full">
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={handleGoogleSignIn}
+          disabled={loading}
+        >
           Continue with Google
         </Button>
       </form>

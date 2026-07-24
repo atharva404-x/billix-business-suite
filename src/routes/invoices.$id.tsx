@@ -1,181 +1,674 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Printer, Download, Send, Copy } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import React, { useState } from "react";
+import {
+  ArrowLeft,
+  Printer,
+  Download,
+  Send,
+  CreditCard,
+  Ban,
+  CheckCircle2,
+  Calendar,
+  User,
+  Building2,
+  FileText,
+} from "lucide-react";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useBusiness } from "@/hooks/use-business";
+import { useBusinessQuery } from "@/hooks/use-api";
+import { API_ENDPOINTS } from "@/lib/api-endpoints";
+import { invalidateCache } from "@/lib/cache-invalidation";
+import { apiClient } from "@/lib/api-client";
+import { toast } from "sonner";
+
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { StatusBadge } from "@/components/common/status-badge";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ErrorState } from "@/components/shared/api-states";
+
+import type { Invoice } from "./invoices";
+import type { Customer } from "./customers";
+import type { Product } from "./products";
 
 export const Route = createFileRoute("/invoices/$id")({
-  head: () => ({ meta: [{ title: "Invoice — Billix" }] }),
+  head: () => ({ meta: [{ title: "Invoice Details — Billix" }] }),
   component: InvoiceDetails,
 });
 
+interface PaymentRecord {
+  id: string;
+  business_id: string;
+  invoice_id: string;
+  amount: number;
+  payment_method: string;
+  transaction_id?: string | null;
+  notes?: string | null;
+  created_by: string;
+  created_at: string;
+}
+
+interface PaymentListResponse {
+  items: PaymentRecord[];
+  total: number;
+}
+
+interface ProductListResponse {
+  items: Product[];
+  total: number;
+}
+
 function InvoiceDetails() {
   const { id } = Route.useParams();
-  const items = [
-    { name: "Paracetamol 500mg", hsn: "3004", qty: 10, rate: 18, gst: 12 },
-    { name: "Cotton T-Shirt (M)", hsn: "6109", qty: 2, rate: 399, gst: 5 },
-  ];
-  const subtotal = items.reduce((s, i) => s + i.qty * i.rate, 0);
-  const gst = items.reduce((s, i) => s + (i.qty * i.rate * i.gst) / 100, 0);
-  const total = subtotal + gst;
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { activeBusiness } = useBusiness();
+
+  const [paymentOpen, setPaymentOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
+
+  // Form states for Payment Modal
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("CASH");
+  const [transactionId, setTransactionId] = useState("");
+  const [paymentNotes, setPaymentNotes] = useState("");
+
+  // Form state for Cancellation Dialog
+  const [cancelReason, setCancelReason] = useState("");
+
+  // 1. Query Invoice Details
+  const {
+    data: invoice,
+    isLoading,
+    error,
+    refetch,
+  } = useBusinessQuery<Invoice>(["invoices", id], `/api/v1/invoices/${id}`);
+
+  // 2. Query Customer Profile for invoice
+  const { data: customer } = useBusinessQuery<Customer>(
+    ["customers", invoice?.customer_id],
+    `/api/v1/customers/${invoice?.customer_id}`,
+    { enabled: !!invoice?.customer_id },
+  );
+
+  // 3. Query Product catalog to map item product_ids to product names
+  const { data: productsData } = useBusinessQuery<ProductListResponse>(
+    ["products", "dropdown"],
+    "/api/v1/products?limit=100",
+  );
+  const productMap = new Map((productsData?.items || []).map((p) => [p.id, p]));
+
+  // 4. Query Payment Records
+  const { data: paymentsData, refetch: refetchPayments } = useBusinessQuery<PaymentListResponse>(
+    ["payments", id],
+    `/api/v1/invoices/${id}/payments`,
+    { enabled: !!id },
+  );
+
+  // 5. Record Payment Mutation
+  const recordPaymentMutation = useMutation({
+    mutationFn: (payload: Record<string, unknown>) => {
+      return apiClient<PaymentRecord>("/api/v1/invoices/payments", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+    },
+    onSuccess: () => {
+      invalidateCache("invoice:create", queryClient);
+      toast.success("Payment recorded successfully.");
+      setPaymentOpen(false);
+      setPaymentAmount("");
+      setTransactionId("");
+      setPaymentNotes("");
+      refetch();
+      refetchPayments();
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to record payment.");
+    },
+  });
+
+  // 6. Cancel Invoice Mutation
+  const cancelInvoiceMutation = useMutation({
+    mutationFn: (payload: Record<string, unknown>) => {
+      return apiClient<Invoice>(`/api/v1/invoices/${id}/cancel`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+    },
+    onSuccess: () => {
+      invalidateCache("invoice:cancel", queryClient);
+      toast.success("Invoice cancelled & stock returned.");
+      setCancelOpen(false);
+      setCancelReason("");
+      refetch();
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to cancel invoice.");
+    },
+  });
+
+  if (isLoading) {
+    return <InvoiceDetailsSkeleton />;
+  }
+
+  if (error || !invoice) {
+    return (
+      <AppShell>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <ErrorState
+            title="Invoice not found"
+            description={error?.message || "The requested invoice could not be located."}
+            onRetry={refetch}
+          />
+        </div>
+      </AppShell>
+    );
+  }
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleOpenPaymentModal = () => {
+    setPaymentAmount(invoice.outstanding_balance.toString());
+    setPaymentOpen(true);
+  };
+
+  const handleRecordPaymentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const amt = parseFloat(paymentAmount);
+    if (!amt || amt <= 0) {
+      toast.error("Please enter a valid positive payment amount.");
+      return;
+    }
+    if (amt > invoice.outstanding_balance) {
+      toast.error("Payment amount cannot exceed outstanding balance.");
+      return;
+    }
+
+    recordPaymentMutation.mutate({
+      invoice_id: invoice.id,
+      amount: amt,
+      payment_method: paymentMethod,
+      transaction_id: transactionId.trim() || null,
+      notes: paymentNotes.trim() || null,
+    });
+  };
+
+  const handleCancelSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cancelReason.trim()) {
+      toast.error("Please specify a reason for cancellation.");
+      return;
+    }
+
+    cancelInvoiceMutation.mutate({
+      reason: cancelReason.trim(),
+    });
+  };
+
+  const payments = paymentsData?.items || [];
+  const isCancelled = invoice.status === "CANCELLED";
 
   return (
     <AppShell>
-      <PageHeader
-        title={`Invoice ${id}`}
-        description="Tax invoice · Original for Recipient"
-        actions={
-          <>
-            <Button asChild variant="ghost" size="sm" className="gap-1.5">
-              <Link to="/invoices">
-                <ArrowLeft className="h-4 w-4" /> Back
-              </Link>
-            </Button>
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <Copy className="h-4 w-4" /> Duplicate
-            </Button>
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <Printer className="h-4 w-4" /> Print
-            </Button>
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <Download className="h-4 w-4" /> PDF
-            </Button>
-            <Button size="sm" className="gap-1.5">
-              <Send className="h-4 w-4" /> Send
-            </Button>
-          </>
-        }
-      />
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        <Card>
-          <CardContent className="p-8">
+      <div className="print:hidden">
+        <PageHeader
+          title={`Invoice ${invoice.invoice_number}`}
+          description={`Issued on ${new Date(invoice.invoice_date).toLocaleDateString("en-IN")}`}
+          actions={
+            <>
+              <Button asChild variant="ghost" size="sm" className="gap-1.5">
+                <Link to="/invoices">
+                  <ArrowLeft className="h-4 w-4" /> Back
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePrint}
+                className="gap-1.5 shadow-sm"
+              >
+                <Printer className="h-4 w-4" /> Print / PDF
+              </Button>
+              {invoice.outstanding_balance > 0 && !isCancelled && (
+                <Button size="sm" onClick={handleOpenPaymentModal} className="gap-1.5 shadow-sm">
+                  <CreditCard className="h-4 w-4" /> Record Payment
+                </Button>
+              )}
+              {!isCancelled && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setCancelOpen(true)}
+                  className="gap-1.5 shadow-sm"
+                >
+                  <Ban className="h-4 w-4" /> Cancel Invoice
+                </Button>
+              )}
+            </>
+          }
+        />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_320px] print:block print:w-full">
+        {/* Printable Tax Invoice Container */}
+        <Card className="shadow-sm border print:shadow-none print:border-none">
+          <CardContent className="p-6 md:p-8">
             <div className="flex flex-col justify-between gap-6 sm:flex-row">
               <div>
-                <div className="font-display text-2xl font-bold">Sharma Retail Store</div>
-                <div className="mt-1 text-xs text-muted-foreground">GSTIN: 27ABCDE1234F1Z5</div>
-                <div className="text-xs text-muted-foreground">
-                  14 Market Rd, Andheri West, Mumbai 400058
+                <div className="font-display text-2xl font-bold text-foreground">
+                  {activeBusiness?.business_name || "Business Suite"}
+                </div>
+                {activeBusiness?.gstin && (
+                  <div className="mt-1 text-xs font-mono text-muted-foreground">
+                    GSTIN: {activeBusiness.gstin}
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground mt-1 max-w-xs">
+                  {[
+                    activeBusiness?.address,
+                    activeBusiness?.city,
+                    activeBusiness?.state,
+                    activeBusiness?.pincode,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-xs uppercase text-muted-foreground">Tax Invoice</div>
-                <div className="font-display text-xl font-bold">{id}</div>
-                <div className="mt-1 text-xs text-muted-foreground">Date: 12 Jul 2026</div>
-                <div className="mt-2">
-                  <StatusBadge status="Paid" />
+              <div className="text-left sm:text-right">
+                <div className="text-xs uppercase font-bold tracking-wider text-muted-foreground">
+                  Tax Invoice
+                </div>
+                <div className="font-display text-xl font-bold font-mono text-primary">
+                  {invoice.invoice_number}
+                </div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  Date: {new Date(invoice.invoice_date).toLocaleDateString("en-IN")}
+                </div>
+                {invoice.due_date && (
+                  <div className="text-xs text-muted-foreground">
+                    Due Date: {new Date(invoice.due_date).toLocaleDateString("en-IN")}
+                  </div>
+                )}
+                <div className="mt-2 flex gap-2 sm:justify-end">
+                  <StatusBadge
+                    status={
+                      invoice.payment_status === "PAID"
+                        ? "Paid"
+                        : invoice.payment_status === "PARTIALLY_PAID"
+                          ? "Partially Paid"
+                          : "Unpaid"
+                    }
+                  />
+                  {isCancelled && <Badge variant="destructive">Cancelled</Badge>}
                 </div>
               </div>
             </div>
+
             <Separator className="my-6" />
+
             <div className="grid gap-6 sm:grid-cols-2">
               <div>
-                <div className="text-xs uppercase text-muted-foreground">Bill to</div>
-                <div className="mt-1 font-semibold">Sharma Traders</div>
-                <div className="text-xs text-muted-foreground">GSTIN 27ABCDE1234F1Z5</div>
-                <div className="text-xs text-muted-foreground">MG Road, Mumbai 400001</div>
+                <div className="text-xs uppercase font-bold tracking-wider text-muted-foreground">
+                  Bill To
+                </div>
+                <div className="mt-1 font-semibold text-foreground">
+                  {customer?.name || "Valued Customer"}
+                </div>
+                {customer?.gstin && (
+                  <div className="text-xs font-mono text-muted-foreground">
+                    GSTIN: {customer.gstin}
+                  </div>
+                )}
+                <div className="text-xs text-muted-foreground mt-1">
+                  {[customer?.address, customer?.city, customer?.state, customer?.pincode]
+                    .filter(Boolean)
+                    .join(", ") || "Address not provided"}
+                </div>
               </div>
               <div className="sm:text-right">
-                <div className="text-xs uppercase text-muted-foreground">Place of supply</div>
-                <div className="mt-1 font-semibold">Maharashtra (27)</div>
-                <div className="mt-2 text-xs uppercase text-muted-foreground">Due date</div>
-                <div className="font-semibold">28 Jul 2026</div>
+                <div className="text-xs uppercase font-bold tracking-wider text-muted-foreground">
+                  Place of Supply
+                </div>
+                <div className="mt-1 font-semibold text-foreground">
+                  {customer?.state || activeBusiness?.state || "Intra-State"}
+                </div>
               </div>
             </div>
+
             <div className="mt-8 overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="border-b text-left text-xs uppercase text-muted-foreground">
+                <thead className="border-b text-left text-xs uppercase font-semibold text-muted-foreground bg-muted/30">
                   <tr>
-                    <th className="py-2">Item</th>
-                    <th>HSN</th>
-                    <th className="text-right">Qty</th>
-                    <th className="text-right">Rate</th>
-                    <th className="text-right">GST</th>
-                    <th className="text-right">Amount</th>
+                    <th className="py-2.5 px-2">Product Item</th>
+                    <th className="text-right py-2.5 px-2">Qty</th>
+                    <th className="text-right py-2.5 px-2">Rate (₹)</th>
+                    <th className="text-right py-2.5 px-2">GST %</th>
+                    <th className="text-right py-2.5 px-2">Tax (₹)</th>
+                    <th className="text-right py-2.5 px-2">Total (₹)</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {items.map((i) => (
-                    <tr key={i.name} className="border-b last:border-0">
-                      <td className="py-3 font-medium">{i.name}</td>
-                      <td className="text-xs text-muted-foreground">{i.hsn}</td>
-                      <td className="text-right">{i.qty}</td>
-                      <td className="text-right">₹{i.rate}</td>
-                      <td className="text-right">{i.gst}%</td>
-                      <td className="text-right font-semibold">
-                        ₹{(i.qty * i.rate).toLocaleString("en-IN")}
-                      </td>
-                    </tr>
-                  ))}
+                  {invoice.items.map((item) => {
+                    const prod = productMap.get(item.product_id);
+
+                    return (
+                      <tr key={item.id} className="border-b last:border-0 hover:bg-muted/10">
+                        <td className="py-3 px-2 font-medium">
+                          {prod?.name || "Product Record"}
+                          {prod?.sku && (
+                            <span className="ml-2 text-xs font-mono text-muted-foreground">
+                              ({prod.sku})
+                            </span>
+                          )}
+                        </td>
+                        <td className="text-right py-3 px-2">{item.quantity}</td>
+                        <td className="text-right py-3 px-2">₹{item.unit_price.toFixed(2)}</td>
+                        <td className="text-right py-3 px-2">{item.gst_rate || 0}%</td>
+                        <td className="text-right py-3 px-2">
+                          ₹{(item.tax_amount || 0).toFixed(2)}
+                        </td>
+                        <td className="text-right py-3 px-2 font-semibold">
+                          ₹
+                          {item.total.toLocaleString("en-IN", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
+
             <div className="mt-6 flex justify-end">
               <div className="w-full max-w-xs space-y-2 text-sm">
-                <Row l="Subtotal" v={`₹${subtotal.toLocaleString("en-IN")}`} />
-                <Row l="CGST" v={`₹${(gst / 2).toFixed(2)}`} />
-                <Row l="SGST" v={`₹${(gst / 2).toFixed(2)}`} />
+                <DetailRow
+                  label="Subtotal"
+                  value={`₹${invoice.subtotal.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                />
+                {invoice.discount_amount && invoice.discount_amount > 0 && (
+                  <DetailRow label="Discount" value={`-₹${invoice.discount_amount.toFixed(2)}`} />
+                )}
+                <DetailRow
+                  label="Taxable Amount"
+                  value={`₹${invoice.taxable_amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                />
+                {invoice.cgst_amount && invoice.cgst_amount > 0 && (
+                  <DetailRow label="CGST" value={`₹${invoice.cgst_amount.toFixed(2)}`} />
+                )}
+                {invoice.sgst_amount && invoice.sgst_amount > 0 && (
+                  <DetailRow label="SGST" value={`₹${invoice.sgst_amount.toFixed(2)}`} />
+                )}
+                {invoice.igst_amount && invoice.igst_amount > 0 && (
+                  <DetailRow label="IGST" value={`₹${invoice.igst_amount.toFixed(2)}`} />
+                )}
+                {invoice.round_off !== null && invoice.round_off !== undefined && (
+                  <DetailRow label="Round Off" value={`₹${invoice.round_off.toFixed(2)}`} />
+                )}
                 <Separator />
-                <div className="flex items-center justify-between font-display text-lg font-bold">
-                  <span>Total</span>
-                  <span>₹{total.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>
+                <div className="flex items-center justify-between font-display text-lg font-bold text-foreground">
+                  <span>Grand Total</span>
+                  <span>
+                    ₹
+                    {invoice.grand_total.toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm font-semibold text-destructive pt-1">
+                  <span>Balance Outstanding</span>
+                  <span>
+                    ₹
+                    {invoice.outstanding_balance.toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
                 </div>
               </div>
             </div>
+
+            {invoice.notes && (
+              <div className="mt-8 rounded-lg border p-4 bg-muted/20 text-xs">
+                <div className="font-semibold text-muted-foreground mb-1">Notes & Terms:</div>
+                <p className="text-foreground whitespace-pre-wrap">{invoice.notes}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
-        <div className="space-y-6">
-          <Card>
-            <CardContent className="p-5">
-              <div className="text-xs uppercase text-muted-foreground">Payment</div>
-              <div className="mt-2 font-display text-2xl font-bold">₹{total.toFixed(2)}</div>
-              <div className="text-xs text-muted-foreground">Received via UPI · 12 Jul 2026</div>
+
+        {/* Sidebar Payment Info & Audit Logs */}
+        <div className="space-y-6 print:hidden">
+          <Card className="shadow-sm border">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                Payment Breakdown
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <div className="text-xs text-muted-foreground">Grand Total</div>
+                <div className="font-display text-xl font-bold">
+                  ₹
+                  {invoice.grand_total.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </div>
+              </div>
+              <Separator />
+              <div>
+                <div className="text-xs text-muted-foreground">Outstanding Due</div>
+                <div className="font-display text-2xl font-bold text-destructive">
+                  ₹
+                  {invoice.outstanding_balance.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </div>
+              </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="p-5">
-              <div className="text-xs uppercase text-muted-foreground">Timeline</div>
-              <ul className="mt-3 space-y-3 text-sm">
-                <li className="flex gap-3">
-                  <Dot color="bg-success" />
-                  <div>
-                    <div className="font-medium">Payment received</div>
-                    <div className="text-xs text-muted-foreground">12 Jul, 4:12 PM</div>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <Dot color="bg-primary" />
-                  <div>
-                    <div className="font-medium">Invoice sent</div>
-                    <div className="text-xs text-muted-foreground">12 Jul, 11:03 AM</div>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <Dot color="bg-muted-foreground" />
-                  <div>
-                    <div className="font-medium">Invoice created</div>
-                    <div className="text-xs text-muted-foreground">12 Jul, 10:58 AM</div>
-                  </div>
-                </li>
-              </ul>
+
+          <Card className="shadow-sm border">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                Payment History
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {payments.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  No payments recorded for this invoice yet.
+                </p>
+              ) : (
+                <ul className="space-y-3 text-xs">
+                  {payments.map((p) => (
+                    <li key={p.id} className="p-2.5 rounded border bg-muted/20 space-y-1">
+                      <div className="flex justify-between font-semibold">
+                        <span>₹{p.amount.toFixed(2)}</span>
+                        <Badge variant="outline" className="text-[10px]">
+                          {p.payment_method}
+                        </Badge>
+                      </div>
+                      <div className="text-muted-foreground text-[11px]">
+                        Recorded on {new Date(p.created_at).toLocaleString("en-IN")}
+                      </div>
+                      {p.transaction_id && (
+                        <div className="font-mono text-[10px] text-muted-foreground">
+                          Txn #: {p.transaction_id}
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* Record Payment Dialog */}
+      <Dialog open={paymentOpen} onOpenChange={setPaymentOpen}>
+        <DialogContent className="sm:max-w-md">
+          <form onSubmit={handleRecordPaymentSubmit}>
+            <DialogHeader>
+              <DialogTitle>Record Payment</DialogTitle>
+              <DialogDescription>
+                Record customer payment against Invoice {invoice.invoice_number}.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div className="space-y-1">
+                <Label htmlFor="payment_amount">Payment Amount (₹) *</Label>
+                <Input
+                  id="payment_amount"
+                  type="number"
+                  step="any"
+                  max={invoice.outstanding_balance}
+                  value={paymentAmount}
+                  onChange={(e) => setPaymentAmount(e.target.value)}
+                  placeholder="Enter amount"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Max balance: ₹{invoice.outstanding_balance.toFixed(2)}
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="payment_method">Payment Mode</Label>
+                <select
+                  id="payment_method"
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                >
+                  <option value="CASH">Cash</option>
+                  <option value="UPI">UPI</option>
+                  <option value="BANK_TRANSFER">Bank Transfer</option>
+                  <option value="CHEQUE">Cheque</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="transaction_id">Transaction ID / Reference Number</Label>
+                <Input
+                  id="transaction_id"
+                  value={transactionId}
+                  onChange={(e) => setTransactionId(e.target.value)}
+                  placeholder="UTR / Cheque No."
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="payment_notes">Notes</Label>
+                <Textarea
+                  id="payment_notes"
+                  rows={2}
+                  value={paymentNotes}
+                  onChange={(e) => setPaymentNotes(e.target.value)}
+                  placeholder="Optional payment notes"
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setPaymentOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={recordPaymentMutation.isPending}>
+                Save Payment
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancel Invoice Dialog */}
+      <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
+        <DialogContent className="sm:max-w-md">
+          <form onSubmit={handleCancelSubmit}>
+            <DialogHeader>
+              <DialogTitle className="text-destructive">Cancel Invoice</DialogTitle>
+              <DialogDescription>
+                Cancelling Invoice {invoice.invoice_number} will automatically reverse stock back
+                into inventory.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="py-4 space-y-2">
+              <Label htmlFor="cancel_reason">Cancellation Reason *</Label>
+              <Textarea
+                id="cancel_reason"
+                rows={3}
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                placeholder="Specify reason for cancelling this invoice..."
+              />
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setCancelOpen(false)}>
+                Go Back
+              </Button>
+              <Button
+                type="submit"
+                variant="destructive"
+                disabled={cancelInvoiceMutation.isPending}
+              >
+                Confirm Cancellation
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }
 
-function Row({ l, v }: { l: string; v: string }) {
+function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-muted-foreground">{l}</span>
-      <span className="font-medium">{v}</span>
+    <div className="flex items-center justify-between text-xs">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-semibold text-foreground">{value}</span>
     </div>
   );
 }
-function Dot({ color }: { color: string }) {
-  return <span className={`mt-1.5 inline-block h-2 w-2 shrink-0 rounded-full ${color}`} />;
+
+function InvoiceDetailsSkeleton() {
+  return (
+    <AppShell>
+      <div className="space-y-6">
+        <div className="h-8 w-64 animate-pulse rounded bg-muted/60" />
+        <div className="rounded-xl border bg-card p-8 shadow-sm space-y-6">
+          <div className="flex justify-between">
+            <div className="h-12 w-48 animate-pulse rounded bg-muted/60" />
+            <div className="h-12 w-32 animate-pulse rounded bg-muted/60" />
+          </div>
+          <div className="h-40 w-full animate-pulse rounded bg-muted/30" />
+        </div>
+      </div>
+    </AppShell>
+  );
 }

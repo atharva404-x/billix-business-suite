@@ -1,4 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useState } from "react";
+import { useSignUp } from "@clerk/clerk-react";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 
 export const Route = createFileRoute("/register")({
   head: () => ({ meta: [{ title: "Create account — Billix" }] }),
@@ -17,6 +20,125 @@ export const Route = createFileRoute("/register")({
 });
 
 function RegisterPage() {
+  const { isLoaded, signUp, setActive } = useSignUp();
+  const router = useRouter();
+
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [businessType, setBusinessType] = useState("");
+  const [stateCode, setStateCode] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [pendingVerification, setPendingVerification] = useState(false);
+  const [code, setCode] = useState("");
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isLoaded) return;
+    setLoading(true);
+    setError("");
+
+    const nameParts = fullName.trim().split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
+
+    try {
+      await signUp.create({
+        emailAddress: email,
+        password,
+        firstName,
+        lastName,
+      });
+
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      setPendingVerification(true);
+    } catch (err: unknown) {
+      const clerkError = err as { errors?: Array<{ message: string }> };
+      setError(clerkError.errors?.[0]?.message || "Failed to create account.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isLoaded) return;
+    setLoading(true);
+    setError("");
+
+    try {
+      const completeSignUp = await signUp.attemptEmailAddressVerification({
+        code,
+      });
+
+      if (completeSignUp.status === "complete") {
+        await setActive({ session: completeSignUp.createdSessionId });
+        router.navigate({ to: "/dashboard" });
+      } else {
+        setError("Verification failed or incomplete.");
+      }
+    } catch (err: unknown) {
+      const clerkError = err as { errors?: Array<{ message: string }> };
+      setError(clerkError.errors?.[0]?.message || "Failed to verify email code.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    if (!isLoaded) return;
+    setLoading(true);
+    setError("");
+
+    try {
+      await signUp.authenticateWithRedirect({
+        strategy: "oauth_google",
+        redirectUrl: "/dashboard",
+        redirectUrlComplete: "/dashboard",
+      });
+    } catch (err: unknown) {
+      const clerkError = err as { errors?: Array<{ message: string }> };
+      setError(clerkError.errors?.[0]?.message || "Google Sign-Up failed.");
+      setLoading(false);
+    }
+  };
+
+  if (pendingVerification) {
+    return (
+      <AuthLayout
+        title="Verify your email"
+        subtitle={`We've sent a 6-digit verification code to ${email}.`}
+      >
+        <form className="space-y-4" onSubmit={handleVerify}>
+          {error && (
+            <div className="rounded-lg bg-destructive/15 p-3 text-xs text-destructive font-medium">
+              {error}
+            </div>
+          )}
+          <div className="space-y-2">
+            <Label htmlFor="code">Verification Code</Label>
+            <Input
+              id="code"
+              type="text"
+              placeholder="123456"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              required
+              disabled={loading}
+            />
+          </div>
+          <Button className="w-full" size="lg" type="submit" disabled={loading}>
+            {loading ? "Verifying..." : "Verify & Continue"}
+          </Button>
+        </form>
+      </AuthLayout>
+    );
+  }
+
   return (
     <AuthLayout
       title="Create your account"
@@ -30,25 +152,49 @@ function RegisterPage() {
         </>
       }
     >
-      <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+      <form className="space-y-4" onSubmit={handleSignUp}>
+        {error && (
+          <div className="rounded-lg bg-destructive/15 p-3 text-xs text-destructive font-medium">
+            {error}
+          </div>
+        )}
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="fname">Full name</Label>
-            <Input id="fname" placeholder="Rahul Sharma" />
+            <Input
+              id="fname"
+              placeholder="Rahul Sharma"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+              disabled={loading}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">Mobile</Label>
-            <Input id="phone" placeholder="+91 98xxx xxxxx" />
+            <Input
+              id="phone"
+              placeholder="+91 98xxx xxxxx"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              disabled={loading}
+            />
           </div>
         </div>
         <div className="space-y-2">
           <Label htmlFor="business">Business name</Label>
-          <Input id="business" placeholder="Sharma Retail Store" />
+          <Input
+            id="business"
+            placeholder="Sharma Retail Store"
+            value={businessName}
+            onChange={(e) => setBusinessName(e.target.value)}
+            disabled={loading}
+          />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="type">Business type</Label>
-            <Select>
+            <Select onValueChange={setBusinessType} disabled={loading}>
               <SelectTrigger>
                 <SelectValue placeholder="Select" />
               </SelectTrigger>
@@ -65,7 +211,7 @@ function RegisterPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="state">State</Label>
-            <Select>
+            <Select onValueChange={setStateCode} disabled={loading}>
               <SelectTrigger>
                 <SelectValue placeholder="Select" />
               </SelectTrigger>
@@ -81,14 +227,45 @@ function RegisterPage() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">Work email</Label>
-          <Input id="email" type="email" placeholder="you@business.in" />
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@business.in"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={loading}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" placeholder="Minimum 8 characters" />
+          <Input
+            id="password"
+            type="password"
+            placeholder="Minimum 8 characters"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            disabled={loading}
+          />
         </div>
-        <Button className="w-full" size="lg" asChild>
-          <Link to="/dashboard">Create account</Link>
+        <Button className="w-full" size="lg" type="submit" disabled={loading}>
+          {loading ? "Creating account..." : "Create account"}
+        </Button>
+        <div className="relative py-2">
+          <Separator />
+          <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-xs text-muted-foreground">
+            OR
+          </span>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={handleGoogleSignUp}
+          disabled={loading}
+        >
+          Continue with Google
         </Button>
         <p className="text-center text-xs text-muted-foreground">
           By continuing, you agree to Billix's Terms & Privacy Policy.
