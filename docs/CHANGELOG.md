@@ -54,6 +54,36 @@ Future Dependencies:
 ---
 
 Ticket ID:
+CI-FIX-004
+
+Title:
+Frontend Docker Build & Runtime Fix — Switch Nginx to Node.js for TanStack Start SSR
+
+Status:
+Completed
+
+Completion Date:
+2026-07-24
+
+Files Created:
+None
+
+Files Modified:
+- Dockerfile.frontend
+- docs/CHANGELOG.md
+
+Summary:
+Resolved the Docker build failure in `Dockerfile.frontend` by aligning it with the requirements of the **TanStack Start (SSR)** framework. Set `NITRO_PRESET=node-server` at build time so the Nitro engine compiles a Node.js-compatible production server bundle. Changed the runtime base image from `nginx:alpine` to `node:22-alpine` and updated the `COPY` instruction to grab the compiled `.output` directory instead of the non-existent static `dist` folder.
+
+Notes:
+The frontend container now runs a native Node.js web server listening on port 80. The change is fully compatible with GitHub Actions and docker-compose configurations.
+
+Future Dependencies:
+None
+
+---
+
+Ticket ID:
 CI-FIX-003
 
 Title:
