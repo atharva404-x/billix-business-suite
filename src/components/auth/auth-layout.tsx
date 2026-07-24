@@ -28,17 +28,20 @@ export function AuthLayout({
             Run your entire business, from one calm dashboard.
           </h2>
           <p className="mt-4 text-primary-foreground/80">
-            GST-ready invoicing, live inventory and clear reports — built for Indian retail, wholesale and SMEs.
+            GST-ready invoicing, live inventory and clear reports — built for Indian retail,
+            wholesale and SMEs.
           </p>
           <div className="mt-8 grid gap-3 text-sm">
             <div className="flex items-center gap-3 rounded-xl bg-white/10 p-3 backdrop-blur">
-              <BadgeIndianRupee className="h-4 w-4 shrink-0" /> GST invoices, e-way bills & HSN in one click
+              <BadgeIndianRupee className="h-4 w-4 shrink-0" /> GST invoices, e-way bills & HSN in
+              one click
             </div>
             <div className="flex items-center gap-3 rounded-xl bg-white/10 p-3 backdrop-blur">
               <Zap className="h-4 w-4 shrink-0" /> Fast billing on desktop, tablet and mobile
             </div>
             <div className="flex items-center gap-3 rounded-xl bg-white/10 p-3 backdrop-blur">
-              <ShieldCheck className="h-4 w-4 shrink-0" /> Bank-grade security, daily encrypted backups
+              <ShieldCheck className="h-4 w-4 shrink-0" /> Bank-grade security, daily encrypted
+              backups
             </div>
           </div>
         </div>

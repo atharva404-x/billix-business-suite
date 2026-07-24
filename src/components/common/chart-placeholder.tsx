@@ -1,4 +1,10 @@
-export function ChartPlaceholder({ height = 260, label = "Revenue trend" }: { height?: number; label?: string }) {
+export function ChartPlaceholder({
+  height = 260,
+  label = "Revenue trend",
+}: {
+  height?: number;
+  label?: string;
+}) {
   const bars = [40, 65, 52, 78, 60, 90, 72, 84, 96, 70, 88, 100];
   return (
     <div className="w-full">

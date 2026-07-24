@@ -29,11 +29,23 @@ function InvoiceDetails() {
         description="Tax invoice · Original for Recipient"
         actions={
           <>
-            <Button asChild variant="ghost" size="sm" className="gap-1.5"><Link to="/invoices"><ArrowLeft className="h-4 w-4" /> Back</Link></Button>
-            <Button variant="outline" size="sm" className="gap-1.5"><Copy className="h-4 w-4" /> Duplicate</Button>
-            <Button variant="outline" size="sm" className="gap-1.5"><Printer className="h-4 w-4" /> Print</Button>
-            <Button variant="outline" size="sm" className="gap-1.5"><Download className="h-4 w-4" /> PDF</Button>
-            <Button size="sm" className="gap-1.5"><Send className="h-4 w-4" /> Send</Button>
+            <Button asChild variant="ghost" size="sm" className="gap-1.5">
+              <Link to="/invoices">
+                <ArrowLeft className="h-4 w-4" /> Back
+              </Link>
+            </Button>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <Copy className="h-4 w-4" /> Duplicate
+            </Button>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <Printer className="h-4 w-4" /> Print
+            </Button>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <Download className="h-4 w-4" /> PDF
+            </Button>
+            <Button size="sm" className="gap-1.5">
+              <Send className="h-4 w-4" /> Send
+            </Button>
           </>
         }
       />
@@ -44,13 +56,17 @@ function InvoiceDetails() {
               <div>
                 <div className="font-display text-2xl font-bold">Sharma Retail Store</div>
                 <div className="mt-1 text-xs text-muted-foreground">GSTIN: 27ABCDE1234F1Z5</div>
-                <div className="text-xs text-muted-foreground">14 Market Rd, Andheri West, Mumbai 400058</div>
+                <div className="text-xs text-muted-foreground">
+                  14 Market Rd, Andheri West, Mumbai 400058
+                </div>
               </div>
               <div className="text-right">
                 <div className="text-xs uppercase text-muted-foreground">Tax Invoice</div>
                 <div className="font-display text-xl font-bold">{id}</div>
                 <div className="mt-1 text-xs text-muted-foreground">Date: 12 Jul 2026</div>
-                <div className="mt-2"><StatusBadge status="Paid" /></div>
+                <div className="mt-2">
+                  <StatusBadge status="Paid" />
+                </div>
               </div>
             </div>
             <Separator className="my-6" />
@@ -88,7 +104,9 @@ function InvoiceDetails() {
                       <td className="text-right">{i.qty}</td>
                       <td className="text-right">₹{i.rate}</td>
                       <td className="text-right">{i.gst}%</td>
-                      <td className="text-right font-semibold">₹{(i.qty * i.rate).toLocaleString("en-IN")}</td>
+                      <td className="text-right font-semibold">
+                        ₹{(i.qty * i.rate).toLocaleString("en-IN")}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -101,7 +119,8 @@ function InvoiceDetails() {
                 <Row l="SGST" v={`₹${(gst / 2).toFixed(2)}`} />
                 <Separator />
                 <div className="flex items-center justify-between font-display text-lg font-bold">
-                  <span>Total</span><span>₹{total.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>
+                  <span>Total</span>
+                  <span>₹{total.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>
                 </div>
               </div>
             </div>
@@ -119,9 +138,27 @@ function InvoiceDetails() {
             <CardContent className="p-5">
               <div className="text-xs uppercase text-muted-foreground">Timeline</div>
               <ul className="mt-3 space-y-3 text-sm">
-                <li className="flex gap-3"><Dot color="bg-success" /><div><div className="font-medium">Payment received</div><div className="text-xs text-muted-foreground">12 Jul, 4:12 PM</div></div></li>
-                <li className="flex gap-3"><Dot color="bg-primary" /><div><div className="font-medium">Invoice sent</div><div className="text-xs text-muted-foreground">12 Jul, 11:03 AM</div></div></li>
-                <li className="flex gap-3"><Dot color="bg-muted-foreground" /><div><div className="font-medium">Invoice created</div><div className="text-xs text-muted-foreground">12 Jul, 10:58 AM</div></div></li>
+                <li className="flex gap-3">
+                  <Dot color="bg-success" />
+                  <div>
+                    <div className="font-medium">Payment received</div>
+                    <div className="text-xs text-muted-foreground">12 Jul, 4:12 PM</div>
+                  </div>
+                </li>
+                <li className="flex gap-3">
+                  <Dot color="bg-primary" />
+                  <div>
+                    <div className="font-medium">Invoice sent</div>
+                    <div className="text-xs text-muted-foreground">12 Jul, 11:03 AM</div>
+                  </div>
+                </li>
+                <li className="flex gap-3">
+                  <Dot color="bg-muted-foreground" />
+                  <div>
+                    <div className="font-medium">Invoice created</div>
+                    <div className="text-xs text-muted-foreground">12 Jul, 10:58 AM</div>
+                  </div>
+                </li>
               </ul>
             </CardContent>
           </Card>
@@ -132,7 +169,12 @@ function InvoiceDetails() {
 }
 
 function Row({ l, v }: { l: string; v: string }) {
-  return <div className="flex items-center justify-between"><span className="text-muted-foreground">{l}</span><span className="font-medium">{v}</span></div>;
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-muted-foreground">{l}</span>
+      <span className="font-medium">{v}</span>
+    </div>
+  );
 }
 function Dot({ color }: { color: string }) {
   return <span className={`mt-1.5 inline-block h-2 w-2 shrink-0 rounded-full ${color}`} />;

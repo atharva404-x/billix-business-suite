@@ -18,7 +18,11 @@ function BusinessProfilesPage() {
       <PageHeader
         title="Business Profiles"
         description="Manage multiple GSTINs, branches and outlets from one login."
-        actions={<Button className="gap-1.5"><Plus className="h-4 w-4" /> Add Business</Button>}
+        actions={
+          <Button className="gap-1.5">
+            <Plus className="h-4 w-4" /> Add Business
+          </Button>
+        }
       />
       <div className="grid gap-4 md:grid-cols-2">
         {businessProfiles.map((b) => (
@@ -31,24 +35,32 @@ function BusinessProfilesPage() {
                   </div>
                   <div className="min-w-0">
                     <div className="font-display text-lg font-semibold">{b.name}</div>
-                    <div className="text-xs text-muted-foreground">GSTIN {b.gstin} · {b.city}</div>
+                    <div className="text-xs text-muted-foreground">
+                      GSTIN {b.gstin} · {b.city}
+                    </div>
                   </div>
                 </div>
                 <StatusBadge status={b.active ? "Active" : "Inactive"} />
               </div>
               <div className="mt-6 flex items-center gap-2">
                 {b.active ? (
-                  <Button size="sm" variant="secondary" className="gap-1.5" disabled><Check className="h-4 w-4" /> Current</Button>
+                  <Button size="sm" variant="secondary" className="gap-1.5" disabled>
+                    <Check className="h-4 w-4" /> Current
+                  </Button>
                 ) : (
                   <Button size="sm">Switch to this</Button>
                 )}
-                <Button size="sm" variant="outline">Edit</Button>
+                <Button size="sm" variant="outline">
+                  Edit
+                </Button>
               </div>
             </CardContent>
           </Card>
         ))}
         <button className="flex min-h-[168px] items-center justify-center rounded-xl border border-dashed bg-card text-sm text-muted-foreground hover:border-primary hover:text-primary">
-          <span className="flex items-center gap-2"><Plus className="h-4 w-4" /> Add another business</span>
+          <span className="flex items-center gap-2">
+            <Plus className="h-4 w-4" /> Add another business
+          </span>
         </button>
       </div>
     </AppShell>

@@ -55,7 +55,7 @@ You are building production software, not a demo. No throwaway code.
 13. **Use production-ready coding practices.** Validation at boundaries, typed inputs/outputs, error states surfaced to the user.
 14. **No dead code.** Delete what you replace — no `_old` files, no commented-out blocks.
 15. **No premature abstraction.** Introduce a shared helper only with ≥2 concrete call sites and a clear shared shape.
-16. **Comments:** default to none. Add a comment only when the *why* is non-obvious.
+16. **Comments:** default to none. Add a comment only when the _why_ is non-obvious.
 17. **Never leave `console.log`, `print`, or debug statements in committed code.**
 
 ## 3. Data & Security

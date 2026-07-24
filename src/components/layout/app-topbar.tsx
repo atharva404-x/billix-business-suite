@@ -44,7 +44,12 @@ export function AppTopbar() {
             <Plus className="h-4 w-4" /> New Invoice
           </Link>
         </Button>
-        <Button variant="ghost" size="icon" onClick={() => setDark((v) => !v)} aria-label="Toggle theme">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setDark((v) => !v)}
+          aria-label="Toggle theme"
+        >
           {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </Button>
         <Button variant="ghost" size="icon" aria-label="Help">
@@ -52,13 +57,17 @@ export function AppTopbar() {
         </Button>
         <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
           <Bell className="h-4 w-4" />
-          <Badge className="absolute -right-0.5 -top-0.5 h-4 min-w-4 rounded-full p-0 px-1 text-[10px]">3</Badge>
+          <Badge className="absolute -right-0.5 -top-0.5 h-4 min-w-4 rounded-full p-0 px-1 text-[10px]">
+            3
+          </Badge>
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 rounded-full pl-1 pr-2 py-1 hover:bg-muted">
               <Avatar className="h-7 w-7">
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs">RS</AvatarFallback>
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                  RS
+                </AvatarFallback>
               </Avatar>
               <div className="hidden text-left leading-tight sm:block">
                 <div className="text-xs font-semibold">Rahul Sharma</div>
@@ -69,11 +78,19 @@ export function AppTopbar() {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild><Link to="/profile">Profile</Link></DropdownMenuItem>
-            <DropdownMenuItem asChild><Link to="/settings">Settings</Link></DropdownMenuItem>
-            <DropdownMenuItem asChild><Link to="/business-profiles">Switch Business</Link></DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/profile">Profile</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/settings">Settings</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/business-profiles">Switch Business</Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild><Link to="/login">Log out</Link></DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/login">Log out</Link>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

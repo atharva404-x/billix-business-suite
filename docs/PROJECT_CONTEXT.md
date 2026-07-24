@@ -10,6 +10,7 @@
 **Billix** is a production-ready, cloud-based **GST Billing, Inventory & Business Management SaaS** built for Indian retail, wholesale, medical, hardware and SME businesses.
 
 Billix allows a business owner to:
+
 - Raise GST-compliant tax invoices (HSN, e-invoice, e-way bill ready).
 - Manage live inventory across branches (batch, expiry, low-stock alerts).
 - Track customers, suppliers, payables and receivables.
@@ -28,24 +29,25 @@ Provide Indian businesses with a calm, modern, reliable workspace that replaces 
 
 ## 3. Core Features (Target State)
 
-| Domain | Capability |
-| --- | --- |
-| Auth | Clerk-based identity, role-based access, multi-user teams |
-| Multi-tenant | Multiple business profiles (GSTINs / branches) per account |
-| Customers | B2B/B2C, GSTIN, credit limits, outstanding balances |
-| Suppliers | Vendors, purchase orders, payables |
-| Products | SKU catalogue, HSN, GST rate, units, categories |
-| Inventory | Live stock, batch/expiry, low-stock alerts, stock transfers |
-| Invoices | GST tax invoices, e-invoice (IRN), e-way bill, thermal print |
-| Payments | UPI / cash / card / bank / credit tracking |
-| Reports | GSTR-1, GSTR-3B, GSTR-2B, HSN summary, P&L, sales vs purchase |
-| Settings | Business, invoice, tax, team, notifications, plan & billing |
+| Domain       | Capability                                                    |
+| ------------ | ------------------------------------------------------------- |
+| Auth         | Clerk-based identity, role-based access, multi-user teams     |
+| Multi-tenant | Multiple business profiles (GSTINs / branches) per account    |
+| Customers    | B2B/B2C, GSTIN, credit limits, outstanding balances           |
+| Suppliers    | Vendors, purchase orders, payables                            |
+| Products     | SKU catalogue, HSN, GST rate, units, categories               |
+| Inventory    | Live stock, batch/expiry, low-stock alerts, stock transfers   |
+| Invoices     | GST tax invoices, e-invoice (IRN), e-way bill, thermal print  |
+| Payments     | UPI / cash / card / bank / credit tracking                    |
+| Reports      | GSTR-1, GSTR-3B, GSTR-2B, HSN summary, P&L, sales vs purchase |
+| Settings     | Business, invoice, tax, team, notifications, plan & billing   |
 
 ---
 
 ## 4. Tech Stack
 
 ### Frontend
+
 - React 19
 - TypeScript
 - Vite
@@ -59,6 +61,7 @@ Provide Indian businesses with a calm, modern, reliable workspace that replaces 
 - react-hook-form + zod
 
 ### Backend
+
 - FastAPI
 - Python 3.13+
 - SQLAlchemy 2.0
@@ -66,15 +69,19 @@ Provide Indian businesses with a calm, modern, reliable workspace that replaces 
 - PostgreSQL (Neon)
 
 ### Authentication
+
 - Clerk
 
 ### Storage
+
 - Appwrite
 
 ### Monitoring
+
 - Sentry
 
 ### Deployment
+
 - Frontend → Vercel
 - Backend → DigitalOcean
 
@@ -114,24 +121,27 @@ Sentry observes FE + BE for error tracking.
 ## 6. Current Project Status
 
 ### Completed
+
 - **Milestone 1 — Backend Foundation**
 - **Milestone 2 — Database Infrastructure**
 - **Milestone 3 (partial) — Identity & Authentication Foundation**
   - `AUTH-001` Clerk Configuration — Completed
 
 ### Current Milestone
+
 - **Milestone 3 — Identity & Authentication Foundation**
 
 ### Upcoming Engineering Tickets
-| Ticket | Title |
-| --- | --- |
+
+| Ticket   | Title                     |
+| -------- | ------------------------- |
 | AUTH-002 | Backend Clerk Integration |
-| AUTH-003 | User Model |
+| AUTH-003 | User Model                |
 | AUTH-004 | Authentication Middleware |
-| AUTH-005 | Current User Dependency |
-| AUTH-006 | Role Foundation |
-| AUTH-007 | Protected Routes |
-| AUTH-008 | Authentication Testing |
+| AUTH-005 | Current User Dependency   |
+| AUTH-006 | Role Foundation           |
+| AUTH-007 | Protected Routes          |
+| AUTH-008 | Authentication Testing    |
 
 ---
 
@@ -139,20 +149,20 @@ Sentry observes FE + BE for error tracking.
 
 See [ROADMAP.md](./ROADMAP.md) for the full milestone breakdown, engineering tickets, dependencies, and completion criteria.
 
-| Milestone | Theme |
-| --- | --- |
-| 1 | Backend Foundation |
-| 2 | Database Infrastructure |
-| 3 | Identity & Authentication |
-| 4 | Multi-Tenant Business Foundation |
-| 5 | Customer Module |
-| 6 | Supplier Module |
-| 7 | Product Module |
-| 8 | Inventory Module |
-| 9 | Invoice Module |
-| 10 | Payments |
-| 11 | Reports & Analytics |
-| 12 | Deployment |
+| Milestone | Theme                            |
+| --------- | -------------------------------- |
+| 1         | Backend Foundation               |
+| 2         | Database Infrastructure          |
+| 3         | Identity & Authentication        |
+| 4         | Multi-Tenant Business Foundation |
+| 5         | Customer Module                  |
+| 6         | Supplier Module                  |
+| 7         | Product Module                   |
+| 8         | Inventory Module                 |
+| 9         | Invoice Module                   |
+| 10        | Payments                         |
+| 11        | Reports & Analytics              |
+| 12        | Deployment                       |
 
 ---
 
@@ -168,6 +178,7 @@ This project is operated by AI assistants across multiple tools (Bolt AI, Cursor
 - **Never redesign** the architecture or move files between modules without approval.
 
 ### Companion Documents
+
 - [ARCHITECTURE.md](./ARCHITECTURE.md) — structure, patterns, conventions
 - [ROADMAP.md](./ROADMAP.md) — milestones and tickets
 - [AI_RULES.md](./AI_RULES.md) — mandatory rules for every AI session

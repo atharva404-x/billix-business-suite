@@ -6,8 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 
@@ -32,21 +45,31 @@ function NewInvoicePage() {
         description="Raise a GST-compliant tax invoice in seconds."
         actions={
           <>
-            <Button asChild variant="ghost" size="sm"><Link to="/invoices">Cancel</Link></Button>
-            <Button variant="outline" size="sm" className="gap-1.5"><Save className="h-4 w-4" /> Save draft</Button>
-            <Button size="sm" className="gap-1.5"><Send className="h-4 w-4" /> Save & Send</Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/invoices">Cancel</Link>
+            </Button>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <Save className="h-4 w-4" /> Save draft
+            </Button>
+            <Button size="sm" className="gap-1.5">
+              <Send className="h-4 w-4" /> Save & Send
+            </Button>
           </>
         }
       />
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="space-y-6">
           <Card>
-            <CardHeader><CardTitle>Bill to</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Bill to</CardTitle>
+            </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2 sm:col-span-2">
                 <Label>Customer</Label>
                 <Select>
-                  <SelectTrigger><SelectValue placeholder="Search or add customer" /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Search or add customer" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="1">Sharma Traders</SelectItem>
                     <SelectItem value="2">Raj Medical Store</SelectItem>
@@ -54,17 +77,31 @@ function NewInvoicePage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2"><Label>Invoice #</Label><Input defaultValue="INV-2042" /></div>
-              <div className="space-y-2"><Label>Date</Label><Input type="date" defaultValue="2026-07-14" /></div>
-              <div className="space-y-2"><Label>Place of supply</Label><Input defaultValue="Maharashtra (27)" /></div>
-              <div className="space-y-2"><Label>Due date</Label><Input type="date" defaultValue="2026-07-28" /></div>
+              <div className="space-y-2">
+                <Label>Invoice #</Label>
+                <Input defaultValue="INV-2042" />
+              </div>
+              <div className="space-y-2">
+                <Label>Date</Label>
+                <Input type="date" defaultValue="2026-07-14" />
+              </div>
+              <div className="space-y-2">
+                <Label>Place of supply</Label>
+                <Input defaultValue="Maharashtra (27)" />
+              </div>
+              <div className="space-y-2">
+                <Label>Due date</Label>
+                <Input type="date" defaultValue="2026-07-28" />
+              </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Items</CardTitle>
-              <Button size="sm" variant="outline" className="gap-1.5"><Plus className="h-4 w-4" /> Add Item</Button>
+              <Button size="sm" variant="outline" className="gap-1.5">
+                <Plus className="h-4 w-4" /> Add Item
+              </Button>
             </CardHeader>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
@@ -82,12 +119,25 @@ function NewInvoicePage() {
                   <TableBody>
                     {rows.map((r) => (
                       <TableRow key={r.name}>
-                        <TableCell><div className="font-medium">{r.name}</div><div className="text-xs text-muted-foreground">HSN 3004 · Strip</div></TableCell>
-                        <TableCell className="text-right"><Input defaultValue={r.qty} className="ml-auto h-8 w-16 text-right" /></TableCell>
-                        <TableCell className="text-right"><Input defaultValue={r.price} className="ml-auto h-8 w-20 text-right" /></TableCell>
+                        <TableCell>
+                          <div className="font-medium">{r.name}</div>
+                          <div className="text-xs text-muted-foreground">HSN 3004 · Strip</div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Input defaultValue={r.qty} className="ml-auto h-8 w-16 text-right" />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Input defaultValue={r.price} className="ml-auto h-8 w-20 text-right" />
+                        </TableCell>
                         <TableCell className="text-right">{r.gst}%</TableCell>
-                        <TableCell className="text-right font-semibold">₹{(r.qty * r.price).toLocaleString("en-IN")}</TableCell>
-                        <TableCell><Button variant="ghost" size="icon" className="h-8 w-8 text-destructive"><Trash2 className="h-4 w-4" /></Button></TableCell>
+                        <TableCell className="text-right font-semibold">
+                          ₹{(r.qty * r.price).toLocaleString("en-IN")}
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -97,17 +147,27 @@ function NewInvoicePage() {
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Notes & Terms</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Notes & Terms</CardTitle>
+            </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2"><Label>Notes to customer</Label><Textarea placeholder="Thank you for your business!" /></div>
-              <div className="space-y-2"><Label>Terms & conditions</Label><Textarea placeholder="Payment due within 14 days." /></div>
+              <div className="space-y-2">
+                <Label>Notes to customer</Label>
+                <Textarea placeholder="Thank you for your business!" />
+              </div>
+              <div className="space-y-2">
+                <Label>Terms & conditions</Label>
+                <Textarea placeholder="Payment due within 14 days." />
+              </div>
             </CardContent>
           </Card>
         </div>
 
         <div className="space-y-6">
           <Card>
-            <CardHeader><CardTitle>Summary</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Summary</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <Row label="Subtotal" value={`₹${subtotal.toLocaleString("en-IN")}`} />
               <Row label="CGST" value={`₹${(gst / 2).toFixed(2)}`} />
@@ -115,7 +175,8 @@ function NewInvoicePage() {
               <Row label="Round off" value="₹0.00" />
               <Separator />
               <div className="flex items-center justify-between font-display text-lg font-bold">
-                <span>Total</span><span>₹{total.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>
+                <span>Total</span>
+                <span>₹{total.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>
               </div>
               <div className="rounded-lg bg-muted/60 p-3 text-xs text-muted-foreground">
                 Amount in words: Rupees {Math.round(total)} only
@@ -123,12 +184,16 @@ function NewInvoicePage() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle>Payment</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Payment</CardTitle>
+            </CardHeader>
             <CardContent className="space-y-3">
               <div className="space-y-2">
                 <Label>Mode</Label>
                 <Select>
-                  <SelectTrigger><SelectValue placeholder="Select mode" /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select mode" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="cash">Cash</SelectItem>
                     <SelectItem value="upi">UPI</SelectItem>
@@ -138,7 +203,10 @@ function NewInvoicePage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2"><Label>Reference</Label><Input placeholder="UTR / txn id" /></div>
+              <div className="space-y-2">
+                <Label>Reference</Label>
+                <Input placeholder="UTR / txn id" />
+              </div>
             </CardContent>
           </Card>
         </div>

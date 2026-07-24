@@ -3,7 +3,13 @@ import { AuthLayout } from "@/components/auth/auth-layout";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Route = createFileRoute("/register")({
   head: () => ({ meta: [{ title: "Create account — Billix" }] }),
@@ -15,7 +21,14 @@ function RegisterPage() {
     <AuthLayout
       title="Create your account"
       subtitle="Start your 14-day free trial. No card required."
-      footer={<>Already using Billix? <Link to="/login" className="font-semibold text-primary hover:underline">Sign in</Link></>}
+      footer={
+        <>
+          Already using Billix?{" "}
+          <Link to="/login" className="font-semibold text-primary hover:underline">
+            Sign in
+          </Link>
+        </>
+      }
     >
       <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -36,7 +49,9 @@ function RegisterPage() {
           <div className="space-y-2">
             <Label htmlFor="type">Business type</Label>
             <Select>
-              <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="retail">Retail Shop</SelectItem>
                 <SelectItem value="medical">Medical Store</SelectItem>
@@ -51,7 +66,9 @@ function RegisterPage() {
           <div className="space-y-2">
             <Label htmlFor="state">State</Label>
             <Select>
-              <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="mh">Maharashtra</SelectItem>
                 <SelectItem value="ka">Karnataka</SelectItem>
@@ -70,7 +87,9 @@ function RegisterPage() {
           <Label htmlFor="password">Password</Label>
           <Input id="password" type="password" placeholder="Minimum 8 characters" />
         </div>
-        <Button className="w-full" size="lg" asChild><Link to="/dashboard">Create account</Link></Button>
+        <Button className="w-full" size="lg" asChild>
+          <Link to="/dashboard">Create account</Link>
+        </Button>
         <p className="text-center text-xs text-muted-foreground">
           By continuing, you agree to Billix's Terms & Privacy Policy.
         </p>

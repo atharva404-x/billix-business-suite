@@ -4,7 +4,14 @@ import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { DataToolbar } from "@/components/common/data-toolbar";
 import { SimplePagination } from "@/components/common/simple-pagination";
@@ -29,7 +36,11 @@ function ProductsPage() {
       <PageHeader
         title="Products"
         description="Your item catalogue with pricing, GST and stock."
-        actions={<Button className="gap-1.5"><Plus className="h-4 w-4" /> Add Product</Button>}
+        actions={
+          <Button className="gap-1.5">
+            <Plus className="h-4 w-4" /> Add Product
+          </Button>
+        }
       />
       <div className="mb-6 grid gap-4 sm:grid-cols-4">
         <KpiCard label="Total SKUs" value="1,206" icon={Package} />
@@ -57,14 +68,27 @@ function ProductsPage() {
               <TableBody>
                 {products.map((p) => (
                   <TableRow key={p.id}>
-                    <TableCell><div className="font-medium">{p.name}</div><div className="text-xs text-muted-foreground">{p.id} · {p.unit}</div></TableCell>
+                    <TableCell>
+                      <div className="font-medium">{p.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {p.id} · {p.unit}
+                      </div>
+                    </TableCell>
                     <TableCell className="font-mono text-xs">{p.sku}</TableCell>
-                    <TableCell><Badge variant="secondary">{p.category}</Badge></TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{p.category}</Badge>
+                    </TableCell>
                     <TableCell className="text-right font-semibold">{p.price}</TableCell>
                     <TableCell>{p.gst}</TableCell>
                     <TableCell className="text-right">{p.stock}</TableCell>
-                    <TableCell><StatusBadge status={stockStatus(p.stock)} /></TableCell>
-                    <TableCell><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></TableCell>
+                    <TableCell>
+                      <StatusBadge status={stockStatus(p.stock)} />
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

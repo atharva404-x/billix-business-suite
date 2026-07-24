@@ -78,10 +78,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Billix — GST Billing, Inventory & Business Management for India" },
-      { name: "description", content: "Billix is a modern cloud billing, GST invoicing, inventory and reports platform built for Indian retail, wholesale and SME businesses." },
+      {
+        name: "description",
+        content:
+          "Billix is a modern cloud billing, GST invoicing, inventory and reports platform built for Indian retail, wholesale and SME businesses.",
+      },
       { name: "author", content: "Billix" },
       { property: "og:title", content: "Billix — Modern GST Billing & Inventory" },
-      { property: "og:description", content: "All-in-one billing, GST invoicing and inventory suite for Indian businesses." },
+      {
+        property: "og:description",
+        content: "All-in-one billing, GST invoicing and inventory suite for Indian businesses.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Billix" },
@@ -94,7 +101,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,

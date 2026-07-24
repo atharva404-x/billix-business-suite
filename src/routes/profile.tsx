@@ -20,30 +20,60 @@ function ProfilePage() {
         <Card>
           <CardContent className="flex flex-col items-center p-6 text-center">
             <Avatar className="h-24 w-24">
-              <AvatarFallback className="bg-primary text-2xl text-primary-foreground">RS</AvatarFallback>
+              <AvatarFallback className="bg-primary text-2xl text-primary-foreground">
+                RS
+              </AvatarFallback>
             </Avatar>
             <div className="mt-4 font-display text-lg font-semibold">Rahul Sharma</div>
             <div className="text-xs text-muted-foreground">Owner · Sharma Retail Store</div>
-            <Button variant="outline" size="sm" className="mt-4">Change photo</Button>
+            <Button variant="outline" size="sm" className="mt-4">
+              Change photo
+            </Button>
           </CardContent>
         </Card>
         <div className="space-y-6">
           <Card>
-            <CardHeader><CardTitle>Personal information</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Personal information</CardTitle>
+            </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2"><Label>First name</Label><Input defaultValue="Rahul" /></div>
-              <div className="space-y-2"><Label>Last name</Label><Input defaultValue="Sharma" /></div>
-              <div className="space-y-2"><Label>Email</Label><Input defaultValue="rahul@sharmaretail.in" /></div>
-              <div className="space-y-2"><Label>Mobile</Label><Input defaultValue="+91 98765 43210" /></div>
-              <div className="space-y-2 sm:col-span-2"><Button>Save changes</Button></div>
+              <div className="space-y-2">
+                <Label>First name</Label>
+                <Input defaultValue="Rahul" />
+              </div>
+              <div className="space-y-2">
+                <Label>Last name</Label>
+                <Input defaultValue="Sharma" />
+              </div>
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <Input defaultValue="rahul@sharmaretail.in" />
+              </div>
+              <div className="space-y-2">
+                <Label>Mobile</Label>
+                <Input defaultValue="+91 98765 43210" />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Button>Save changes</Button>
+              </div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle>Security</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle>Security</CardTitle>
+            </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2"><Label>Current password</Label><Input type="password" /></div>
-              <div className="space-y-2"><Label>New password</Label><Input type="password" /></div>
-              <div className="space-y-2 sm:col-span-2"><Button variant="outline">Update password</Button></div>
+              <div className="space-y-2">
+                <Label>Current password</Label>
+                <Input type="password" />
+              </div>
+              <div className="space-y-2">
+                <Label>New password</Label>
+                <Input type="password" />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Button variant="outline">Update password</Button>
+              </div>
             </CardContent>
           </Card>
         </div>

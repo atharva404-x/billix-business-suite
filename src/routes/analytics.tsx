@@ -17,7 +17,14 @@ function AnalyticsPage() {
       <PageHeader
         title="Analytics"
         description="Deep insight into revenue, customers and product performance."
-        actions={<><Button size="sm" variant="outline">Last 30 days</Button><Button size="sm">Compare</Button></>}
+        actions={
+          <>
+            <Button size="sm" variant="outline">
+              Last 30 days
+            </Button>
+            <Button size="sm">Compare</Button>
+          </>
+        }
       />
       <div className="mb-6 grid gap-4 sm:grid-cols-4">
         <KpiCard label="Avg. Order Value" value="₹1,842" trend="up" change="+4.2%" />
@@ -27,15 +34,25 @@ function AnalyticsPage() {
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle>Revenue trend</CardTitle></CardHeader>
-          <CardContent><ChartPlaceholder /></CardContent>
+          <CardHeader>
+            <CardTitle>Revenue trend</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartPlaceholder />
+          </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle>Category mix</CardTitle></CardHeader>
-          <CardContent><ChartPlaceholder label="Share by category" /></CardContent>
+          <CardHeader>
+            <CardTitle>Category mix</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ChartPlaceholder label="Share by category" />
+          </CardContent>
         </Card>
         <Card className="lg:col-span-2">
-          <CardHeader><CardTitle>Top customers</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Top customers</CardTitle>
+          </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {[
@@ -45,8 +62,13 @@ function AnalyticsPage() {
                 { n: "Raj Medical Store", v: "₹98,120", p: 32 },
               ].map((c) => (
                 <div key={c.n}>
-                  <div className="flex items-center justify-between text-sm"><span className="font-medium">{c.n}</span><span className="text-muted-foreground">{c.v}</span></div>
-                  <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${c.p}%` }} /></div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">{c.n}</span>
+                    <span className="text-muted-foreground">{c.v}</span>
+                  </div>
+                  <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted">
+                    <div className="h-full rounded-full bg-primary" style={{ width: `${c.p}%` }} />
+                  </div>
                 </div>
               ))}
             </div>

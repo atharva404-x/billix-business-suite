@@ -4,7 +4,14 @@ import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { DataToolbar } from "@/components/common/data-toolbar";
 import { SimplePagination } from "@/components/common/simple-pagination";
@@ -22,11 +29,21 @@ function CustomersPage() {
       <PageHeader
         title="Customers"
         description="Manage buyers, GSTINs, credit limits and outstanding balances."
-        actions={<Button className="gap-1.5"><Plus className="h-4 w-4" /> Add Customer</Button>}
+        actions={
+          <Button className="gap-1.5">
+            <Plus className="h-4 w-4" /> Add Customer
+          </Button>
+        }
       />
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
         <KpiCard label="Total Customers" value="482" hint="all businesses" icon={Users} />
-        <KpiCard label="Outstanding" value="₹1,42,800" trend="down" change="-4.2%" hint="receivables" />
+        <KpiCard
+          label="Outstanding"
+          value="₹1,42,800"
+          trend="down"
+          change="-4.2%"
+          hint="receivables"
+        />
         <KpiCard label="New this month" value="26" trend="up" change="+18%" />
       </div>
       <Card>
@@ -55,9 +72,15 @@ function CustomersPage() {
                     <TableCell className="font-mono text-xs">{c.gstin}</TableCell>
                     <TableCell>{c.phone}</TableCell>
                     <TableCell>{c.city}</TableCell>
-                    <TableCell><Badge variant="secondary">{c.type}</Badge></TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{c.type}</Badge>
+                    </TableCell>
                     <TableCell className="text-right font-semibold">{c.balance}</TableCell>
-                    <TableCell><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

@@ -3,7 +3,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { ReactNode } from "react";
 
-export function DataToolbar({ placeholder = "Search…", right }: { placeholder?: string; right?: ReactNode }) {
+export function DataToolbar({
+  placeholder = "Search…",
+  right,
+}: {
+  placeholder?: string;
+  right?: ReactNode;
+}) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:justify-between">
       <div className="relative min-w-0 sm:max-w-sm sm:flex-1">

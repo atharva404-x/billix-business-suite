@@ -4,7 +4,14 @@ import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataToolbar } from "@/components/common/data-toolbar";
 import { SimplePagination } from "@/components/common/simple-pagination";
@@ -23,7 +30,13 @@ function InvoicesPage() {
       <PageHeader
         title="Invoices"
         description="All sales invoices, credit notes and drafts."
-        actions={<Button asChild className="gap-1.5"><Link to="/invoices/new"><Plus className="h-4 w-4" /> New Invoice</Link></Button>}
+        actions={
+          <Button asChild className="gap-1.5">
+            <Link to="/invoices/new">
+              <Plus className="h-4 w-4" /> New Invoice
+            </Link>
+          </Button>
+        }
       />
       <div className="mb-6 grid gap-4 sm:grid-cols-4">
         <KpiCard label="Total Sales" value="₹12,84,500" trend="up" change="+12.4%" />
@@ -44,7 +57,9 @@ function InvoicesPage() {
               </TabsList>
             </Tabs>
           </div>
-          <div className="mt-4"><DataToolbar placeholder="Search by invoice #, customer…" /></div>
+          <div className="mt-4">
+            <DataToolbar placeholder="Search by invoice #, customer…" />
+          </div>
           <div className="mt-4 overflow-x-auto">
             <Table>
               <TableHeader>
@@ -64,10 +79,18 @@ function InvoicesPage() {
                     <TableCell>{r.customer}</TableCell>
                     <TableCell className="text-muted-foreground">{r.date}</TableCell>
                     <TableCell className="text-right font-semibold">{r.amount}</TableCell>
-                    <TableCell><StatusBadge status={r.status} /></TableCell>
+                    <TableCell>
+                      <StatusBadge status={r.status} />
+                    </TableCell>
                     <TableCell className="text-right">
-                      <Button asChild variant="ghost" size="icon" className="h-8 w-8"><Link to="/invoices/$id" params={{ id: r.id }}><Eye className="h-4 w-4" /></Link></Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
+                      <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                        <Link to="/invoices/$id" params={{ id: r.id }}>
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

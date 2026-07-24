@@ -51,10 +51,52 @@ Future Dependencies:
 
 ## Completed Engineering Tickets
 
------------------------------------------
+---
+
+Ticket ID:
+CI-FIX-003
+
+Title:
+Complete GitHub Actions CI Pipeline Fix — pytest asyncio mode, Prettier formatting, .gitattributes
+
+Status:
+Completed
+
+Completion Date:
+2026-07-24
+
+Files Created:
+- pytest.ini
+- .gitattributes
+
+Files Modified:
+- .prettierrc
+- docs/CHANGELOG.md
+- All source TS/TSX files (auto-formatted by Prettier)
+
+Summary:
+Resolved all remaining GitHub Actions CI pipeline failures across all three jobs.
+
+1. Backend — pytest asyncio_mode missing:
+   Created pytest.ini with asyncio_mode = auto. Without this, pytest-asyncio >= 0.21 emits deprecation warnings or fails to correctly handle async test functions. The test suite contains 40+ async test functions decorated with @pytest.mark.asyncio and fixtures using @pytest_asyncio.fixture; without the global asyncio_mode config, these fail silently or raise PytestUnraisableExceptionWarning.
+
+2. Frontend — Prettier CRLF/formatting errors (6739 lint errors):
+   Added endOfLine: "auto" to .prettierrc so Prettier does not enforce a specific line ending. Then ran npm run format (prettier --write) to auto-format all source files that violated the existing prettier rules (long lines, single-line destructuring). After formatting, lint produces 0 errors.
+
+3. Line ending normalization — .gitattributes:
+   Added .gitattributes declaring eol=lf for all text files. This ensures consistent LF line endings in the repository regardless of whether contributors develop on Windows or Linux, preventing future CRLF-related lint failures.
+
+Notes:
+No application logic, APIs, database models, or migration files were modified.
+
+Future Dependencies:
+None
+
+---
 
 Ticket ID:
 CI-FIX-002
+
 
 Title:
 Alembic Migration Graph Repair — Merge Three Divergent Heads Into One
@@ -66,9 +108,11 @@ Completion Date:
 2026-07-24
 
 Files Created:
+
 - alembic/versions/20260723_merge_heads.py
 
 Files Modified:
+
 - docs/CHANGELOG.md
 
 Summary:
@@ -80,13 +124,12 @@ The merge migration contains no schema changes (upgrade/downgrade are no-ops) �
 Future Dependencies:
 None
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 CI-FIX-001
-
 
 Title:
 GitHub Actions CI Failures — Fix Alembic SQLite MissingGreenlet & Frontend Lockfile Sync
@@ -101,6 +144,7 @@ Files Created:
 None
 
 Files Modified:
+
 - alembic/env.py
 - package-lock.json
 
@@ -113,13 +157,12 @@ No application code, business logic, API, or database models were modified.
 Future Dependencies:
 None
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 REVIEW-MF-001
-
 
 Title:
 Production Readiness Review — Critical: Fix Missing AuditLogService Imports in InvoiceService
@@ -134,6 +177,7 @@ Files Created:
 None
 
 Files Modified:
+
 - app/services/invoice.py
 - docs/CHANGELOG.md
 
@@ -146,13 +190,12 @@ Review also identified 6 improvement suggestions (non-blocking): lock ALLOWED_HO
 Future Dependencies:
 None
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 DEPLOY-PROD-PREP-001
-
 
 Title:
 Production Deployment Preparation & Cloud Infrastructure Specifications
@@ -164,12 +207,14 @@ Completion Date:
 2026-07-23
 
 Files Created:
+
 - vercel.json
 - render.yaml
 - digitalocean.yaml
 - scripts/start-production.sh
 
 Files Modified:
+
 - app/main.py
 - app/core/database.py
 - docs/DEPLOYMENT.md
@@ -184,7 +229,7 @@ None
 Future Dependencies:
 None
 
------------------------------------------
+---
 
 Ticket ID:
 SECURITY-PERF-001
@@ -199,11 +244,13 @@ Completion Date:
 2026-07-23
 
 Files Created:
+
 - app/middleware/security.py
 - app/middleware/rate_limit.py
 - tests/unit/test_security_performance.py
 
 Files Modified:
+
 - app/core/config.py
 - app/core/database.py
 - app/main.py
@@ -219,7 +266,7 @@ None
 Future Dependencies:
 None
 
------------------------------------------
+---
 
 Ticket ID:
 RELIABILITY-001
@@ -234,6 +281,7 @@ Completion Date:
 2026-07-23
 
 Files Created:
+
 - app/core/logging.py
 - app/core/sentry.py
 - app/core/metrics.py
@@ -242,6 +290,7 @@ Files Created:
 - tests/unit/test_reliability.py
 
 Files Modified:
+
 - app/core/config.py
 - app/middleware/auth.py
 - app/main.py
@@ -258,7 +307,7 @@ None
 Future Dependencies:
 None
 
------------------------------------------
+---
 
 Ticket ID:
 DEPLOY-CONTAINER-001
@@ -273,6 +322,7 @@ Completion Date:
 2026-07-23
 
 Files Created:
+
 - requirements.txt
 - Dockerfile
 - Dockerfile.frontend
@@ -283,6 +333,7 @@ Files Created:
 - docs/DEPLOYMENT.md
 
 Files Modified:
+
 - .gitignore
 - docs/CHANGELOG.md
 
@@ -295,7 +346,7 @@ None
 Future Dependencies:
 None
 
------------------------------------------
+---
 
 Ticket ID:
 POLISH-NOTIFICATION-001
@@ -313,6 +364,7 @@ Files Created:
 None
 
 Files Modified:
+
 - app/repositories/notification.py
 - app/api/v1/notifications.py
 
@@ -325,7 +377,7 @@ None
 Future Dependencies:
 None
 
------------------------------------------
+---
 
 Ticket ID:
 ALIGN-NOTIFICATION-BACKUP-001
@@ -340,10 +392,12 @@ Completion Date:
 2026-07-23
 
 Files Created:
+
 - tests/unit/test_backup.py
 - tests/conftest.py
 
 Files Modified:
+
 - app/models/user.py
 - app/models/customer.py
 - app/models/supplier.py
@@ -368,7 +422,7 @@ None
 Future Dependencies:
 None
 
------------------------------------------
+---
 
 Ticket ID:
 CORE-HARDEN-001
@@ -383,9 +437,11 @@ Completion Date:
 2026-07-22
 
 Files Created:
+
 - alembic/versions/20260722_harden_core_integrity.py
 
 Files Modified:
+
 - app/core/database.py
 - app/repositories/base.py
 - app/services/inventory.py
@@ -399,14 +455,15 @@ Summary:
 Made request transactions the unit of work, removed repository commits, fixed the router database dependency compatibility issue, hardened core tenant/invoice constraints, retained Decimal invoice calculations, repaired inventory stock lookup, and added safe Clerk first-login provisioning.
 
 Notes:
+
 - Configure CLERK_JWT_AUDIENCE in production to enforce audience validation.
 
 Future Dependencies:
 None
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 AUTH-001
@@ -421,10 +478,12 @@ Completion Date:
 2026-07-18
 
 Files Created:
+
 - app/auth/
-- app/auth/__init__.py
+- app/auth/**init**.py
 
 Files Modified:
+
 - app/core/config.py
 - .env.example
 
@@ -432,6 +491,7 @@ Summary:
 Configured Clerk environment variables (publishable key, secret key, JWKS endpoint) and initialized the authentication package on the backend. Established the `app/auth/` module that subsequent Clerk integration tickets will build on.
 
 Notes:
+
 - Backend repository assumed separate from this frontend repo.
 - Frontend Clerk SDK wiring will be handled in AUTH-002.
 - No runtime behavior changes yet — only configuration scaffolding.
@@ -441,9 +501,9 @@ AUTH-002
 AUTH-004
 AUTH-005
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 AUTH-002
@@ -458,17 +518,19 @@ Completion Date:
 2026-07-18
 
 Files Created:
+
 - app/auth/clerk_client.py
 - app/auth/exceptions.py
 - app/auth/helpers.py
 - app/auth/jwt_utils.py
-- app/core/__init__.py
+- app/core/**init**.py
 - app/core/config.py
-- tests/__init__.py
-- tests/unit/__init__.py
+- tests/**init**.py
+- tests/unit/**init**.py
 - tests/unit/test_auth.py
 
 Files Modified:
+
 - .gitignore
 - docs/CHANGELOG.md
 
@@ -476,6 +538,7 @@ Summary:
 Implemented the backend integration layer for Clerk. Created settings configurations, custom authentication exceptions, a thread-safe and expiration-aware cached JWKS manager, an async Clerk Backend API client, and reusable token-extraction helper functions. Additionally, added a comprehensive 15-test suite for complete backend authentication coverage.
 
 Notes:
+
 - Uses `base64.urlsafe_b64decode` to properly parse URL-safe base64 payloads from Clerk's publishable keys.
 - Completely mocked out network calls during testing using custom Async Mock clients, preventing any external dependencies on test runs.
 - Adheres to async-first conventions for FastAPI, utilizing httpx.AsyncClient and asyncio.Lock.
@@ -485,9 +548,9 @@ AUTH-003
 AUTH-004
 AUTH-005
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 AUTH-004
@@ -502,17 +565,20 @@ Completion Date:
 2026-07-18
 
 Files Created:
-- app/middleware/__init__.py
+
+- app/middleware/**init**.py
 - app/middleware/auth.py
 - tests/unit/test_middleware.py
 
 Files Modified:
+
 - docs/CHANGELOG.md
 
 Summary:
 Implemented the FastAPI authentication middleware layer (`AuthMiddleware`). It intercepts incoming requests, enforces Clerk JWT verification on all non-public routes, handles public routes pass-through, and attaches authenticated user identity to the request state (`request.state.user` and `request.state.user_id`). Included a comprehensive unit test suite with 6 passing tests using FastAPI's TestClient.
 
 Notes:
+
 - Inherits from Starlette's `BaseHTTPMiddleware` to process incoming requests and outgoing responses asynchronously.
 - Core public paths such as `/`, `/docs`, `/openapi.json`, `/health`, and `/ready` are bypassed by default.
 - Returns explicit JSONResponse with 401 Unauthorized on invalid/missing/expired tokens.
@@ -520,9 +586,9 @@ Notes:
 Future Dependencies:
 AUTH-005
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 AUTH-005
@@ -537,14 +603,16 @@ Completion Date:
 2026-07-18
 
 Files Created:
+
 - app/core/database.py
-- app/models/__init__.py
+- app/models/**init**.py
 - app/models/base.py
 - app/models/user.py
 - app/auth/dependencies.py
 - tests/unit/test_dependencies.py
 
 Files Modified:
+
 - app/core/config.py
 - docs/CHANGELOG.md
 
@@ -552,6 +620,7 @@ Summary:
 Set up core database connections, baseline declarative schemas, and BaseModelMixin, then created the get_current_user() FastAPI dependency. It reads the authenticated clerk user id from the request state, checks the user profile in the database, and injects the User object.
 
 Notes:
+
 - Async execution is handled natively using SQLAlchemy 2.0.
 - Standardizes in-memory SQLite (aiosqlite) as a fast, zero-config local testing and development database.
 
@@ -559,9 +628,9 @@ Future Dependencies:
 AUTH-006
 AUTH-007
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 AUTH-006
@@ -576,10 +645,12 @@ Completion Date:
 2026-07-18
 
 Files Created:
+
 - app/models/roles.py
 - app/auth/role_helpers.py
 
 Files Modified:
+
 - app/models/user.py
 - docs/CHANGELOG.md
 
@@ -587,15 +658,16 @@ Summary:
 Created the backend role foundation with OWNER, ADMIN, MANAGER, STAFF, and VIEWER roles using an Enum in `app/models/roles.py`. Implemented comparison hierarchy utilities and a reusable FastAPI dependency class `RoleChecker` in `app/auth/role_helpers.py`.
 
 Notes:
+
 - The role hierarchy indexes OWNER as the most privileged and VIEWER as the least privileged.
 - Enforces role checks in endpoints asynchronously with complete exception handling (returning 403 Forbidden).
 
 Future Dependencies:
 AUTH-007
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 AUTH-007
@@ -610,24 +682,27 @@ Completion Date:
 2026-07-18
 
 Files Created:
+
 - app/main.py
 - tests/unit/test_roles.py
 
 Files Modified:
+
 - docs/CHANGELOG.md
 
 Summary:
 Configured and registered AuthMiddleware globals and created public health and readiness check routes alongside authenticated and role-restricted API endpoints. Fully protected routes using get_current_user and RoleChecker dependencies.
 
 Notes:
+
 - Wrote integration tests covering public endpoints, unauthenticated rejections, and correct role permissions/denials via FastAPI's TestClient.
 
 Future Dependencies:
 AUTH-008
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 AUTH-008
@@ -642,26 +717,29 @@ Completion Date:
 2026-07-18
 
 Files Created:
+
 - tests/unit/test_auth.py
 - tests/unit/test_dependencies.py
 - tests/unit/test_middleware.py
 - tests/unit/test_roles.py
 
 Files Modified:
+
 - docs/CHANGELOG.md
 
 Summary:
 Wrote and compiled a comprehensive 34-test suite validating end-to-end backend authentication security and reliability. The tests cover JWT signature validation, thread-safe public key caching with double-checked lock, middleware extraction, route exceptions, DB lookups, role validation logic, and role protection on routing endpoints.
 
 Notes:
+
 - Replaced custom test runner loops in dependencies test with native async generators via pytest_asyncio.fixture to allow perfect async execution.
 
 Future Dependencies:
 None
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 TENANT-01, TENANT-02, CUST-01, CUST-02, CUST-03, CUST-04
@@ -676,31 +754,34 @@ Completion Date:
 2026-07-21
 
 Files Created:
+
 - app/models/business.py
 - app/models/customer.py
-- app/schemas/__init__.py
+- app/schemas/**init**.py
 - app/schemas/business.py
 - app/schemas/customer.py
-- app/repositories/__init__.py
+- app/repositories/**init**.py
 - app/repositories/base.py
 - app/repositories/business.py
 - app/repositories/customer.py
-- app/services/__init__.py
+- app/services/**init**.py
 - app/services/business.py
 - app/services/customer.py
-- app/api/__init__.py
-- app/api/v1/__init__.py
+- app/api/**init**.py
+- app/api/v1/**init**.py
 - app/api/v1/business.py
 - app/api/v1/customers.py
 - alembic/versions/20260720_add_business_and_customers.py
 
 Files Modified:
-- app/models/__init__.py
+
+- app/models/**init**.py
 - alembic/env.py
 - app/main.py
 
 Summary:
 Implemented the complete multi-tenant foundation with business profiles and customer management module including:
+
 - BusinessProfile and BusinessMember models and migrations
 - Customer model and migrations
 - Pydantic schemas for business profiles and customers
@@ -709,6 +790,7 @@ Implemented the complete multi-tenant foundation with business profiles and cust
 - Business isolation, authentication, GST validation, and duplicate customer checks
 
 Notes:
+
 - Uses BaseModelMixin with soft deletes and timestamps
 - Uses SQLAlchemy async ORM and Alembic migrations
 - Business access is checked via BusinessMemberRepository
@@ -718,9 +800,9 @@ Notes:
 Future Dependencies:
 None
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 CUS-003
@@ -735,9 +817,11 @@ Completion Date:
 2026-07-21
 
 Files Created:
+
 - alembic/versions/20260721_add_customer_code_and_indexes.py
 
 Files Modified:
+
 - app/models/customer.py
 - app/schemas/customer.py
 - app/repositories/customer.py
@@ -746,6 +830,7 @@ Files Modified:
 
 Summary:
 Implemented Customer Intelligence features:
+
 - Added customer_code field to Customer model
 - Added search by name, gstin, phone, customer_code
 - Added filtering by active/inactive, customer type, city, state
@@ -755,6 +840,7 @@ Implemented Customer Intelligence features:
 - Improved count query with SQLAlchemy func.count()
 
 Notes:
+
 - All queries are strictly business-scoped
 - Soft delete is already handled by BaseModelMixin
 - Default sort is name ascending
@@ -763,9 +849,9 @@ Notes:
 Future Dependencies:
 None
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 SUP-001
@@ -780,7 +866,8 @@ Completion Date:
 2026-07-21
 
 Files Created:
-- app/utils/__init__.py
+
+- app/utils/**init**.py
 - app/utils/validation.py
 - app/models/supplier.py
 - app/schemas/supplier.py
@@ -790,15 +877,17 @@ Files Created:
 - alembic/versions/20260721_add_suppliers_table.py
 
 Files Modified:
+
 - app/services/customer.py
-- app/models/__init__.py
-- app/schemas/__init__.py
-- app/repositories/__init__.py
-- app/services/__init__.py
-- app/api/v1/__init__.py
+- app/models/**init**.py
+- app/schemas/**init**.py
+- app/repositories/**init**.py
+- app/services/**init**.py
+- app/api/v1/**init**.py
 
 Summary:
 Implemented the complete Supplier Management module:
+
 - Added Supplier model with business_id, supplier_code, name, type, gstin, contact info, address, credit limit, outstanding balance, and BaseModelMixin
 - Created Supplier schemas (Create, Update, Response, ListResponse)
 - Implemented SupplierRepository with search, filter, sort, pagination, and business isolation
@@ -808,6 +897,7 @@ Implemented the complete Supplier Management module:
 - Updated alembic/env.py (we'll do that now)
 
 Notes:
+
 - Reused existing architecture from Customer module
 - Reused BaseModel, BaseRepository, validation, and business isolation
 - Future-compatible with Purchase Orders, Inventory, Expenses, Vendor Payments, Reports
@@ -815,9 +905,9 @@ Notes:
 Future Dependencies:
 None
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 PROD-001
@@ -832,7 +922,8 @@ Completion Date:
 2026-07-21
 
 Files Created:
-- app/utils/__init__.py
+
+- app/utils/**init**.py
 - app/utils/validation.py
 - app/models/unit.py
 - app/models/category.py
@@ -852,17 +943,19 @@ Files Created:
 - alembic/versions/20260721_add_products_categories_units.py
 
 Files Modified:
-- app/models/__init__.py
-- app/schemas/__init__.py
-- app/repositories/__init__.py
-- app/services/__init__.py
-- app/api/v1/__init__.py
+
+- app/models/**init**.py
+- app/schemas/**init**.py
+- app/repositories/**init**.py
+- app/services/**init**.py
+- app/api/v1/**init**.py
 - alembic/env.py
 - docs/CHANGELOG.md
 - app/utils/validation.py
 
 Summary:
 Implemented complete Product Catalog Management:
+
 - Units management (custom units for products)
 - Category management (hierarchical categories)
 - Product management with all required fields (sku, barcode, hsn/sac, gst rate, pricing, stock, etc.)
@@ -873,6 +966,7 @@ Implemented complete Product Catalog Management:
 - Future-compatible with inventory, PO, invoices, etc.
 
 Notes:
+
 - Reused existing architecture from Customer/Supplier modules
 - Moved validate_gstin and added validate_hsn_sac to shared utils
 - Product current_stock initialized from opening_stock on creation
@@ -880,9 +974,9 @@ Notes:
 Future Dependencies:
 None
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 INV-001
@@ -897,6 +991,7 @@ Completion Date:
 2026-07-21
 
 Files Created:
+
 - app/models/inventory.py
 - app/schemas/inventory.py
 - app/repositories/inventory.py
@@ -905,16 +1000,18 @@ Files Created:
 - alembic/versions/20260721_add_inventory_transactions.py
 
 Files Modified:
-- app/models/__init__.py
-- app/schemas/__init__.py
-- app/repositories/__init__.py
-- app/services/__init__.py
-- app/api/v1/__init__.py
+
+- app/models/**init**.py
+- app/schemas/**init**.py
+- app/repositories/**init**.py
+- app/services/**init**.py
+- app/api/v1/**init**.py
 - alembic/env.py
 - docs/CHANGELOG.md
 
 Summary:
 Implemented complete Inventory Management module:
+
 - StockMovement enum (OPENING_STOCK, PURCHASE, SALE, SALES_RETURN, PURCHASE_RETURN, ADJUSTMENT_IN, ADJUSTMENT_OUT, MANUAL_UPDATE)
 - InventoryTransaction model with ledger support
 - InventoryService with stock_in, stock_out, adjust_stock, get_current_stock, get_inventory_history, validate_stock_availability
@@ -924,20 +1021,22 @@ Implemented complete Inventory Management module:
 - Future-compatible with warehouses, batch/expiry tracking, PO, invoices, returns
 
 Notes:
+
 - Never directly update product.current_stock; always use InventoryService
 - Transactions record previous/new stock for audit trail
 - Stock availability validation prevents negative stock by default
 
 Future Dependencies:
+
 - Purchase Orders (uses reference_type/reference_id for PO links)
 - Sales Invoices (uses SALE transaction type, reference for invoices)
 - Returns (uses SALES_RETURN/PURCHASE_RETURN)
 - Warehouses (add warehouse_id to InventoryTransaction later)
 - Batch/Expiry Tracking (add batch_id, expiry_date later)
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 INVC-001
@@ -952,6 +1051,7 @@ Completion Date:
 2026-07-21
 
 Files Created:
+
 - app/models/invoice.py
 - app/schemas/invoice.py
 - app/repositories/invoice.py
@@ -960,16 +1060,18 @@ Files Created:
 - alembic/versions/20260721_add_invoice_payment_tables.py
 
 Files Modified:
-- app/models/__init__.py
-- app/schemas/__init__.py
-- app/repositories/__init__.py
-- app/services/__init__.py
-- app/api/v1/__init__.py
+
+- app/models/**init**.py
+- app/schemas/**init**.py
+- app/repositories/**init**.py
+- app/services/**init**.py
+- app/api/v1/**init**.py
 - alembic/env.py
 - docs/CHANGELOG.md
 
 Summary:
 Implemented complete Sales Invoice Engine with Payments:
+
 - Invoice and InvoiceItem models with proper relationships
 - Payment model and PaymentMethod enum
 - InvoiceService with automatic calculations (subtotal, GST, grand total, round-off)
@@ -984,6 +1086,7 @@ Implemented complete Sales Invoice Engine with Payments:
 - CRUD operations for invoices and payments
 
 Notes:
+
 - Stock is automatically deducted when invoice is created
 - TODO: Reverse inventory on invoice cancellation
 - TODO: Add business-specific invoice prefix support
@@ -991,14 +1094,15 @@ Notes:
 - TODO: Recalculate totals when invoice discount updated
 
 Future Dependencies:
+
 - PDF Generation
 - Recurring Invoices
 - Online Payment Gateway Integration
 - Credit Notes
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 INVC-009
@@ -1013,10 +1117,12 @@ Completion Date:
 2026-07-21
 
 Files Created:
+
 - app/utils/invoice_calculator.py
 - alembic/versions/20260721_harden_invoice_engine.py
 
 Files Modified:
+
 - app/models/invoice.py
 - app/schemas/invoice.py
 - app/repositories/invoice.py
@@ -1026,6 +1132,7 @@ Files Modified:
 
 Summary:
 Hardened invoice engine for production with the following improvements:
+
 1. Implemented automatic GST calculation (CGST/SGST for intrastate, IGST for interstate based on business and customer states)
 2. Created reusable InvoiceCalculator component that handles all invoice calculations
 3. Added concurrency-safe invoice number generation using SELECT FOR UPDATE
@@ -1037,19 +1144,21 @@ Hardened invoice engine for production with the following improvements:
 9. All invoice calculations now go through the InvoiceCalculator ensuring consistency
 
 Notes:
+
 - Stock is automatically reversed when invoice is cancelled
 - Invoice numbers are generated in a concurrency-safe way
 - GST type is automatically determined based on business and customer states
 
 Future Dependencies:
+
 - PDF Generation
 - Recurring Invoices
 - Online Payment Gateway Integration
 - Credit Notes
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 RPT-001
@@ -1064,18 +1173,21 @@ Completion Date:
 2026-07-21
 
 Files Created:
+
 - app/schemas/reports.py
 - app/services/reports.py
 - app/api/v1/reports.py
 
 Files Modified:
-- app/schemas/__init__.py
-- app/services/__init__.py
-- app/api/v1/__init__.py
+
+- app/schemas/**init**.py
+- app/services/**init**.py
+- app/api/v1/**init**.py
 - docs/CHANGELOG.md
 
 Summary:
 Implemented complete production-ready reporting and analytics engine for the Billix platform:
+
 1. Dashboard Summary Endpoint (`/v1/reports/dashboard`) with sales metrics, outstanding receivables, product inventory, invoice statuses, top selling products, and recent invoices.
 2. Sales Reports (`/v1/reports/sales`) with daily/weekly/monthly/yearly grouping, custom date ranges, and aggregate metrics.
 3. Customer Reports (`/v1/reports/customers`) with top customers, highest spending, outstanding customers, and purchase history.
@@ -1084,20 +1196,22 @@ Implemented complete production-ready reporting and analytics engine for the Bil
 6. Inventory Reports (`/v1/reports/inventory`) with inventory valuation, low stock, out of stock, and stock movement reports.
 
 Notes:
+
 - Uses existing repository/service architecture for consistency
 - All queries are strictly business-scoped (multi-tenant safe)
 - No frontend/chart/export functionality implemented as per requirements
 - All reports use optimized aggregate SQL queries to avoid N+1 issues
 
 Future Dependencies:
+
 - CSV/Excel export
 - Charting/visualization
 - Scheduled reports
 - AI analytics
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 ADMIN-001
@@ -1112,6 +1226,7 @@ Completion Date:
 2026-07-23
 
 Files Created:
+
 - app/models/settings.py
 - app/schemas/settings.py
 - app/repositories/settings.py
@@ -1120,17 +1235,19 @@ Files Created:
 - alembic/versions/20260723_add_business_settings_and_preferences.py
 
 Files Modified:
-- app/models/__init__.py
-- app/schemas/__init__.py
-- app/repositories/__init__.py
-- app/services/__init__.py
-- app/api/v1/__init__.py
+
+- app/models/**init**.py
+- app/schemas/**init**.py
+- app/repositories/**init**.py
+- app/services/**init**.py
+- app/api/v1/**init**.py
 - docs/CHANGELOG.md
 
 Summary:
 Implemented Phase 1 of the Production Administration Module, comprising two sub-modules. Module 1 (BusinessSettings) delivers tenant-specific company identity, GST/PAN details, invoice numbering format, financial year, locale (currency, timezone, date format), invoice defaults, and an Appwrite-ready logo abstraction. Module 2 (BusinessPreferences) delivers notification preferences, decimal precision, low-stock threshold, default tax mode, inventory behaviour flags, and an extensible JSON report_preferences column. Both modules follow the project's Repository → Service → Router layering strictly, reuse BaseModelMixin and BaseRepository, enforce tenant isolation via BusinessMemberRepository access checks, and auto-provision a record on first GET (upsert-on-read pattern). RBAC, Audit Logs, Notifications, and Backup Abstraction were explicitly excluded per scope.
 
 Notes:
+
 - Each business profile has at most one settings record and one preferences record (enforced by UNIQUE constraint on business_id in both tables).
 - logo_file_id stores an Appwrite file ID, not a raw URL — resolution to a signed URL should be handled at the API gateway or frontend layer.
 - report_preferences is a schema-less JSON column, allowing future preference keys to be added without migrations.
@@ -1139,9 +1256,9 @@ Notes:
 Future Dependencies:
 None
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 RBAC-001
@@ -1156,14 +1273,16 @@ Completion Date:
 2026-07-23
 
 Files Created:
+
 - app/auth/permissions.py
 - alembic/versions/20260723_add_member_role.py
 - tests/unit/test_rbac.py
 
 Files Modified:
+
 - app/models/roles.py
 - app/models/business.py
-- app/models/__init__.py
+- app/models/**init**.py
 - app/services/business.py
 - app/repositories/business.py
 - app/api/v1/business.py
@@ -1182,17 +1301,19 @@ Summary:
 Implemented a complete, production-ready Role-Based Access Control system layered on top of the existing BusinessMember membership architecture. Added BusinessRole enum (Owner, Admin, Manager, Accountant, Sales, Inventory, Viewer) as a per-business role stored on BusinessMember.role, backed by an Alembic migration that back-fills existing owner members. Defined a granular Permission enum covering all domains (business, settings, members, customers, suppliers, products, inventory, invoices, payments, reports) and a ROLE_PERMISSIONS mapping that grants each role a precisely scoped permission set. Implemented PermissionChecker — a FastAPI dependency factory that resolves business_id from path or query params, loads the caller's BusinessMember record, and enforces the required Permission, returning 403 on failure. Applied PermissionChecker to every sensitive endpoint across all nine domain routers. The system is zero-duplication: all authorization logic lives exclusively in app/auth/permissions.py. A 30-assertion test suite covers enum completeness, mapping correctness, privilege monotonicity, and PermissionChecker behaviour under all edge cases.
 
 Notes:
+
 - BusinessRole is a per-business concept stored on BusinessMember.role; UserRole on User remains as the global system role for platform-level operations.
 - POST /business-profiles (create) and GET /business-profiles (list own businesses) intentionally have no per-business permission check — they predate any membership.
 - Run `alembic upgrade head` to apply the migration; existing owner members are back-filled to role='owner' and all others to role='viewer'.
 - The ROLE_PERMISSIONS dict is the single source of truth — to change what a role can do, edit only that dict.
 
 Future Dependencies:
+
 - Member invitation API (MEMBER_INVITE / MEMBER_REMOVE permissions are defined but the endpoints do not yet exist)
 
------------------------------------------
+---
 
------------------------------------------
+---
 
 Ticket ID:
 ADMIN-002
@@ -1207,6 +1328,7 @@ Completion Date:
 2026-07-23
 
 Files Created:
+
 - app/models/notification.py
 - app/schemas/notification.py
 - app/repositories/notification.py
@@ -1217,19 +1339,21 @@ Files Created:
 - tests/unit/test_notification.py
 
 Files Modified:
-- app/models/__init__.py
+
+- app/models/**init**.py
 - app/models/business.py
 - app/models/user.py
-- app/schemas/__init__.py
-- app/repositories/__init__.py
-- app/services/__init__.py
-- app/api/v1/__init__.py
+- app/schemas/**init**.py
+- app/repositories/**init**.py
+- app/services/**init**.py
+- app/api/v1/**init**.py
 - app/auth/permissions.py
 - alembic/env.py
 - docs/CHANGELOG.md
 
 Summary:
 Implemented Phase 2 of the Production Administration Module, including:
+
 1. Notification Framework: SQLAlchemy model, repository, service, manager, and provider interface with support for email, SMS, WhatsApp, and push notifications
 2. Backup Abstraction Layer: Interfaces for database, file, and cloud backup providers with a manager to coordinate backups
 3. Added notification permissions to RBAC system and updated all roles
@@ -1237,6 +1361,7 @@ Implemented Phase 2 of the Production Administration Module, including:
 5. Complete unit tests for notification components
 
 Notes:
+
 - Notification providers are pluggable via the NotificationProvider interface
 - Backup providers are pluggable via BackupProvider, DatabaseBackupProvider, FileBackupProvider, and CloudBackupProvider interfaces
 - All components follow existing project architecture (Repository → Service → Router) and tenant isolation
@@ -1245,21 +1370,21 @@ Notes:
 Future Dependencies:
 None
 
------------------------------------------
+---
 
 ---
 
 ## Upcoming Tickets
 
-| Ticket ID | Title | Milestone |
-| --- | --- | --- |
-| AUTH-002 | Backend Clerk Integration | 3 |
-| AUTH-003 | User Model | 3 |
-| AUTH-004 | Authentication Middleware | 3 |
-| AUTH-005 | Current User Dependency | 3 |
-| AUTH-006 | Role Foundation | 3 |
-| AUTH-007 | Protected Routes | 3 |
-| AUTH-008 | Authentication Testing | 3 |
+| Ticket ID | Title                     | Milestone |
+| --------- | ------------------------- | --------- |
+| AUTH-002  | Backend Clerk Integration | 3         |
+| AUTH-003  | User Model                | 3         |
+| AUTH-004  | Authentication Middleware | 3         |
+| AUTH-005  | Current User Dependency   | 3         |
+| AUTH-006  | Role Foundation           | 3         |
+| AUTH-007  | Protected Routes          | 3         |
+| AUTH-008  | Authentication Testing    | 3         |
 
 See [ROADMAP.md](./ROADMAP.md) for the full milestone roadmap and ticket dependencies.
 
@@ -1267,7 +1392,7 @@ See [ROADMAP.md](./ROADMAP.md) for the full milestone roadmap and ticket depende
 
 ## Completed Engineering Tickets
 
------------------------------------------
+---
 
 Ticket ID:
 AUDIT-001
@@ -1282,6 +1407,7 @@ Completion Date:
 2026-07-23
 
 Files Created:
+
 - app/models/audit_log.py
 - alembic/versions/20260723_add_audit_logs.py
 - app/schemas/audit_log.py
@@ -1291,11 +1417,12 @@ Files Created:
 - tests/unit/test_audit_log.py
 
 Files Modified:
-- app/models/__init__.py
-- app/schemas/__init__.py
-- app/repositories/__init__.py
-- app/services/__init__.py
-- app/api/v1/__init__.py
+
+- app/models/**init**.py
+- app/schemas/**init**.py
+- app/repositories/**init**.py
+- app/services/**init**.py
+- app/api/v1/**init**.py
 - alembic/env.py
 - app/services/business.py
 - app/services/customer.py
@@ -1308,6 +1435,7 @@ Summary:
 Implemented a complete audit logging module to track all CRUD operations on business entities. Created the AuditLog SQLAlchemy model with fields for user_id, business_id, entity_type, entity_id, action, before/after values, IP address, and user agent. Added Alembic migration for the audit_logs table. Implemented Repository, Service, and API layers with filtering capabilities. Integrated audit logging into Business, Customer, Supplier, Product, Invoice, and Settings services to automatically log CREATE, UPDATE, and DELETE actions. Added unit tests for the audit log functionality.
 
 Notes:
+
 - Audit logs capture before/after values as JSON strings for change tracking
 - IP address and user agent are optional fields for enhanced security tracking
 - Audit logs are scoped by business_id for multi-tenant isolation
@@ -1317,7 +1445,7 @@ Notes:
 Future Dependencies:
 None
 
------------------------------------------
+---
 
 ---
 
@@ -1331,14 +1459,14 @@ _None yet._
 
 ## Architectural Decisions
 
-| Date | Decision | Rationale |
-| --- | --- | --- |
+| Date       | Decision                                                     | Rationale                                                                                        |
+| ---------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
 | 2026-07-18 | Use Clerk for authentication instead of building custom auth | Reduces risk, accelerates delivery, provides hosted sessions, social/email flows out of the box. |
-| 2026-07-18 | Use PostgreSQL on Neon as the primary database | Serverless Postgres, branching for dev, reliable for production SaaS. |
-| 2026-07-18 | Use Appwrite only for file/blob storage | Keeps the primary data model in Postgres; Appwrite handles invoice PDFs, logos, attachments. |
-| 2026-07-18 | Frontend on Vercel, backend on DigitalOcean | Vercel for SSR/edge performance; DigitalOcean for predictable FastAPI hosting. |
-| 2026-07-18 | Layered backend: Router → Service → Repository → Model | Keeps HTTP, business logic, and data access cleanly separated and testable. |
-| 2026-07-18 | Multi-tenant scoping via `business_id` on every domain table | Allows one user to operate multiple GSTINs/branches from a single account. |
+| 2026-07-18 | Use PostgreSQL on Neon as the primary database               | Serverless Postgres, branching for dev, reliable for production SaaS.                            |
+| 2026-07-18 | Use Appwrite only for file/blob storage                      | Keeps the primary data model in Postgres; Appwrite handles invoice PDFs, logos, attachments.     |
+| 2026-07-18 | Frontend on Vercel, backend on DigitalOcean                  | Vercel for SSR/edge performance; DigitalOcean for predictable FastAPI hosting.                   |
+| 2026-07-18 | Layered backend: Router → Service → Repository → Model       | Keeps HTTP, business logic, and data access cleanly separated and testable.                      |
+| 2026-07-18 | Multi-tenant scoping via `business_id` on every domain table | Allows one user to operate multiple GSTINs/branches from a single account.                       |
 
 ---
 
@@ -1351,6 +1479,7 @@ _None yet._
 ---
 
 ## Cross-References
+
 - [PROJECT_CONTEXT.md](./PROJECT_CONTEXT.md)
 - [ARCHITECTURE.md](./ARCHITECTURE.md)
 - [ROADMAP.md](./ROADMAP.md)

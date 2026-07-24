@@ -78,7 +78,9 @@ export function AppSidebar() {
           </div>
           <div className="min-w-0 leading-tight group-data-[collapsible=icon]:hidden">
             <div className="truncate font-display text-base font-bold tracking-tight">Billix</div>
-            <div className="truncate text-[11px] text-muted-foreground">GST · Billing · Inventory</div>
+            <div className="truncate text-[11px] text-muted-foreground">
+              GST · Billing · Inventory
+            </div>
           </div>
         </Link>
       </SidebarHeader>
@@ -106,7 +108,9 @@ export function AppSidebar() {
       <SidebarFooter className="border-t">
         <div className="rounded-lg bg-gradient-to-br from-primary/10 to-accent/40 p-3 text-xs group-data-[collapsible=icon]:hidden">
           <div className="font-semibold">Upgrade to Pro</div>
-          <div className="mt-1 text-muted-foreground">Unlimited invoices, e-way bills and multi-branch.</div>
+          <div className="mt-1 text-muted-foreground">
+            Unlimited invoices, e-way bills and multi-branch.
+          </div>
         </div>
       </SidebarFooter>
     </Sidebar>

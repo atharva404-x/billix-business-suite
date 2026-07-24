@@ -4,7 +4,14 @@ import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { DataToolbar } from "@/components/common/data-toolbar";
 import { SimplePagination } from "@/components/common/simple-pagination";
 import { KpiCard } from "@/components/common/kpi-card";
@@ -30,8 +37,12 @@ function InventoryPage() {
         description="Live stock levels, movements and low-stock alerts."
         actions={
           <>
-            <Button variant="outline" size="sm" className="gap-1.5"><ArrowUpDown className="h-4 w-4" /> Stock Transfer</Button>
-            <Button size="sm" className="gap-1.5"><Plus className="h-4 w-4" /> Adjust Stock</Button>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <ArrowUpDown className="h-4 w-4" /> Stock Transfer
+            </Button>
+            <Button size="sm" className="gap-1.5">
+              <Plus className="h-4 w-4" /> Adjust Stock
+            </Button>
           </>
         }
       />
@@ -60,10 +71,14 @@ function InventoryPage() {
                   <TableRow key={p.id}>
                     <TableCell className="font-medium">{p.name}</TableCell>
                     <TableCell className="font-mono text-xs">{p.sku}</TableCell>
-                    <TableCell className="text-right">{p.stock} {p.unit}</TableCell>
+                    <TableCell className="text-right">
+                      {p.stock} {p.unit}
+                    </TableCell>
                     <TableCell className="text-right text-muted-foreground">15</TableCell>
                     <TableCell className="text-right font-semibold">{p.price}</TableCell>
-                    <TableCell><StatusBadge status={status(p.stock)} /></TableCell>
+                    <TableCell>
+                      <StatusBadge status={status(p.stock)} />
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

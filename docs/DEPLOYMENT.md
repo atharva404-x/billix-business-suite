@@ -54,6 +54,7 @@ Sentry observes FE + BE for error tracking and APM.
 ## 3. Backend Cloud Deployment (DigitalOcean / Render)
 
 ### Option A: Render Cloud Deployment
+
 1. Connect repository to Render.
 2. Render detects `render.yaml` automatically and provisions:
    - `billix-backend` Python Web Service (`/health` health check path).
@@ -61,6 +62,7 @@ Sentry observes FE + BE for error tracking and APM.
 3. Supply required environment variables (`DATABASE_URL`, `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY`).
 
 ### Option B: DigitalOcean App Platform
+
 1. Select DigitalOcean App Platform and import `digitalocean.yaml`.
 2. Configure environment variables in App Platform Settings.
 3. DigitalOcean builds the multi-stage `Dockerfile` and deploys containerized instances automatically.
@@ -84,19 +86,19 @@ Sentry observes FE + BE for error tracking and APM.
 
 Copy `.env.example` to `.env` for local configuration.
 
-| Variable | Description | Production Example | Required |
-| :--- | :--- | :--- | :--- |
-| `ENV` | Environment mode | `production` | Yes |
-| `PROJECT_NAME` | Application name | `Billix` | Yes |
-| `PORT` | Backend port | `8000` | No |
-| `DATABASE_URL` | Neon PostgreSQL async URI | `postgresql+asyncpg://user:pass@ep-...neon.tech/billix?sslmode=require` | **Yes** |
-| `REDIS_URL` | Redis instance connection URI | `redis://...:6379/0` | **Yes** |
-| `CLERK_PUBLISHABLE_KEY` | Clerk Publishable Key | `pk_live_...` | **Yes** |
-| `CLERK_SECRET_KEY` | Clerk Secret Key | `sk_live_...` | **Yes** |
-| `CLERK_JWKS_URL` | Clerk JWKS Endpoint | `https://api.clerk.com/v1/.well-known/jwks.json` | **Yes** |
-| `LOG_LEVEL` | Logging level | `INFO` | Yes |
-| `LOG_FORMAT` | Log format | `json` | Yes |
-| `SENTRY_DSN` | Sentry DSN | `https://...` | Optional |
+| Variable                | Description                   | Production Example                                                      | Required |
+| :---------------------- | :---------------------------- | :---------------------------------------------------------------------- | :------- |
+| `ENV`                   | Environment mode              | `production`                                                            | Yes      |
+| `PROJECT_NAME`          | Application name              | `Billix`                                                                | Yes      |
+| `PORT`                  | Backend port                  | `8000`                                                                  | No       |
+| `DATABASE_URL`          | Neon PostgreSQL async URI     | `postgresql+asyncpg://user:pass@ep-...neon.tech/billix?sslmode=require` | **Yes**  |
+| `REDIS_URL`             | Redis instance connection URI | `redis://...:6379/0`                                                    | **Yes**  |
+| `CLERK_PUBLISHABLE_KEY` | Clerk Publishable Key         | `pk_live_...`                                                           | **Yes**  |
+| `CLERK_SECRET_KEY`      | Clerk Secret Key              | `sk_live_...`                                                           | **Yes**  |
+| `CLERK_JWKS_URL`        | Clerk JWKS Endpoint           | `https://api.clerk.com/v1/.well-known/jwks.json`                        | **Yes**  |
+| `LOG_LEVEL`             | Logging level                 | `INFO`                                                                  | Yes      |
+| `LOG_FORMAT`            | Log format                    | `json`                                                                  | Yes      |
+| `SENTRY_DSN`            | Sentry DSN                    | `https://...`                                                           | Optional |
 
 ---
 
