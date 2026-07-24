@@ -1,9 +1,11 @@
-from typing import Optional, List
+
+from typing import List, Optional
+
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.models.base import Base, BaseModelMixin
 from app.models.roles import UserRole
-
 
 class User(Base, BaseModelMixin):
     """

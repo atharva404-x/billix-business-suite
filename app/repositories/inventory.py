@@ -1,12 +1,13 @@
 
 import uuid
-from typing import List, Optional, Tuple
-from sqlalchemy import select, and_, or_, func, desc, asc
 from datetime import datetime
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.repositories.base import BaseRepository
-from app.models.inventory import InventoryTransaction, StockMovement
+from typing import List, Optional, Tuple
 
+from sqlalchemy import and_, asc, desc, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.inventory import InventoryTransaction, StockMovement
+from app.repositories.base import BaseRepository
 
 class InventoryRepository(BaseRepository):
     def __init__(self, session: AsyncSession):

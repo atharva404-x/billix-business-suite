@@ -1,10 +1,11 @@
 
 import uuid
-from typing import Optional, List
-from sqlalchemy import String, ForeignKey, UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.models.base import Base, BaseModelMixin
+from typing import List, Optional
 
+from sqlalchemy import ForeignKey, String, UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.models.base import Base, BaseModelMixin
 
 class Category(Base, BaseModelMixin):
     __tablename__ = "categories"

@@ -1,10 +1,12 @@
+
 import uuid
 from typing import Optional
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.repositories.base import BaseRepository
-from app.models.settings import BusinessSettings, BusinessPreferences
 
+from app.models.settings import BusinessPreferences, BusinessSettings
+from app.repositories.base import BaseRepository
 
 class BusinessSettingsRepository(BaseRepository):
     def __init__(self, session: AsyncSession):
@@ -18,7 +20,6 @@ class BusinessSettingsRepository(BaseRepository):
             )
         )
         return result.scalars().first()
-
 
 class BusinessPreferencesRepository(BaseRepository):
     def __init__(self, session: AsyncSession):

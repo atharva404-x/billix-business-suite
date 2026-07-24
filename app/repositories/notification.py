@@ -1,19 +1,13 @@
 
 import uuid
-from typing import Optional, List, Tuple
 from datetime import datetime, timezone
+from typing import List, Optional, Tuple
 
-from sqlalchemy import select, func, and_, update
+from sqlalchemy import and_, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.notification import Notification, NotificationChannel, NotificationStatus, NotificationType
 from app.repositories.base import BaseRepository
-from app.models.notification import (
-    Notification,
-    NotificationType,
-    NotificationStatus,
-    NotificationChannel,
-)
-
 
 class NotificationRepository(BaseRepository[Notification]):
     """Repository for Notification model."""

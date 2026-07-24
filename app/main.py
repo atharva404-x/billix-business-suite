@@ -1,33 +1,30 @@
+
 import logging
-from fastapi import FastAPI, Depends, status
+
+from fastapi import Depends, FastAPI, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.gzip import GZipMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from app.core.config import settings
-from app.core.logging import setup_logging
-from app.core.sentry import init_sentry
-from app.core.metrics import metrics_collector
-from app.core.database import get_db_session
-from app.middleware.auth import AuthMiddleware
-from app.middleware.request_id import RequestIDMiddleware
-from app.middleware.error_handler import ErrorHandlerMiddleware
-from app.middleware.security import SecurityHeadersMiddleware, RequestSizeLimitMiddleware
-from app.middleware.rate_limit import RateLimitMiddleware
+from app.api import api_router
 from app.auth.dependencies import get_current_user
 from app.auth.role_helpers import RoleChecker
-from app.models.user import User
+from app.core.config import settings
+from app.core.database import get_db_session
+from app.core.logging import setup_logging
+from app.core.metrics import metrics_collector
+from app.core.sentry import init_sentry
+from app.middleware.auth import AuthMiddleware
+from app.middleware.error_handler import ErrorHandlerMiddleware
+from app.middleware.rate_limit import RateLimitMiddleware
+from app.middleware.request_id import RequestIDMiddleware
+from app.middleware.security import RequestSizeLimitMiddleware, SecurityHeadersMiddleware
 from app.models.roles import UserRole
-from app.api import api_router
-
-# Setup structured logging and initialize Sentry error reporting
-setup_logging()
-init_sentry()
-
-from fastapi.openapi.utils import get_openapi
+from app.models.user import User
 
 logger = logging.getLogger("app.main")
 
@@ -40,7 +37,6 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/openapi.json",
 )
-
 
 def custom_openapi():
     """
@@ -74,7 +70,6 @@ def custom_openapi():
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
-
 app.openapi = custom_openapi
 
 # Middleware Pipeline Assembly (Registered outermost to innermost)
@@ -107,7 +102,6 @@ app.add_middleware(
     }
 )
 
-
 @app.get("/health")
 async def health_check():
     """
@@ -118,7 +112,6 @@ async def health_check():
         "service": settings.PROJECT_NAME,
         "env": settings.ENV
     }
-
 
 @app.get("/ready")
 async def readiness_check(session: AsyncSession = Depends(get_db_session)):
@@ -141,14 +134,12 @@ async def readiness_check(session: AsyncSession = Depends(get_db_session)):
             }
         )
 
-
 @app.get("/metrics")
 async def metrics():
     """
     Public metrics endpoint for application monitoring and metrics scraping.
     """
     return metrics_collector.get_summary()
-
 
 @app.get("/users/me")
 async def get_me(current_user: User = Depends(get_current_user)):
@@ -165,7 +156,6 @@ async def get_me(current_user: User = Depends(get_current_user)):
         "is_active": current_user.is_active
     }
 
-
 @app.get("/admin/system-status")
 async def get_admin_status(admin_user: User = Depends(RoleChecker(UserRole.ADMIN))):
     """
@@ -176,7 +166,6 @@ async def get_admin_status(admin_user: User = Depends(RoleChecker(UserRole.ADMIN
         "accessed_by": admin_user.email,
         "role": admin_user.role
     }
-
 
 # Include all API routes
 app.include_router(api_router, prefix="/api")

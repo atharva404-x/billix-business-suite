@@ -1,38 +1,16 @@
 
 import uuid
-from typing import List, Optional, Tuple
 from datetime import datetime, timedelta, timezone
-from sqlalchemy import select, func, and_, desc, asc
+from typing import List, Optional, Tuple
+
+from fastapi import HTTPException, status
+from sqlalchemy import and_, asc, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from fastapi import HTTPException, status
 
-from app.models import (
-    Invoice, InvoiceItem, Payment, Customer, Supplier, Product,
-    InventoryTransaction, StockMovement, InvoiceStatus, PaymentStatus
-)
+from app.models import Customer, InventoryTransaction, Invoice, InvoiceItem, InvoiceStatus, Payment, PaymentStatus, Product, StockMovement, Supplier
 from app.repositories.business import BusinessMemberRepository
-from app.schemas.reports import (
-    DashboardSummary,
-    TopSellingProductItem,
-    RecentInvoiceItem,
-    DashboardResponse,
-    SalesReportItem,
-    SalesReportResponse,
-    TopCustomerItem,
-    OutstandingCustomerItem,
-    CustomerPurchaseHistoryItem,
-    CustomerReportsResponse,
-    ProductSalesItem,
-    StockValueItem,
-    ProductReportsResponse,
-    PaymentMethodDistributionItem,
-    PaymentReportsResponse,
-    InventoryValuationItem,
-    StockMovementReportItem,
-    InventoryReportsResponse
-)
-
+from app.schemas.reports import CustomerPurchaseHistoryItem, CustomerReportsResponse, DashboardResponse, DashboardSummary, InventoryReportsResponse, InventoryValuationItem, OutstandingCustomerItem, PaymentMethodDistributionItem, PaymentReportsResponse, ProductReportsResponse, ProductSalesItem, RecentInvoiceItem, SalesReportItem, SalesReportResponse, StockMovementReportItem, StockValueItem, TopCustomerItem, TopSellingProductItem
 
 class ReportingService:
     def __init__(self, session: AsyncSession):

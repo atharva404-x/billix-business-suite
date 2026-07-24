@@ -1,21 +1,15 @@
-import uuid
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException, status
-from app.models.settings import BusinessSettings, BusinessPreferences
-from app.schemas.settings import (
-    BusinessSettingsCreate,
-    BusinessSettingsUpdate,
-    BusinessPreferencesCreate,
-    BusinessPreferencesUpdate,
-)
-from app.repositories.settings import (
-    BusinessSettingsRepository,
-    BusinessPreferencesRepository,
-)
-from app.repositories.business import BusinessMemberRepository
-from app.services.audit_log import AuditLogService
-from app.models.audit_log import AuditAction
 
+import uuid
+
+from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.audit_log import AuditAction
+from app.models.settings import BusinessPreferences, BusinessSettings
+from app.repositories.business import BusinessMemberRepository
+from app.repositories.settings import BusinessPreferencesRepository, BusinessSettingsRepository
+from app.schemas.settings import BusinessPreferencesCreate, BusinessPreferencesUpdate, BusinessSettingsCreate, BusinessSettingsUpdate
+from app.services.audit_log import AuditLogService
 
 class BusinessSettingsService:
     def __init__(self, session: AsyncSession):
@@ -60,7 +54,6 @@ class BusinessSettingsService:
             after_values=data.model_dump(exclude_unset=True)
         )
         return updated_settings
-
 
 class BusinessPreferencesService:
     def __init__(self, session: AsyncSession):

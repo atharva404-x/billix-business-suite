@@ -1,16 +1,17 @@
 
 import uuid
-from typing import List
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException, status
-from app.models.supplier import Supplier, SupplierType
-from app.schemas.supplier import SupplierCreate, SupplierUpdate
-from app.repositories.supplier import SupplierRepository
-from app.repositories.business import BusinessMemberRepository
-from app.utils.validation import validate_gstin
-from app.services.audit_log import AuditLogService
-from app.models.audit_log import AuditAction
+from typing import List, Optional
 
+from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.audit_log import AuditAction
+from app.models.supplier import Supplier, SupplierType
+from app.repositories.business import BusinessMemberRepository
+from app.repositories.supplier import SupplierRepository
+from app.schemas.supplier import SupplierCreate, SupplierUpdate
+from app.services.audit_log import AuditLogService
+from app.utils.validation import validate_gstin
 
 class SupplierService:
     def __init__(self, session: AsyncSession):

@@ -1,12 +1,13 @@
 
-import uuid
-from typing import Optional, List
-from datetime import datetime
-from sqlalchemy import String, ForeignKey, UUID, Numeric, DateTime, Enum as SQLEnum
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.models.base import Base, BaseModelMixin
 import enum
+import uuid
+from datetime import datetime
+from typing import List, Optional
 
+from sqlalchemy import DateTime, Enum as SQLEnum, ForeignKey, Numeric, String, UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.models.base import Base, BaseModelMixin
 
 class InvoiceStatus(str, enum.Enum):
     DRAFT = "draft"
@@ -17,12 +18,10 @@ class InvoiceStatus(str, enum.Enum):
     CANCELLED = "cancelled"
     VOID = "void"
 
-
 class PaymentStatus(str, enum.Enum):
     UNPAID = "unpaid"
     PARTIALLY_PAID = "partially_paid"
     PAID = "paid"
-
 
 class PaymentMethod(str, enum.Enum):
     CASH = "cash"
@@ -33,7 +32,6 @@ class PaymentMethod(str, enum.Enum):
     RTGS = "rtgs"
     BANK_TRANSFER = "bank_transfer"
     OTHER = "other"
-
 
 class Invoice(Base, BaseModelMixin):
     __tablename__ = "invoices"
@@ -115,7 +113,6 @@ class Invoice(Base, BaseModelMixin):
         "Payment", back_populates="invoice", cascade="all, delete-orphan"
     )
 
-
 class Payment(Base, BaseModelMixin):
     __tablename__ = "payments"
 
@@ -142,7 +139,6 @@ class Payment(Base, BaseModelMixin):
     )
 
     invoice: Mapped["Invoice"] = relationship("Invoice", back_populates="payments")
-
 
 class InvoiceItem(Base, BaseModelMixin):
     __tablename__ = "invoice_items"

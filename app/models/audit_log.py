@@ -1,17 +1,18 @@
+
 import uuid
 from enum import Enum
 from typing import Optional
-from sqlalchemy import UUID, String, DateTime, Text, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
-from app.models.base import Base, BaseModelMixin
 
+from sqlalchemy import DateTime, ForeignKey, String, Text, UUID
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.models.base import Base, BaseModelMixin
 
 class AuditAction(str, Enum):
     CREATE = "CREATE"
     UPDATE = "UPDATE"
     DELETE = "DELETE"
     VIEW = "VIEW"
-
 
 class AuditLog(Base, BaseModelMixin):
     """

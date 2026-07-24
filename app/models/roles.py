@@ -1,6 +1,6 @@
+
 from enum import Enum
 from typing import List
-
 
 class UserRole(str, Enum):
     """
@@ -14,7 +14,6 @@ class UserRole(str, Enum):
     STAFF = "staff"
     VIEWER = "viewer"
 
-
 class BusinessRole(str, Enum):
     """
     Per-business membership role stored on BusinessMember.
@@ -27,7 +26,6 @@ class BusinessRole(str, Enum):
     SALES = "sales"
     INVENTORY = "inventory"
     VIEWER = "viewer"
-
 
 # Hierarchy order for BusinessRole: index 0 = highest privilege.
 BUSINESS_ROLE_ORDER: List[BusinessRole] = [
@@ -49,7 +47,6 @@ ROLE_ORDER: List[UserRole] = [
     UserRole.VIEWER,
 ]
 
-
 def has_minimum_role(user_role: UserRole, required_role: UserRole) -> bool:
     """
     Returns True if user_role meets or exceeds required_role in the global hierarchy.
@@ -60,7 +57,6 @@ def has_minimum_role(user_role: UserRole, required_role: UserRole) -> bool:
         return user_index <= required_index
     except ValueError:
         return False
-
 
 def has_minimum_business_role(
     member_role: BusinessRole, required_role: BusinessRole

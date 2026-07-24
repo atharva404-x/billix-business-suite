@@ -1,17 +1,19 @@
+
 import uuid
-from typing import Annotated, Optional
 from datetime import datetime
+from typing import Annotated, Optional
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.auth.permissions import Permission, PermissionChecker
 from app.core.database import get_db_session
-from app.auth.permissions import PermissionChecker, Permission
 from app.models.audit_log import AuditAction
+from app.models.user import User
 from app.schemas.audit_log import AuditLogListResponse
 from app.services.audit_log import AuditLogService
-from app.models.user import User
 
 router = APIRouter()
-
 
 @router.get("/", response_model=AuditLogListResponse)
 async def list_audit_logs(
@@ -47,7 +49,6 @@ async def list_audit_logs(
         sort_by=sort_by,
         sort_order=sort_order
     )
-
 
 @router.get("/entity/{entity_type}/{entity_id}", response_model=AuditLogListResponse)
 async def get_entity_audit_history(

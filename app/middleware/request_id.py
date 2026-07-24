@@ -1,12 +1,13 @@
+
 import time
 import uuid
+
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import Response
 
-from app.core.logging import request_id_var, correlation_id_var
+from app.core.logging import correlation_id_var, request_id_var
 from app.core.metrics import metrics_collector
-
 
 class RequestIDMiddleware(BaseHTTPMiddleware):
     """

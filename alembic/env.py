@@ -1,12 +1,31 @@
 from logging.config import fileConfig
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from sqlalchemy import engine_from_config, pool, Table, Column, String, inspect, MetaData
+import sqlalchemy as sa
 
 from alembic import context
+from alembic.ddl.impl import DefaultImpl
 from app.core.config import settings
 from app.models.base import Base
+
+# Customize version table column size to accommodate descriptive/long revision IDs
+def custom_version_table_impl(
+    self,
+    *,
+    version_table: str,
+    version_table_schema=None,
+    version_table_pk: bool = True,
+    **kw
+) -> Table:
+    return Table(
+        version_table,
+        MetaData(),
+        Column("version_num", String(255), primary_key=version_table_pk),
+        schema=version_table_schema,
+    )
+
+DefaultImpl.version_table_impl = custom_version_table_impl
 from app.models.user import User  # noqa: F401
 from app.models.business import BusinessProfile, BusinessMember  # noqa: F401
 from app.models.customer import Customer  # noqa: F401
@@ -103,6 +122,25 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
+        # Check if the alembic version table exists, and if so, alter the column type in PostgreSQL
+        version_table_name = config.get_main_option("version_table", "alembic_version")
+        if not version_table_name:
+            version_table_name = "alembic_version"
+
+        inspector = inspect(connection)
+        tables = inspector.get_table_names()
+
+        if version_table_name in tables:
+            if connection.dialect.name == "postgresql":
+                # Execute the ALTER statement to increase version_num VARCHAR size to 255
+                alter_stmt = sa.text(f"ALTER TABLE {version_table_name} ALTER COLUMN version_num TYPE VARCHAR(255)")
+                connection.execute(alter_stmt)
+
+        # Commit any implicitly started transactions to ensure changes are persisted
+        # and the connection transaction state is clean before Alembic configure.
+        if connection.in_transaction():
+            connection.commit()
+
         context.configure(
             connection=connection, target_metadata=target_metadata
         )

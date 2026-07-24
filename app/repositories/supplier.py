@@ -1,11 +1,12 @@
 
 import uuid
 from typing import List, Optional, Tuple
-from sqlalchemy import select, and_, or_, func, desc, asc
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.repositories.base import BaseRepository
-from app.models.supplier import Supplier, SupplierType
 
+from sqlalchemy import and_, asc, desc, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.supplier import Supplier, SupplierType
+from app.repositories.base import BaseRepository
 
 class SupplierRepository(BaseRepository):
     def __init__(self, session: AsyncSession):

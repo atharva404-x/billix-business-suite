@@ -1,11 +1,12 @@
 
 import uuid
-from typing import Optional, List
-from sqlalchemy import String, ForeignKey, UUID, Numeric
+from typing import List, Optional
+
+from sqlalchemy import ForeignKey, Numeric, String, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.models.base import Base, BaseModelMixin
 from app.models.roles import BusinessRole
-
 
 class BusinessProfile(Base, BaseModelMixin):
     __tablename__ = "business_profiles"
@@ -62,7 +63,6 @@ class BusinessProfile(Base, BaseModelMixin):
         back_populates="business",
         cascade="all, delete-orphan"
     )
-
 
 class BusinessMember(Base, BaseModelMixin):
     __tablename__ = "business_members"

@@ -1,15 +1,32 @@
 import logging
 from typing import AsyncGenerator
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from urllib.parse import urlsplit, parse_qsl, urlencode, urlunsplit
+
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
 from app.core.config import settings
 
 logger = logging.getLogger("app.core.database")
+
+def _clean_db_url(db_url: str) -> str:
+    """Remove sslmode query parameter if using asyncpg, since it's not supported directly by asyncpg."""
+    if db_url.startswith("postgresql+asyncpg://"):
+        parts = urlsplit(db_url)
+        if parts.query:
+            query = dict(parse_qsl(parts.query, keep_blank_values=True))
+            if "sslmode" in query:
+                query.pop("sslmode")
+            new_query = urlencode(query)
+            db_url = urlunsplit((parts.scheme, parts.netloc, parts.path, new_query, parts.fragment))
+    return db_url
+
+db_url = _clean_db_url(settings.DATABASE_URL)
 
 # Create async database engine with pool optimization
 connect_args = {}
 engine_kwargs = {"echo": False}
 
-if settings.DATABASE_URL.startswith("sqlite"):
+if db_url.startswith("sqlite"):
     connect_args["check_same_thread"] = False
 else:
     # Neon PostgreSQL and cloud database SSL connection support for asyncpg
@@ -24,7 +41,7 @@ else:
     })
 
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    db_url,
     connect_args=connect_args,
     **engine_kwargs
 )
@@ -35,7 +52,6 @@ AsyncSessionLocal = async_sessionmaker(
     expire_on_commit=False,
     class_=AsyncSession
 )
-
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
@@ -51,7 +67,6 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             raise
         finally:
             await session.close()
-
 
 # Backwards-compatible dependency name used by the API routers.  A request owns
 # one session and one transaction; repositories deliberately never commit.

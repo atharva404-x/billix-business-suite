@@ -1,22 +1,19 @@
 
 import uuid
 from datetime import datetime
-from typing import Optional, List
-from pydantic import BaseModel, Field, ConfigDict
+from typing import List, Optional
 
+from pydantic import BaseModel, ConfigDict, Field
 
 class UnitBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=50)
     symbol: Optional[str] = Field(None, max_length=20)
 
-
 class UnitCreate(UnitBase):
     pass
 
-
 class UnitUpdate(UnitBase):
     name: Optional[str] = Field(None, min_length=1, max_length=50)
-
 
 class UnitResponse(UnitBase):
     model_config = ConfigDict(from_attributes=True)
@@ -25,7 +22,6 @@ class UnitResponse(UnitBase):
     created_at: datetime
     updated_at: datetime
     is_active: bool
-
 
 class UnitListResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)

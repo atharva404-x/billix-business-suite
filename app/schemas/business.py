@@ -1,9 +1,9 @@
 
 import uuid
 from datetime import datetime
-from typing import Optional, List
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from typing import List, Optional
 
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 class BusinessProfileBase(BaseModel):
     business_name: str = Field(..., min_length=1, max_length=255)
@@ -15,14 +15,11 @@ class BusinessProfileBase(BaseModel):
     phone: Optional[str] = Field(None, max_length=20)
     email: Optional[EmailStr] = None
 
-
 class BusinessProfileCreate(BusinessProfileBase):
     pass
 
-
 class BusinessProfileUpdate(BusinessProfileBase):
     business_name: Optional[str] = Field(None, min_length=1, max_length=255)
-
 
 class BusinessProfileResponse(BusinessProfileBase):
     model_config = ConfigDict(from_attributes=True)
@@ -31,22 +28,18 @@ class BusinessProfileResponse(BusinessProfileBase):
     updated_at: datetime
     is_active: bool
 
-
 class BusinessProfileListResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     items: List[BusinessProfileResponse]
     total: int
-
 
 class BusinessMemberBase(BaseModel):
     user_id: uuid.UUID
     business_id: uuid.UUID
     is_owner: bool = True
 
-
 class BusinessMemberCreate(BusinessMemberBase):
     pass
-
 
 class BusinessMemberResponse(BusinessMemberBase):
     model_config = ConfigDict(from_attributes=True)

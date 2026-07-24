@@ -1,5 +1,7 @@
+
 import os
 from typing import Optional
+
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -36,7 +38,6 @@ class Settings(BaseSettings):
     DB_POOL_SIZE: int = Field(default=10, validation_alias="DB_POOL_SIZE")
     DB_MAX_OVERFLOW: int = Field(default=20, validation_alias="DB_MAX_OVERFLOW")
     DB_POOL_RECYCLE: int = Field(default=1800, validation_alias="DB_POOL_RECYCLE")
-
 
     model_config = SettingsConfigDict(
         env_file=".env",

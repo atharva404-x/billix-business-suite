@@ -1,23 +1,19 @@
 
 import uuid
 from typing import Annotated, Optional
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.database import get_db_session
+
 from app.auth.dependencies import get_current_user
 from app.auth.permissions import Permission, PermissionChecker
-from app.models.user import User
-from app.schemas.supplier import (
-    SupplierCreate,
-    SupplierUpdate,
-    SupplierResponse,
-    SupplierListResponse
-)
+from app.core.database import get_db_session
 from app.models.supplier import SupplierType
+from app.models.user import User
+from app.schemas.supplier import SupplierCreate, SupplierListResponse, SupplierResponse, SupplierUpdate
 from app.services.supplier import SupplierService
 
 router = APIRouter(prefix="/suppliers", tags=["suppliers"])
-
 
 @router.post("", response_model=SupplierResponse, status_code=201)
 async def create_supplier(
@@ -32,7 +28,6 @@ async def create_supplier(
         business_id,
         supplier_data
     )
-
 
 @router.get("", response_model=SupplierListResponse)
 async def list_suppliers(
@@ -65,7 +60,6 @@ async def list_suppliers(
     )
     return SupplierListResponse(items=suppliers, total=total)
 
-
 @router.get("/{supplier_id}", response_model=SupplierResponse)
 async def get_supplier(
     business_id: uuid.UUID,
@@ -77,7 +71,6 @@ async def get_supplier(
     return await service.get_supplier(
         current_user.id, business_id, supplier_id
     )
-
 
 @router.patch("/{supplier_id}", response_model=SupplierResponse)
 async def update_supplier(
@@ -91,7 +84,6 @@ async def update_supplier(
     return await service.update_supplier(
         current_user.id, business_id, supplier_id, update_data
     )
-
 
 @router.delete("/{supplier_id}", response_model=SupplierResponse)
 async def deactivate_supplier(

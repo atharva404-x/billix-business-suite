@@ -1,13 +1,14 @@
+
 import logging
+
+from fastapi import HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
-from starlette.responses import Response, JSONResponse
-from fastapi import HTTPException
+from starlette.responses import JSONResponse, Response
 
 from app.core.config import settings
 
 logger = logging.getLogger("app.middleware.error_handler")
-
 
 class ErrorHandlerMiddleware(BaseHTTPMiddleware):
     """

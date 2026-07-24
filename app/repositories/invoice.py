@@ -1,13 +1,14 @@
 
 import uuid
-from typing import List, Optional, Tuple
 from datetime import datetime
-from sqlalchemy import select, and_, or_, func, desc, asc
-from sqlalchemy.orm import selectinload
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.repositories.base import BaseRepository
-from app.models.invoice import Invoice, InvoiceStatus, PaymentStatus, Payment
+from typing import List, Optional, Tuple
 
+from sqlalchemy import and_, asc, desc, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
+
+from app.models.invoice import Invoice, InvoiceStatus, Payment, PaymentStatus
+from app.repositories.base import BaseRepository
 
 class InvoiceRepository(BaseRepository):
     def __init__(self, session: AsyncSession):
@@ -138,7 +139,6 @@ class InvoiceRepository(BaseRepository):
             return f"INV-{new_num:05d}"
         except Exception:
             return "INV-00001"
-
 
 class PaymentRepository(BaseRepository):
     def __init__(self, session: AsyncSession):

@@ -1,8 +1,7 @@
 
-from typing import List, Optional, Tuple
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
-
+from typing import List, Optional, Tuple
 
 @dataclass
 class InvoiceItemCalculation:
@@ -14,7 +13,6 @@ class InvoiceItemCalculation:
     taxable_amount: Decimal
     tax_amount: Decimal
     total: Decimal
-
 
 @dataclass
 class InvoiceCalculationResult:
@@ -28,7 +26,6 @@ class InvoiceCalculationResult:
     round_off: Decimal
     grand_total: Decimal
     items: List[InvoiceItemCalculation]
-
 
 class InvoiceCalculator:
     @staticmethod

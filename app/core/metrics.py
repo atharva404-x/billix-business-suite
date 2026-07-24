@@ -1,6 +1,6 @@
-import time
-from typing import Dict, Any, List
 
+import time
+from typing import Any, Dict, List
 
 class MetricsCollector:
     """
@@ -48,7 +48,6 @@ class MetricsCollector:
                 "recent_sample_count": len(self.latencies),
             },
         }
-
 
 # Global metrics singleton
 metrics_collector = MetricsCollector()

@@ -1,14 +1,13 @@
 
 import uuid
 from datetime import datetime
-from typing import Optional
 from enum import Enum
+from typing import Optional
 
-from sqlalchemy import UUID, Boolean, DateTime, Enum as SQLEnum, ForeignKey, String, Text, func, JSON
+from sqlalchemy import Boolean, DateTime, Enum as SQLEnum, ForeignKey, JSON, String, Text, UUID, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base, BaseModelMixin
-
 
 class NotificationType(str, Enum):
     """Enum for notification types."""
@@ -17,7 +16,6 @@ class NotificationType(str, Enum):
     ERROR = "error"
     SUCCESS = "success"
 
-
 class NotificationStatus(str, Enum):
     """Enum for notification delivery status."""
     PENDING = "pending"
@@ -25,14 +23,12 @@ class NotificationStatus(str, Enum):
     FAILED = "failed"
     READ = "read"
 
-
 class NotificationChannel(str, Enum):
     """Enum for notification delivery channels."""
     EMAIL = "email"
     SMS = "sms"
     WHATSAPP = "whatsapp"
     PUSH = "push"
-
 
 class Notification(Base, BaseModelMixin):
     """SQLAlchemy model for notifications.

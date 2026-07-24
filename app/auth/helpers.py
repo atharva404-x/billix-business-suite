@@ -1,10 +1,11 @@
+
 import logging
-from typing import Dict, Any, Optional
-from app.auth.exceptions import MissingTokenError, InvalidTokenError
+from typing import Any, Dict, Optional
+
+from app.auth.exceptions import InvalidTokenError, MissingTokenError
 from app.auth.jwt_utils import verify_clerk_token
 
 logger = logging.getLogger("app.auth.helpers")
-
 
 def extract_token_from_header(authorization_header: Optional[str]) -> Optional[str]:
     """
@@ -24,7 +25,6 @@ def extract_token_from_header(authorization_header: Optional[str]) -> Optional[s
         return None
 
     return parts[1]
-
 
 async def authenticate_request(authorization_header: Optional[str]) -> Dict[str, Any]:
     """

@@ -5,23 +5,14 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.permissions import Permission, PermissionChecker
 from app.core.database import get_db_session
-from app.auth.permissions import PermissionChecker, Permission
+from app.models.notification import NotificationChannel, NotificationStatus, NotificationType
 from app.models.user import User
-from app.models.notification import (
-    NotificationType,
-    NotificationStatus,
-    NotificationChannel,
-)
-from app.schemas.notification import (
-    NotificationCreate,
-    NotificationResponse,
-    NotificationListResponse,
-)
+from app.schemas.notification import NotificationCreate, NotificationListResponse, NotificationResponse
 from app.services.notification import NotificationService
 
 router = APIRouter()
-
 
 @router.post("", response_model=NotificationResponse, status_code=status.HTTP_201_CREATED)
 async def create_notification(
@@ -39,7 +30,6 @@ async def create_notification(
         business_id=business_id,
         notification_data=notification_data
     )
-
 
 @router.get("", response_model=NotificationListResponse)
 async def list_notifications(
@@ -61,7 +51,6 @@ async def list_notifications(
     )
     return NotificationListResponse(items=notifications, total=total)
 
-
 @router.get("/{notification_id}", response_model=NotificationResponse)
 async def get_notification(
     notification_id: uuid.UUID,
@@ -78,7 +67,6 @@ async def get_notification(
         business_id=business_id,
         notification_id=notification_id
     )
-
 
 @router.patch("/{notification_id}/read", response_model=NotificationResponse)
 async def mark_notification_as_read(
@@ -97,7 +85,6 @@ async def mark_notification_as_read(
         notification_id=notification_id
     )
 
-
 @router.patch("/read-all", response_model=dict)
 async def mark_all_notifications_as_read(
     business_id: uuid.UUID,
@@ -113,7 +100,6 @@ async def mark_all_notifications_as_read(
         business_id=business_id
     )
     return {"count": count}
-
 
 @router.delete("/{notification_id}", response_model=NotificationResponse)
 async def deactivate_notification(

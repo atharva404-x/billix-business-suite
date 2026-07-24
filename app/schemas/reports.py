@@ -1,9 +1,9 @@
 
-from typing import Optional, List
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict
+from typing import List, Optional
 from uuid import UUID
 
+from pydantic import BaseModel, ConfigDict
 
 # Dashboard Schemas
 class DashboardSummary(BaseModel):
@@ -27,7 +27,6 @@ class DashboardSummary(BaseModel):
     total_revenue: float
     average_invoice_value: float
 
-
 class TopSellingProductItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     
@@ -35,7 +34,6 @@ class TopSellingProductItem(BaseModel):
     product_name: str
     quantity_sold: float
     total_revenue: float
-
 
 class RecentInvoiceItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -48,12 +46,10 @@ class RecentInvoiceItem(BaseModel):
     status: str
     invoice_date: datetime
 
-
 class DashboardResponse(BaseModel):
     summary: DashboardSummary
     top_selling_products: List[TopSellingProductItem]
     recent_invoices: List[RecentInvoiceItem]
-
 
 # Sales Reports Schemas
 class SalesReportItem(BaseModel):
@@ -64,10 +60,8 @@ class SalesReportItem(BaseModel):
     total_invoices: int
     average_invoice_value: float
 
-
 class SalesReportResponse(BaseModel):
     items: List[SalesReportItem]
-
 
 # Customer Reports Schemas
 class TopCustomerItem(BaseModel):
@@ -78,14 +72,12 @@ class TopCustomerItem(BaseModel):
     total_purchases: int
     total_revenue: float
 
-
 class OutstandingCustomerItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     
     customer_id: UUID
     customer_name: str
     outstanding_balance: float
-
 
 class CustomerPurchaseHistoryItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -97,14 +89,12 @@ class CustomerPurchaseHistoryItem(BaseModel):
     paid_amount: float
     outstanding_balance: float
 
-
 class CustomerReportsResponse(BaseModel):
     top_customers: Optional[List[TopCustomerItem]] = None
     highest_spending_customers: Optional[List[TopCustomerItem]] = None
     outstanding_customers: Optional[List[OutstandingCustomerItem]] = None
     customer_purchase_history: Optional[List[CustomerPurchaseHistoryItem]] = None
     customer_revenue: Optional[List[TopCustomerItem]] = None
-
 
 # Product Reports Schemas
 class ProductSalesItem(BaseModel):
@@ -116,7 +106,6 @@ class ProductSalesItem(BaseModel):
     quantity_sold: float
     total_revenue: float
 
-
 class StockValueItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     
@@ -126,7 +115,6 @@ class StockValueItem(BaseModel):
     unit_price: float
     total_value: float
 
-
 class ProductReportsResponse(BaseModel):
     top_selling_products: Optional[List[ProductSalesItem]] = None
     least_selling_products: Optional[List[ProductSalesItem]] = None
@@ -134,7 +122,6 @@ class ProductReportsResponse(BaseModel):
     stock_value: Optional[List[StockValueItem]] = None
     current_stock: Optional[List[dict]] = None
     stock_movement_summary: Optional[List[dict]] = None
-
 
 # Payment Reports Schemas
 class PaymentMethodDistributionItem(BaseModel):
@@ -144,14 +131,12 @@ class PaymentMethodDistributionItem(BaseModel):
     count: int
     total_amount: float
 
-
 class PaymentReportsResponse(BaseModel):
     payments_received: Optional[List[dict]] = None
     pending_payments: Optional[List[dict]] = None
     overdue_payments: Optional[List[dict]] = None
     payment_method_distribution: Optional[List[PaymentMethodDistributionItem]] = None
     outstanding_balance: Optional[float] = None
-
 
 # Inventory Reports Schemas
 class InventoryValuationItem(BaseModel):
@@ -163,7 +148,6 @@ class InventoryValuationItem(BaseModel):
     unit_price: float
     total_value: float
 
-
 class StockMovementReportItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     
@@ -174,7 +158,6 @@ class StockMovementReportItem(BaseModel):
     quantity: float
     reference_type: Optional[str] = None
     reference_id: Optional[UUID] = None
-
 
 class InventoryReportsResponse(BaseModel):
     inventory_valuation: Optional[List[InventoryValuationItem]] = None

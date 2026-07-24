@@ -1,10 +1,10 @@
+
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 from app.core.config import settings
 
 logger = logging.getLogger("app.core.sentry")
-
 
 def _before_send_filter(event: Dict[str, Any], hint: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """
@@ -21,7 +21,6 @@ def _before_send_filter(event: Dict[str, Any], hint: Dict[str, Any]) -> Optional
                     headers[k] = "[REDACTED]"
 
     return event
-
 
 def init_sentry() -> bool:
     """

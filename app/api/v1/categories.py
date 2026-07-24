@@ -1,23 +1,18 @@
 
 import uuid
 from typing import Annotated, Optional
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.database import get_db_session
+
 from app.auth.dependencies import get_current_user
 from app.auth.permissions import Permission, PermissionChecker
+from app.core.database import get_db_session
 from app.models.user import User
-from app.schemas.category import (
-    CategoryCreate,
-    CategoryUpdate,
-    CategoryResponse,
-    CategoryListResponse
-)
+from app.schemas.category import CategoryCreate, CategoryListResponse, CategoryResponse, CategoryUpdate
 from app.services.category import CategoryService
 
-
 router = APIRouter(prefix="/categories", tags=["categories"])
-
 
 @router.post("", response_model=CategoryResponse, status_code=201)
 async def create_category(
@@ -28,7 +23,6 @@ async def create_category(
 ):
     service = CategoryService(session)
     return await service.create_category(current_user.id, business_id, category_data)
-
 
 @router.get("", response_model=CategoryListResponse)
 async def list_categories(
@@ -49,7 +43,6 @@ async def list_categories(
     )
     return CategoryListResponse(items=categories, total=total)
 
-
 @router.get("/{category_id}", response_model=CategoryResponse)
 async def get_category(
     business_id: uuid.UUID,
@@ -59,7 +52,6 @@ async def get_category(
 ):
     service = CategoryService(session)
     return await service.get_category(current_user.id, business_id, category_id)
-
 
 @router.patch("/{category_id}", response_model=CategoryResponse)
 async def update_category(
@@ -71,7 +63,6 @@ async def update_category(
 ):
     service = CategoryService(session)
     return await service.update_category(current_user.id, business_id, category_id, update_data)
-
 
 @router.delete("/{category_id}", response_model=CategoryResponse)
 async def deactivate_category(

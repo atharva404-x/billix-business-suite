@@ -1,16 +1,17 @@
 
 import uuid
-from typing import List, Tuple, Optional
 from datetime import datetime
+from typing import List, Optional, Tuple
+
+from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException, status
-from app.models.product import Product
-from app.models.inventory import StockMovement, InventoryTransaction
-from app.schemas.inventory import StockIn, StockOut, Adjustment
-from app.repositories.inventory import InventoryRepository
-from app.repositories.business import BusinessMemberRepository
 
+from app.models.inventory import InventoryTransaction, StockMovement
+from app.models.product import Product
+from app.repositories.business import BusinessMemberRepository
+from app.repositories.inventory import InventoryRepository
+from app.schemas.inventory import Adjustment, StockIn, StockOut
 
 class InventoryService:
     def __init__(self, session: AsyncSession):

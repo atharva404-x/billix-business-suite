@@ -1,15 +1,11 @@
 
 import uuid
 from datetime import datetime
-from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, Field, ConfigDict, AliasChoices, field_validator
+from typing import Any, Dict, List, Optional
 
-from app.models.notification import (
-    NotificationType,
-    NotificationStatus,
-    NotificationChannel,
-)
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
+from app.models.notification import NotificationChannel, NotificationStatus, NotificationType
 
 class NotificationBase(BaseModel):
     """Base Pydantic schema for notifications."""
@@ -63,17 +59,14 @@ class NotificationBase(BaseModel):
             
         return v
 
-
 class NotificationCreate(NotificationBase):
     """Schema for creating a notification."""
     user_id: Optional[uuid.UUID] = None
-
 
 class NotificationUpdate(BaseModel):
     """Schema for updating a notification."""
     status: Optional[NotificationStatus] = None
     read_at: Optional[datetime] = None
-
 
 class NotificationResponse(NotificationBase):
     """Schema for returning notification data."""
@@ -88,7 +81,6 @@ class NotificationResponse(NotificationBase):
     created_at: datetime
     updated_at: datetime
     is_active: bool
-
 
 class NotificationListResponse(BaseModel):
     """Schema for returning a list of notifications with pagination."""

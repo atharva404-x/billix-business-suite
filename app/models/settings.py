@@ -1,9 +1,11 @@
+
 import uuid
 from typing import Optional
-from sqlalchemy import String, ForeignKey, UUID, Integer, Boolean, JSON, Text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.models.base import Base, BaseModelMixin
 
+from sqlalchemy import Boolean, ForeignKey, Integer, JSON, String, Text, UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.models.base import Base, BaseModelMixin
 
 class BusinessSettings(Base, BaseModelMixin):
     """
@@ -55,7 +57,6 @@ class BusinessSettings(Base, BaseModelMixin):
         "BusinessProfile",
         foreign_keys=[business_id]
     )
-
 
 class BusinessPreferences(Base, BaseModelMixin):
     """

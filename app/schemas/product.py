@@ -1,9 +1,9 @@
 
 import uuid
 from datetime import datetime
-from typing import Optional, List
-from pydantic import BaseModel, Field, ConfigDict
+from typing import List, Optional
 
+from pydantic import BaseModel, ConfigDict, Field
 
 class ProductBase(BaseModel):
     category_id: Optional[uuid.UUID] = None
@@ -21,15 +21,12 @@ class ProductBase(BaseModel):
     maximum_stock: Optional[float] = Field(None, ge=0)
     is_service: bool = False
 
-
 class ProductCreate(ProductBase):
     pass
-
 
 class ProductUpdate(ProductBase):
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     current_stock: Optional[float] = Field(None, ge=0)  # Only for adjustments (manual)
-
 
 class ProductResponse(ProductBase):
     model_config = ConfigDict(from_attributes=True)
@@ -39,7 +36,6 @@ class ProductResponse(ProductBase):
     updated_at: datetime
     is_active: bool
     current_stock: float
-
 
 class ProductListResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)

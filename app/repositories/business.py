@@ -1,13 +1,14 @@
 
 import uuid
 from typing import List, Optional
-from sqlalchemy import select, and_
+
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.repositories.base import BaseRepository
-from app.models.business import BusinessProfile, BusinessMember
+
+from app.models.business import BusinessMember, BusinessProfile
 from app.models.roles import BusinessRole
 from app.models.user import User
-
+from app.repositories.base import BaseRepository
 
 class BusinessProfileRepository(BaseRepository):
     def __init__(self, session: AsyncSession):
@@ -26,7 +27,6 @@ class BusinessProfileRepository(BaseRepository):
             )
         )
         return list(result.scalars().all())
-
 
 class BusinessMemberRepository(BaseRepository):
     def __init__(self, session: AsyncSession):

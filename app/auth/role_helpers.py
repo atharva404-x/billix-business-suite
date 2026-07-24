@@ -1,12 +1,13 @@
+
 import logging
+
 from fastapi import Depends, HTTPException, status
 
 from app.auth.dependencies import get_current_user
-from app.models.user import User
 from app.models.roles import UserRole, has_minimum_role
+from app.models.user import User
 
 logger = logging.getLogger("app.auth.role_helpers")
-
 
 class RoleChecker:
     """

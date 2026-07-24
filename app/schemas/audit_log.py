@@ -1,9 +1,11 @@
+
 import uuid
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field
-from app.models.audit_log import AuditAction
 
+from pydantic import BaseModel, ConfigDict, Field
+
+from app.models.audit_log import AuditAction
 
 class AuditLogBase(BaseModel):
     entity_type: str = Field(..., description="Type of entity (e.g., 'Customer', 'Invoice')")
@@ -14,11 +16,9 @@ class AuditLogBase(BaseModel):
     ip_address: Optional[str] = Field(None, description="IP address of the user")
     user_agent: Optional[str] = Field(None, description="User agent string")
 
-
 class AuditLogCreate(AuditLogBase):
     user_id: uuid.UUID = Field(..., description="ID of the user who performed the action")
     business_id: uuid.UUID = Field(..., description="ID of the business")
-
 
 class AuditLogResponse(BaseModel):
     id: uuid.UUID
@@ -34,9 +34,7 @@ class AuditLogResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
-
+    model_config = ConfigDict(from_attributes=True)
 
 class AuditLogListResponse(BaseModel):
     items: list[AuditLogResponse]

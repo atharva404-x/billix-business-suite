@@ -1,13 +1,14 @@
 
 import uuid
-from typing import List
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException, status
-from app.models.unit import Unit
-from app.schemas.unit import UnitCreate, UnitUpdate
-from app.repositories.unit import UnitRepository
-from app.repositories.business import BusinessMemberRepository
+from typing import List, Optional
 
+from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.unit import Unit
+from app.repositories.business import BusinessMemberRepository
+from app.repositories.unit import UnitRepository
+from app.schemas.unit import UnitCreate, UnitUpdate
 
 class UnitService:
     def __init__(self, session: AsyncSession):

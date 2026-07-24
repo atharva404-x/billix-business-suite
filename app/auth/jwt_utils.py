@@ -1,15 +1,17 @@
+
 import base64
-import asyncio
-import time
 import logging
-from typing import Dict, Any, Optional
+import time
+from typing import Any, Dict, Optional
+
 import httpx
 import jwt
-from app.core.config import settings
+
+import asyncio
 from app.auth.exceptions import ConfigurationError, InvalidTokenError, TokenExpiredError
+from app.core.config import settings
 
 logger = logging.getLogger("app.auth.jwt")
-
 
 def get_jwks_url_from_publishable_key(publishable_key: str) -> Optional[str]:
     """
@@ -37,7 +39,6 @@ def get_jwks_url_from_publishable_key(publishable_key: str) -> Optional[str]:
     except Exception as e:
         logger.debug(f"Failed to derive JWKS URL from publishable key: {e}")
     return None
-
 
 class JWKSKeyManager:
     """
@@ -141,10 +142,8 @@ class JWKSKeyManager:
 
             return self._keys[kid]
 
-
 # Singleton instance of the key manager
 jwks_manager = JWKSKeyManager()
-
 
 async def verify_clerk_token(token: str) -> Dict[str, Any]:
     """

@@ -1,9 +1,8 @@
 
 import uuid
 from abc import ABC, abstractmethod
-from typing import Optional, Dict, Any
 from datetime import datetime
-
+from typing import Any, Dict, Optional
 
 # ------------------------------------------------------
 # Backup Provider Interface
@@ -48,14 +47,12 @@ class BackupProvider(ABC):
         """Delete a backup. Returns True if successful."""
         pass
 
-
 # ------------------------------------------------------
 # Database Backup Provider (Interface)
 # ------------------------------------------------------
 class DatabaseBackupProvider(BackupProvider, ABC):
     """Abstract base class for database-specific backup providers."""
     pass
-
 
 # ------------------------------------------------------
 # File Backup Provider (Interface)
@@ -64,14 +61,12 @@ class FileBackupProvider(BackupProvider, ABC):
     """Abstract base class for file-specific backup providers."""
     pass
 
-
 # ------------------------------------------------------
 # Cloud Backup Provider (Interface)
 # ------------------------------------------------------
 class CloudBackupProvider(BackupProvider, ABC):
     """Abstract base class for cloud-specific backup providers."""
     pass
-
 
 # ------------------------------------------------------
 # Backup Manager

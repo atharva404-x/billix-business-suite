@@ -1,12 +1,12 @@
 
 import uuid
 from datetime import datetime, timezone
-from typing import Type, TypeVar, List, Optional, Generic
+from typing import Generic, List, Optional, Type, TypeVar
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 T = TypeVar("T")
-
 
 class BaseRepository(Generic[T]):
     def __init__(self, session: AsyncSession, model: Type[T]):

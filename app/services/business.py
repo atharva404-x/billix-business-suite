@@ -1,16 +1,15 @@
 
 import uuid
 from typing import List
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException, status
-from app.models.business import BusinessProfile, BusinessMember
-from app.schemas.business import (
-    BusinessProfileCreate, BusinessProfileUpdate
-)
-from app.repositories.business import BusinessProfileRepository, BusinessMemberRepository
-from app.services.audit_log import AuditLogService
-from app.models.audit_log import AuditAction
 
+from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.audit_log import AuditAction
+from app.models.business import BusinessMember, BusinessProfile
+from app.repositories.business import BusinessMemberRepository, BusinessProfileRepository
+from app.schemas.business import BusinessProfileCreate, BusinessProfileUpdate
+from app.services.audit_log import AuditLogService
 
 class BusinessProfileService:
     def __init__(self, session: AsyncSession):
@@ -109,7 +108,6 @@ class BusinessProfileService:
             after_values={"is_active": False}
         )
         return deactivated_business
-
 
 class BusinessMemberService:
     def __init__(self, session: AsyncSession):

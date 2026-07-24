@@ -1,16 +1,16 @@
+
 import json
 import logging
 import sys
-from contextvars import ContextVar
 from datetime import datetime, timezone
 from typing import Optional
 
 from app.core.config import settings
+from contextvars import ContextVar
 
 # Context variables for request tracing across async call stacks
 request_id_var: ContextVar[Optional[str]] = ContextVar("request_id_var", default=None)
 correlation_id_var: ContextVar[Optional[str]] = ContextVar("correlation_id_var", default=None)
-
 
 class JSONFormatter(logging.Formatter):
     """
@@ -39,7 +39,6 @@ class JSONFormatter(logging.Formatter):
             log_data.update(record.extra_fields)
 
         return json.dumps(log_data)
-
 
 def setup_logging() -> None:
     """

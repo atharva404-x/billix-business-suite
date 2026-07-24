@@ -1,10 +1,11 @@
 
 import uuid
 from datetime import datetime
-from typing import Optional, List
-from pydantic import BaseModel, ConfigDict, Field
-from app.models.invoice import InvoiceStatus, PaymentStatus, PaymentMethod
+from typing import List, Optional
 
+from pydantic import BaseModel, ConfigDict, Field
+
+from app.models.invoice import InvoiceStatus, PaymentMethod, PaymentStatus
 
 class InvoiceItemCreate(BaseModel):
     product_id: uuid.UUID
@@ -13,14 +14,12 @@ class InvoiceItemCreate(BaseModel):
     discount: Optional[float] = Field(None, ge=0)
     gst_rate: Optional[float] = Field(None, ge=0, le=100)
 
-
 class InvoiceItemUpdate(BaseModel):
     product_id: Optional[uuid.UUID] = None
     quantity: Optional[float] = Field(None, gt=0)
     unit_price: Optional[float] = Field(None, ge=0)
     discount: Optional[float] = Field(None, ge=0)
     gst_rate: Optional[float] = Field(None, ge=0, le=100)
-
 
 class InvoiceItemResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -37,7 +36,6 @@ class InvoiceItemResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-
 class InvoiceCreate(BaseModel):
     customer_id: uuid.UUID
     invoice_date: datetime = Field(default_factory=datetime.utcnow)
@@ -45,7 +43,6 @@ class InvoiceCreate(BaseModel):
     discount_amount: Optional[float] = Field(None, ge=0)
     notes: Optional[str] = Field(None, max_length=2000)
     items: List[InvoiceItemCreate] = Field(..., min_length=1)
-
 
 class InvoiceUpdate(BaseModel):
     customer_id: Optional[uuid.UUID] = None
@@ -55,10 +52,8 @@ class InvoiceUpdate(BaseModel):
     notes: Optional[str] = Field(None, max_length=2000)
     items: Optional[List[InvoiceItemCreate]] = Field(None, min_length=1)
 
-
 class InvoiceCancel(BaseModel):
     reason: str = Field(..., max_length=1000)
-
 
 class InvoiceResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -90,12 +85,10 @@ class InvoiceResponse(BaseModel):
     updated_at: datetime
     items: List[InvoiceItemResponse]
 
-
 class InvoiceListResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     items: List[InvoiceResponse]
     total: int
-
 
 class PaymentCreate(BaseModel):
     invoice_id: uuid.UUID
@@ -103,7 +96,6 @@ class PaymentCreate(BaseModel):
     payment_method: PaymentMethod = PaymentMethod.OTHER
     transaction_id: Optional[str] = Field(None, max_length=255)
     notes: Optional[str] = Field(None, max_length=2000)
-
 
 class PaymentResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -117,7 +109,6 @@ class PaymentResponse(BaseModel):
     created_by: uuid.UUID
     created_at: datetime
     updated_at: datetime
-
 
 class PaymentListResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)

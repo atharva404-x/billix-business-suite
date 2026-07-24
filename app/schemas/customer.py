@@ -1,10 +1,11 @@
 
 import uuid
 from datetime import datetime
-from typing import Optional, List
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
-from app.models.customer import CustomerType
+from typing import List, Optional
 
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
+
+from app.models.customer import CustomerType
 
 class CustomerBase(BaseModel):
     customer_code: Optional[str] = Field(None, max_length=50)
@@ -19,15 +20,12 @@ class CustomerBase(BaseModel):
     pincode: Optional[str] = Field(None, max_length=10)
     credit_limit: Optional[float] = None
 
-
 class CustomerCreate(CustomerBase):
     pass
-
 
 class CustomerUpdate(CustomerBase):
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     type: Optional[CustomerType] = None
-
 
 class CustomerResponse(CustomerBase):
     model_config = ConfigDict(from_attributes=True)
@@ -37,7 +35,6 @@ class CustomerResponse(CustomerBase):
     updated_at: datetime
     is_active: bool
     outstanding_balance: float
-
 
 class CustomerListResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)

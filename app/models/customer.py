@@ -1,16 +1,16 @@
 
 import uuid
-from typing import Optional
 from enum import Enum
-from sqlalchemy import String, ForeignKey, UUID, Numeric
-from sqlalchemy.orm import Mapped, mapped_column
-from app.models.base import Base, BaseModelMixin
+from typing import Optional
 
+from sqlalchemy import ForeignKey, Numeric, String, UUID
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.models.base import Base, BaseModelMixin
 
 class CustomerType(str, Enum):
     B2B = "B2B"
     B2C = "B2C"
-
 
 class Customer(Base, BaseModelMixin):
     __tablename__ = "customers"

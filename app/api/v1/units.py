@@ -1,23 +1,18 @@
 
 import uuid
 from typing import Annotated, Optional
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.database import get_db_session
+
 from app.auth.dependencies import get_current_user
 from app.auth.permissions import Permission, PermissionChecker
+from app.core.database import get_db_session
 from app.models.user import User
-from app.schemas.unit import (
-    UnitCreate,
-    UnitUpdate,
-    UnitResponse,
-    UnitListResponse
-)
+from app.schemas.unit import UnitCreate, UnitListResponse, UnitResponse, UnitUpdate
 from app.services.unit import UnitService
 
-
 router = APIRouter(prefix="/units", tags=["units"])
-
 
 @router.post("", response_model=UnitResponse, status_code=201)
 async def create_unit(
@@ -28,7 +23,6 @@ async def create_unit(
 ):
     service = UnitService(session)
     return await service.create_unit(current_user.id, business_id, unit_data)
-
 
 @router.get("", response_model=UnitListResponse)
 async def list_units(
@@ -48,7 +42,6 @@ async def list_units(
     )
     return UnitListResponse(items=units, total=total)
 
-
 @router.get("/{unit_id}", response_model=UnitResponse)
 async def get_unit(
     business_id: uuid.UUID,
@@ -58,7 +51,6 @@ async def get_unit(
 ):
     service = UnitService(session)
     return await service.get_unit(current_user.id, business_id, unit_id)
-
 
 @router.patch("/{unit_id}", response_model=UnitResponse)
 async def update_unit(
@@ -70,7 +62,6 @@ async def update_unit(
 ):
     service = UnitService(session)
     return await service.update_unit(current_user.id, business_id, unit_id, update_data)
-
 
 @router.delete("/{unit_id}", response_model=UnitResponse)
 async def deactivate_unit(

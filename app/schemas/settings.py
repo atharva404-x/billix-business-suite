@@ -1,8 +1,9 @@
+
 import uuid
 from datetime import datetime
-from typing import Optional, Dict, Any
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from typing import Any, Dict, Optional
 
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 # ---------------------------------------------------------------------------
 # MODULE 1 — Business Settings
@@ -45,14 +46,11 @@ class BusinessSettingsBase(BaseModel):
             raise ValueError("Invalid PAN format")
         return v
 
-
 class BusinessSettingsCreate(BusinessSettingsBase):
     pass
 
-
 class BusinessSettingsUpdate(BusinessSettingsBase):
     pass
-
 
 class BusinessSettingsResponse(BusinessSettingsBase):
     model_config = ConfigDict(from_attributes=True)
@@ -62,7 +60,6 @@ class BusinessSettingsResponse(BusinessSettingsBase):
     created_at: datetime
     updated_at: datetime
     is_active: bool
-
 
 # ---------------------------------------------------------------------------
 # MODULE 2 — Business Preferences
@@ -79,14 +76,11 @@ class BusinessPreferencesBase(BaseModel):
     allow_negative_stock: Optional[bool] = None
     report_preferences: Optional[Dict[str, Any]] = None
 
-
 class BusinessPreferencesCreate(BusinessPreferencesBase):
     pass
 
-
 class BusinessPreferencesUpdate(BusinessPreferencesBase):
     pass
-
 
 class BusinessPreferencesResponse(BusinessPreferencesBase):
     model_config = ConfigDict(from_attributes=True)

@@ -1,10 +1,11 @@
 
 import uuid
 from datetime import datetime
-from typing import Optional, List
-from pydantic import BaseModel, Field, ConfigDict
-from app.models.inventory import StockMovement
+from typing import List, Optional
 
+from pydantic import BaseModel, ConfigDict, Field
+
+from app.models.inventory import StockMovement
 
 class StockIn(BaseModel):
     product_id: uuid.UUID
@@ -13,7 +14,6 @@ class StockIn(BaseModel):
     reference_id: Optional[uuid.UUID] = None
     remarks: Optional[str] = None
 
-
 class StockOut(BaseModel):
     product_id: uuid.UUID
     quantity: float = Field(..., ge=0)
@@ -21,14 +21,12 @@ class StockOut(BaseModel):
     reference_id: Optional[uuid.UUID] = None
     remarks: Optional[str] = None
 
-
 class Adjustment(BaseModel):
     product_id: uuid.UUID
     quantity: float
     reference_type: Optional[str] = None
     reference_id: Optional[uuid.UUID] = None
     remarks: Optional[str] = None
-
 
 class InventoryTransactionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -46,12 +44,10 @@ class InventoryTransactionResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-
 class InventoryHistoryListResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     items: List[InventoryTransactionResponse]
     total: int
-
 
 class ProductStockResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)

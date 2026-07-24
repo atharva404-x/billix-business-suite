@@ -1,27 +1,18 @@
 
 import uuid
-from typing import Optional, Dict, Any, List
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.notification import (
-    Notification,
-    NotificationType,
-    NotificationStatus,
-    NotificationChannel,
-)
-from app.schemas.notification import (
-    NotificationCreate,
-    NotificationUpdate,
-)
-from app.repositories.notification import NotificationRepository
-from app.repositories.business import BusinessMemberRepository
-from app.services.audit_log import AuditLogService
 from app.models.audit_log import AuditAction
-
+from app.models.notification import Notification, NotificationChannel, NotificationStatus, NotificationType
+from app.repositories.business import BusinessMemberRepository
+from app.repositories.notification import NotificationRepository
+from app.schemas.notification import NotificationCreate, NotificationUpdate
+from app.services.audit_log import AuditLogService
 
 # ------------------------------------------------------
 # Notification Provider Interface
@@ -33,7 +24,6 @@ class NotificationProvider(ABC):
     async def send(self, notification: Notification) -> bool:
         """Send a notification using this provider. Returns True if successful."""
         pass
-
 
 # ------------------------------------------------------
 # Notification Service
@@ -235,7 +225,6 @@ class NotificationService:
         )
 
         return deactivated
-
 
 # ------------------------------------------------------
 # Notification Manager

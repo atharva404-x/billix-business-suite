@@ -1,16 +1,16 @@
+
 import uuid
 from datetime import datetime
 from typing import Optional
-from sqlalchemy import UUID, Boolean, DateTime, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
+from sqlalchemy import Boolean, DateTime, UUID, func
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 class Base(DeclarativeBase):
     """
     SQLAlchemy Declarative Base class.
     """
     pass
-
 
 class BaseModelMixin:
     """

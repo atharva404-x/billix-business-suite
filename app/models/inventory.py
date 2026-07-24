@@ -1,11 +1,12 @@
 
+import enum
 import uuid
 from typing import Optional
-from sqlalchemy import String, ForeignKey, UUID, Numeric, Enum
-from sqlalchemy.orm import Mapped, mapped_column
-from app.models.base import Base, BaseModelMixin
-import enum
 
+from sqlalchemy import Enum, ForeignKey, Numeric, String, UUID
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.models.base import Base, BaseModelMixin
 
 class StockMovement(str, enum.Enum):
     OPENING_STOCK = "OPENING_STOCK"
@@ -16,7 +17,6 @@ class StockMovement(str, enum.Enum):
     ADJUSTMENT_IN = "ADJUSTMENT_IN"
     ADJUSTMENT_OUT = "ADJUSTMENT_OUT"
     MANUAL_UPDATE = "MANUAL_UPDATE"
-
 
 class InventoryTransaction(Base, BaseModelMixin):
     __tablename__ = "inventory_transactions"

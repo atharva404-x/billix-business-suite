@@ -1,30 +1,21 @@
 
 import uuid
-from typing import Annotated, Optional
 from datetime import datetime
+from typing import Annotated, Optional
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.database import get_db_session
+
 from app.auth.dependencies import get_current_user
 from app.auth.permissions import Permission, PermissionChecker
-from app.models.user import User
-from app.schemas.invoice import (
-    InvoiceCreate,
-    InvoiceUpdate,
-    InvoiceCancel,
-    InvoiceResponse,
-    InvoiceListResponse,
-    PaymentCreate,
-    PaymentResponse,
-    PaymentListResponse
-)
+from app.core.database import get_db_session
 from app.models.invoice import InvoiceStatus, PaymentStatus
-from app.services.invoice import InvoiceService
+from app.models.user import User
 from app.repositories.invoice import PaymentRepository
-
+from app.schemas.invoice import InvoiceCancel, InvoiceCreate, InvoiceListResponse, InvoiceResponse, InvoiceUpdate, PaymentCreate, PaymentListResponse, PaymentResponse
+from app.services.invoice import InvoiceService
 
 router = APIRouter(prefix="/invoices", tags=["invoices"])
-
 
 @router.post("", response_model=InvoiceResponse, status_code=201)
 async def create_invoice(
@@ -35,7 +26,6 @@ async def create_invoice(
 ):
     service = InvoiceService(session)
     return await service.create_invoice(current_user.id, business_id, invoice_data)
-
 
 @router.get("", response_model=InvoiceListResponse)
 async def list_invoices(
@@ -62,7 +52,6 @@ async def list_invoices(
     )
     return InvoiceListResponse(items=invoices, total=total)
 
-
 @router.get("/{invoice_id}", response_model=InvoiceResponse)
 async def get_invoice(
     business_id: uuid.UUID,
@@ -72,7 +61,6 @@ async def get_invoice(
 ):
     service = InvoiceService(session)
     return await service.get_invoice(current_user.id, business_id, invoice_id)
-
 
 @router.patch("/{invoice_id}", response_model=InvoiceResponse)
 async def update_invoice(
@@ -85,7 +73,6 @@ async def update_invoice(
     service = InvoiceService(session)
     return await service.update_invoice(current_user.id, business_id, invoice_id, update_data)
 
-
 @router.post("/{invoice_id}/cancel", response_model=InvoiceResponse)
 async def cancel_invoice(
     business_id: uuid.UUID,
@@ -97,7 +84,6 @@ async def cancel_invoice(
     service = InvoiceService(session)
     return await service.cancel_invoice(current_user.id, business_id, invoice_id, cancel_data)
 
-
 @router.post("/payments", response_model=PaymentResponse, status_code=201)
 async def record_payment(
     business_id: uuid.UUID,
@@ -107,7 +93,6 @@ async def record_payment(
 ):
     service = InvoiceService(session)
     return await service.record_payment(current_user.id, business_id, payment_data)
-
 
 @router.get("/{invoice_id}/payments", response_model=PaymentListResponse)
 async def list_invoice_payments(

@@ -1,27 +1,20 @@
 
 import uuid
-from typing import Annotated, Optional
 from datetime import datetime
+from typing import Annotated, Optional
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.database import get_db_session
+
 from app.auth.dependencies import get_current_user
 from app.auth.permissions import Permission, PermissionChecker
-from app.models.user import User
-from app.schemas.inventory import (
-    StockIn,
-    StockOut,
-    Adjustment,
-    InventoryTransactionResponse,
-    InventoryHistoryListResponse,
-    ProductStockResponse
-)
+from app.core.database import get_db_session
 from app.models.inventory import StockMovement
+from app.models.user import User
+from app.schemas.inventory import Adjustment, InventoryHistoryListResponse, InventoryTransactionResponse, ProductStockResponse, StockIn, StockOut
 from app.services.inventory import InventoryService
 
-
 router = APIRouter(prefix="/inventory", tags=["inventory"])
-
 
 @router.post("/stock-in", response_model=InventoryTransactionResponse, status_code=201)
 async def stock_in_endpoint(
@@ -34,7 +27,6 @@ async def stock_in_endpoint(
     transaction, _ = await service.stock_in(current_user.id, business_id, data)
     return transaction
 
-
 @router.post("/stock-out", response_model=InventoryTransactionResponse, status_code=201)
 async def stock_out_endpoint(
     business_id: uuid.UUID,
@@ -45,7 +37,6 @@ async def stock_out_endpoint(
     service = InventoryService(session)
     transaction, _ = await service.stock_out(current_user.id, business_id, data)
     return transaction
-
 
 @router.post("/adjustment", response_model=InventoryTransactionResponse, status_code=201)
 async def adjustment_endpoint(
@@ -58,7 +49,6 @@ async def adjustment_endpoint(
     transaction, _ = await service.adjust_stock(current_user.id, business_id, data)
     return transaction
 
-
 @router.get("/product/{product_id}", response_model=ProductStockResponse)
 async def get_product_stock(
     business_id: uuid.UUID,
@@ -68,7 +58,6 @@ async def get_product_stock(
 ):
     service = InventoryService(session)
     return await service.get_current_stock(current_user.id, business_id, product_id)
-
 
 @router.get("/history/{product_id}", response_model=InventoryHistoryListResponse)
 async def get_inventory_history(

@@ -1,13 +1,14 @@
 
 import uuid
-from typing import List
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException, status
-from app.models.category import Category
-from app.schemas.category import CategoryCreate, CategoryUpdate
-from app.repositories.category import CategoryRepository
-from app.repositories.business import BusinessMemberRepository
+from typing import List, Optional
 
+from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.category import Category
+from app.repositories.business import BusinessMemberRepository
+from app.repositories.category import CategoryRepository
+from app.schemas.category import CategoryCreate, CategoryUpdate
 
 class CategoryService:
     def __init__(self, session: AsyncSession):

@@ -1,11 +1,13 @@
-import uuid
-from typing import List, Tuple, Optional, Any
-from datetime import datetime
-from sqlalchemy import select, and_, or_, func
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.audit_log import AuditLog, AuditAction
-from app.repositories.base import BaseRepository
 
+import uuid
+from datetime import datetime
+from typing import Any, List, Optional, Tuple
+
+from sqlalchemy import and_, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.audit_log import AuditAction, AuditLog
+from app.repositories.base import BaseRepository
 
 class AuditLogRepository(BaseRepository[AuditLog]):
     def __init__(self, session: AsyncSession):

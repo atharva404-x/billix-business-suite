@@ -1,18 +1,19 @@
 
 import uuid
-from typing import List
-from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List, Optional
+
 from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.audit_log import AuditAction
 from app.models.product import Product
-from app.schemas.product import ProductCreate, ProductUpdate
-from app.repositories.product import ProductRepository
 from app.repositories.business import BusinessMemberRepository
 from app.repositories.category import CategoryRepository
+from app.repositories.product import ProductRepository
 from app.repositories.unit import UnitRepository
-from app.utils.validation import validate_hsn_sac
+from app.schemas.product import ProductCreate, ProductUpdate
 from app.services.audit_log import AuditLogService
-from app.models.audit_log import AuditAction
-
+from app.utils.validation import validate_hsn_sac
 
 class ProductService:
     def __init__(self, session: AsyncSession):

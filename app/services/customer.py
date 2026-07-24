@@ -1,16 +1,17 @@
 
 import uuid
-from typing import List
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException, status
-from app.models.customer import Customer, CustomerType
-from app.schemas.customer import CustomerCreate, CustomerUpdate
-from app.repositories.customer import CustomerRepository
-from app.repositories.business import BusinessMemberRepository
-from app.utils.validation import validate_gstin
-from app.services.audit_log import AuditLogService
-from app.models.audit_log import AuditAction
+from typing import List, Optional
 
+from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.audit_log import AuditAction
+from app.models.customer import Customer, CustomerType
+from app.repositories.business import BusinessMemberRepository
+from app.repositories.customer import CustomerRepository
+from app.schemas.customer import CustomerCreate, CustomerUpdate
+from app.services.audit_log import AuditLogService
+from app.utils.validation import validate_gstin
 
 class CustomerService:
     def __init__(self, session: AsyncSession):

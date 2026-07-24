@@ -1,6 +1,7 @@
 
 from fastapi import APIRouter
-from app.api.v1 import business, customers, suppliers, units, categories, products, inventory, invoices, reports, settings, audit_logs, notifications
+
+from app.api.v1 import audit_logs, business, categories, customers, inventory, invoices, notifications, products, reports, settings, suppliers, units
 
 api_router = APIRouter(prefix="/v1")
 api_router.include_router(business.router, tags=["business"])

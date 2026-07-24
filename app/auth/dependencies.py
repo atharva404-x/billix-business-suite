@@ -1,15 +1,16 @@
+
 import logging
 from typing import Optional
-from fastapi import Depends, HTTPException, Request, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
+from fastapi import Depends, HTTPException, Request, status
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.auth.clerk_client import clerk_client
 from app.core.database import get_db
 from app.models.user import User
-from app.auth.clerk_client import clerk_client
 
 logger = logging.getLogger("app.auth.dependencies")
-
 
 async def get_current_user(
     request: Request,

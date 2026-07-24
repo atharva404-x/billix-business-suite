@@ -1,26 +1,19 @@
 
 import uuid
-from typing import Annotated, Optional
 from datetime import datetime
+from typing import Annotated, Optional
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db_session
 from app.auth.dependencies import get_current_user
 from app.auth.permissions import Permission, PermissionChecker
+from app.core.database import get_db_session
 from app.models.user import User
-from app.schemas.reports import (
-    DashboardResponse,
-    SalesReportResponse,
-    CustomerReportsResponse,
-    ProductReportsResponse,
-    PaymentReportsResponse,
-    InventoryReportsResponse
-)
+from app.schemas.reports import CustomerReportsResponse, DashboardResponse, InventoryReportsResponse, PaymentReportsResponse, ProductReportsResponse, SalesReportResponse
 from app.services.reports import ReportingService
 
 router = APIRouter(prefix="/reports", tags=["reports"])
-
 
 @router.get("/dashboard", response_model=DashboardResponse)
 async def get_dashboard(
@@ -30,7 +23,6 @@ async def get_dashboard(
 ):
     service = ReportingService(session)
     return await service.get_dashboard(current_user.id, business_id)
-
 
 @router.get("/sales", response_model=SalesReportResponse)
 async def get_sales_report(
@@ -46,7 +38,6 @@ async def get_sales_report(
         current_user.id, business_id, group_by, date_from, date_to
     )
 
-
 @router.get("/customers", response_model=CustomerReportsResponse)
 async def get_customer_reports(
     business_id: uuid.UUID,
@@ -60,7 +51,6 @@ async def get_customer_reports(
         current_user.id, business_id, report_type, customer_id
     )
 
-
 @router.get("/products", response_model=ProductReportsResponse)
 async def get_product_reports(
     business_id: uuid.UUID,
@@ -73,7 +63,6 @@ async def get_product_reports(
         current_user.id, business_id, report_type
     )
 
-
 @router.get("/payments", response_model=PaymentReportsResponse)
 async def get_payment_reports(
     business_id: uuid.UUID,
@@ -85,7 +74,6 @@ async def get_payment_reports(
     return await service.get_payment_reports(
         current_user.id, business_id, report_type
     )
-
 
 @router.get("/inventory", response_model=InventoryReportsResponse)
 async def get_inventory_reports(

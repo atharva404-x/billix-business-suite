@@ -9,21 +9,21 @@ PermissionChecker — FastAPI dependency factory; resolves business_id from
                     request path/query params, loads the caller's BusinessMember
                     record, and asserts the required Permission is present.
 """
-import uuid
 import logging
+import uuid
 from enum import Enum
-from typing import Set, Dict
+from typing import Dict, Set
+
 from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db_session
-from app.models.user import User
 from app.models.roles import BusinessRole
+from app.models.user import User
 from app.repositories.business import BusinessMemberRepository
 
 logger = logging.getLogger("app.auth.permissions")
-
 
 # ---------------------------------------------------------------------------
 # Permission Enum
@@ -88,7 +88,6 @@ class Permission(str, Enum):
     BACKUP_READ = "backup:read"
     BACKUP_CREATE = "backup:create"
     BACKUP_DELETE = "backup:delete"
-
 
 # ---------------------------------------------------------------------------
 # Role → Permission mapping
@@ -191,11 +190,9 @@ ROLE_PERMISSIONS: Dict[BusinessRole, Set[Permission]] = {
     },
 }
 
-
 def role_has_permission(role: BusinessRole, permission: Permission) -> bool:
     """Return True if the given BusinessRole grants the requested Permission."""
     return permission in ROLE_PERMISSIONS.get(role, set())
-
 
 # ---------------------------------------------------------------------------
 # PermissionChecker — FastAPI dependency factory

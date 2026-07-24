@@ -1,11 +1,13 @@
+
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
 import httpx
+
+from app.auth.exceptions import AuthError, ConfigurationError
 from app.core.config import settings
-from app.auth.exceptions import ConfigurationError, AuthError
 
 logger = logging.getLogger("app.auth.clerk_client")
-
 
 class ClerkClient:
     """
@@ -13,7 +15,7 @@ class ClerkClient:
     Used for retrieving user profiles and other identity operations.
     """
     def __init__(self, secret_key: Optional[str] = None, api_url: Optional[str] = None):
-        self.secret_key = secret_key or settings.CLERK_SECRET_KEY
+        self.secret_key = secret_key if secret_key is not None else settings.CLERK_SECRET_KEY
         self.api_url = (api_url or settings.CLERK_API_URL).rstrip("/")
 
     def _get_headers(self) -> Dict[str, str]:
@@ -63,7 +65,6 @@ class ClerkClient:
             except httpx.RequestError as e:
                 logger.error(f"Network error calling Clerk: {e}")
                 raise AuthError(f"Network error contacting Clerk API: {str(e)}", status_code=502)
-
 
 # Singleton instance of ClerkClient
 clerk_client = ClerkClient()
