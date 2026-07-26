@@ -36,14 +36,26 @@ export async function apiClient<T = unknown>(
   }
 
   // Dynamically fetch Clerk JWT token on client-side
-  if (typeof window !== "undefined" && (window as unknown as { Clerk?: ClerkGlobal }).Clerk) {
-    try {
-      const token = await (window as unknown as { Clerk: ClerkGlobal }).Clerk.session?.getToken();
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
+  if (typeof window !== "undefined") {
+    let clerkObj = (window as unknown as { Clerk?: ClerkGlobal }).Clerk;
+
+    // Wait briefly if Clerk JS is initializing session state
+    let attempts = 0;
+    while (clerkObj && !clerkObj.session && attempts < 20) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      clerkObj = (window as unknown as { Clerk?: ClerkGlobal }).Clerk;
+      attempts++;
+    }
+
+    if (clerkObj?.session) {
+      try {
+        const token = await clerkObj.session.getToken();
+        if (token) {
+          headers.set("Authorization", `Bearer ${token}`);
+        }
+      } catch (e) {
+        console.warn("Failed to retrieve Clerk JWT token:", e);
       }
-    } catch (e) {
-      console.warn("Failed to retrieve Clerk JWT token:", e);
     }
   }
 
