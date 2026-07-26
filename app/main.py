@@ -77,19 +77,6 @@ app.openapi = custom_openapi
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.ALLOWED_HOSTS)
 app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "X-Request-ID", "X-Correlation-ID"],
-    expose_headers=["X-Request-ID", "X-Correlation-ID"],
-)
-app.add_middleware(GZipMiddleware, minimum_size=1000)
-app.add_middleware(RequestSizeLimitMiddleware, max_bytes=settings.MAX_REQUEST_SIZE_BYTES)
-app.add_middleware(RateLimitMiddleware, requests_per_minute=settings.RATE_LIMIT_PER_MINUTE)
-app.add_middleware(ErrorHandlerMiddleware)
-app.add_middleware(RequestIDMiddleware)
-app.add_middleware(
     AuthMiddleware,
     public_paths={
         "/",
@@ -100,6 +87,19 @@ app.add_middleware(
         "/redoc",
         "/openapi.json"
     }
+)
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+app.add_middleware(RequestSizeLimitMiddleware, max_bytes=settings.MAX_REQUEST_SIZE_BYTES)
+app.add_middleware(RateLimitMiddleware, requests_per_minute=settings.RATE_LIMIT_PER_MINUTE)
+app.add_middleware(ErrorHandlerMiddleware)
+app.add_middleware(RequestIDMiddleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Request-ID", "X-Correlation-ID", "X-Business-ID"],
+    expose_headers=["X-Request-ID", "X-Correlation-ID"],
 )
 
 @app.get("/health")

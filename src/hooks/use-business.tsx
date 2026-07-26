@@ -50,6 +50,7 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchBusinesses = useCallback(async () => {
+    console.log("[DEBUG fetchBusinesses START]", { userId });
     if (!userId) {
       setBusinesses([]);
       setActiveBusiness(null);
@@ -60,9 +61,11 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
 
     try {
       setIsLoading(true);
+      console.log("[DEBUG fetchBusinesses] Calling apiClient('/api/v1/business-profiles')");
       const res = await apiClient<{ items: BusinessProfile[]; total: number }>(
         "/api/v1/business-profiles",
       );
+      console.log("[DEBUG fetchBusinesses SUCCESS]", res);
       const items = res.items || [];
       setBusinesses(items);
 
@@ -87,6 +90,7 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (e: unknown) {
       const err = e as Error;
+      console.error("[DEBUG fetchBusinesses ERROR]", err);
       toast.error(`Failed to load business profiles: ${err.message}`);
     } finally {
       setIsLoading(false);
@@ -94,10 +98,15 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
   }, [userId]);
 
   useEffect(() => {
+    console.log("[DEBUG BusinessProvider useEffect]", { authLoaded, userId });
     if (authLoaded) {
-      fetchBusinesses();
+      if (userId) {
+        fetchBusinesses();
+      } else {
+        setIsLoading(false);
+      }
     }
-  }, [authLoaded, fetchBusinesses]);
+  }, [authLoaded, userId, fetchBusinesses]);
 
   const switchBusiness = (id: string) => {
     const selected = businesses.find((b) => b.id === id);

@@ -33,8 +33,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         path = request.url.path
 
-        # Pass through if path is public
-        if path in self.public_paths or any(path.startswith(p) for p in self.public_paths if p != "/"):
+        # Pass through if path is public or request is a CORS preflight OPTIONS request
+        if request.method == "OPTIONS" or path in self.public_paths or any(path.startswith(p) for p in self.public_paths if p != "/"):
             return await call_next(request)
 
         # Extract and verify Clerk JWT from Authorization header
