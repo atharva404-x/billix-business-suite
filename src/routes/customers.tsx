@@ -13,6 +13,8 @@ import {
   ArrowUpDown,
   ChevronUp,
   ChevronDown,
+  Upload,
+  FileSpreadsheet,
 } from "lucide-react";
 import { useUser } from "@clerk/tanstack-react-start";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
@@ -55,6 +57,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { KpiCard } from "@/components/common/kpi-card";
 import { SimplePagination } from "@/components/common/simple-pagination";
 import { ErrorState, EmptyState } from "@/components/shared/api-states";
@@ -299,6 +302,113 @@ function CustomersPage() {
     setIsDialogOpen(true);
   };
 
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const [importCsvText, setImportCsvText] = useState("");
+  const [importing, setImporting] = useState(false);
+
+  const handleExportCSV = () => {
+    if (!items || items.length === 0) {
+      toast.error("No customer profiles available to export.");
+      return;
+    }
+    const headers = [
+      "Name",
+      "Customer_Code",
+      "Type",
+      "GSTIN",
+      "Phone",
+      "Email",
+      "City",
+      "State",
+      "Credit_Limit",
+      "Outstanding_Balance",
+    ];
+    const rows = items.map((c) => [
+      `"${(c.name || "").replace(/"/g, '""')}"`,
+      `"${c.customer_code || ""}"`,
+      `"${c.type}"`,
+      `"${c.gstin || ""}"`,
+      `"${c.phone || ""}"`,
+      `"${c.email || ""}"`,
+      `"${c.city || ""}"`,
+      `"${c.state || ""}"`,
+      c.credit_limit || 0,
+      c.outstanding_balance || 0,
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `customers_export_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Customers exported to CSV.");
+  };
+
+  const handleBulkDeactivate = async () => {
+    if (selectedIds.size === 0) return;
+    try {
+      for (const id of Array.from(selectedIds)) {
+        await apiClient(`${API_ENDPOINTS.customers.list}/${id}`, { method: "DELETE" });
+      }
+      invalidateCache("customer:delete", queryClient);
+      toast.success(`${selectedIds.size} customer accounts deactivated.`);
+      setSelectedIds(new Set());
+    } catch (err: unknown) {
+      const error = err as Error;
+      toast.error(error.message || "Failed bulk customer deactivation.");
+    }
+  };
+
+  const handleImportSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!importCsvText.trim()) {
+      toast.error("Please paste CSV data or enter valid rows.");
+      return;
+    }
+    setImporting(true);
+    try {
+      const lines = importCsvText.trim().split("\n");
+      if (lines.length < 2) {
+        toast.error("CSV must contain a header row and at least one data row.");
+        return;
+      }
+      let successCount = 0;
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
+        if (!cols[0]) continue;
+        await apiClient(API_ENDPOINTS.customers.create, {
+          method: "POST",
+          body: JSON.stringify({
+            name: cols[0],
+            customer_code: cols[1] || null,
+            type: cols[2]?.toUpperCase() === "B2B" ? "B2B" : "B2C",
+            gstin: cols[3] || null,
+            phone: cols[4] || null,
+            email: cols[5] || null,
+            city: cols[6] || null,
+            state: cols[7] || null,
+            credit_limit: cols[8] ? parseFloat(cols[8]) : null,
+          }),
+        });
+        successCount++;
+      }
+      invalidateCache("customer:create", queryClient);
+      toast.success(`Successfully imported ${successCount} customers.`);
+      setIsImportOpen(false);
+      setImportCsvText("");
+    } catch (err: unknown) {
+      const error = err as Error;
+      toast.error(error.message || "Failed CSV import.");
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const handleCreateClick = () => {
     resetForm();
     setIsDialogOpen(true);
@@ -374,9 +484,19 @@ function CustomersPage() {
         title="Customers"
         description="Manage buyers, GSTINs, credit limits and outstanding balances."
         actions={
-          <Button onClick={handleCreateClick} className="gap-1.5 shadow-sm">
-            <Plus className="h-4 w-4" /> Add Customer
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsImportOpen(true)}
+              className="gap-1.5 shadow-sm"
+            >
+              <Upload className="h-4 w-4" /> Import CSV
+            </Button>
+            <Button onClick={handleCreateClick} className="gap-1.5 shadow-sm">
+              <Plus className="h-4 w-4" /> Add Customer
+            </Button>
+          </div>
         }
       />
 
@@ -416,12 +536,19 @@ function CustomersPage() {
               />
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <Button variant="outline" size="sm" className="gap-1.5">
-                <SlidersHorizontal className="h-4 w-4" />{" "}
-                <span className="hidden sm:inline">Filter</span>
-              </Button>
-              <Button variant="outline" size="sm" className="gap-1.5">
-                <Download className="h-4 w-4" /> <span className="hidden sm:inline">Export</span>
+              {selectedIds.size > 0 && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleBulkDeactivate}
+                  className="gap-1.5"
+                >
+                  <Trash2 className="h-4 w-4" /> Deactivate ({selectedIds.size})
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={handleExportCSV} className="gap-1.5">
+                <Download className="h-4 w-4" />{" "}
+                <span className="hidden sm:inline">Export CSV</span>
               </Button>
             </div>
           </div>
@@ -740,6 +867,42 @@ function CustomersPage() {
               Deactivate Account
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* IMPORT CSV DIALOG */}
+      <Dialog open={isImportOpen} onOpenChange={setIsImportOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileSpreadsheet className="h-5 w-5 text-primary" /> Import Customers from CSV
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleImportSubmit} className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label htmlFor="cust_csv_data">Paste CSV Content or Upload Data</Label>
+              <Textarea
+                id="cust_csv_data"
+                rows={8}
+                value={importCsvText}
+                onChange={(e) => setImportCsvText(e.target.value)}
+                placeholder={`Name,Customer_Code,Type,GSTIN,Phone,Email,City,State,Credit_Limit\n"Acme Corp",CUST-001,B2B,27AAAAA0000A1Z5,9876543210,contact@acme.com,Mumbai,Maharashtra,100000`}
+                className="font-mono text-xs"
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Row format: Name, Customer_Code, Type (B2B/B2C), GSTIN, Phone, Email, City, State,
+                Credit_Limit
+              </p>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsImportOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={importing}>
+                {importing ? "Importing..." : "Process Import"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 

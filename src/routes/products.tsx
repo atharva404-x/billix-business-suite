@@ -12,6 +12,9 @@ import {
   Eye,
   ArrowUpDown,
   AlertTriangle,
+  Copy,
+  Upload,
+  FileSpreadsheet,
 } from "lucide-react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useBusiness } from "@/hooks/use-business";
@@ -328,6 +331,135 @@ function ProductsPage() {
     setIsDialogOpen(true);
   };
 
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const [importCsvText, setImportCsvText] = useState("");
+  const [importing, setImporting] = useState(false);
+
+  const handleExportCSV = () => {
+    if (!items || items.length === 0) {
+      toast.error("No products available to export.");
+      return;
+    }
+    const headers = [
+      "Name",
+      "SKU",
+      "Barcode",
+      "HSN_SAC",
+      "Selling_Price",
+      "Purchase_Price",
+      "GST_Rate",
+      "Current_Stock",
+      "Is_Service",
+    ];
+    const rows = items.map((p) => [
+      `"${(p.name || "").replace(/"/g, '""')}"`,
+      `"${p.sku || ""}"`,
+      `"${p.barcode || ""}"`,
+      `"${p.hsn_sac_code || ""}"`,
+      p.selling_price || 0,
+      p.purchase_price || 0,
+      p.gst_rate || 0,
+      p.is_service ? 0 : p.current_stock,
+      p.is_service ? "Yes" : "No",
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `products_export_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Products exported to CSV.");
+  };
+
+  const handleDuplicateClick = (p: Product) => {
+    setSelectedProduct(null);
+    setFormData({
+      name: `${p.name} (Copy)`,
+      category_id: p.category_id || "",
+      sku: p.sku ? `${p.sku}-COPY` : "",
+      barcode: p.barcode || "",
+      hsn_sac_code: p.hsn_sac_code || "",
+      gst_rate: p.gst_rate !== undefined && p.gst_rate !== null ? String(p.gst_rate) : "",
+      purchase_price:
+        p.purchase_price !== undefined && p.purchase_price !== null ? String(p.purchase_price) : "",
+      selling_price:
+        p.selling_price !== undefined && p.selling_price !== null ? String(p.selling_price) : "",
+      opening_stock: "0",
+      minimum_stock:
+        p.minimum_stock !== undefined && p.minimum_stock !== null ? String(p.minimum_stock) : "",
+      is_service: p.is_service || false,
+      description: p.description || "",
+    });
+    setFormErrors({});
+    setIsDialogOpen(true);
+    toast.info("Prefilled entry form with duplicated product details.");
+  };
+
+  const handleBulkDeactivate = async () => {
+    if (selectedIds.size === 0) return;
+    try {
+      for (const id of Array.from(selectedIds)) {
+        await apiClient(`/api/v1/products/${id}`, { method: "DELETE" });
+      }
+      invalidateCache("product:delete", queryClient);
+      toast.success(`${selectedIds.size} products deactivated.`);
+      setSelectedIds(new Set());
+    } catch (err: unknown) {
+      const error = err as Error;
+      toast.error(error.message || "Failed bulk deactivation.");
+    }
+  };
+
+  const handleImportSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!importCsvText.trim()) {
+      toast.error("Please paste CSV data or select a valid CSV file.");
+      return;
+    }
+    setImporting(true);
+    try {
+      const lines = importCsvText.trim().split("\n");
+      if (lines.length < 2) {
+        toast.error("CSV must contain a header row and at least one data row.");
+        return;
+      }
+      let successCount = 0;
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
+        if (!cols[0]) continue;
+        await apiClient("/api/v1/products", {
+          method: "POST",
+          body: JSON.stringify({
+            name: cols[0],
+            sku: cols[1] || null,
+            barcode: cols[2] || null,
+            hsn_sac_code: cols[3] || null,
+            selling_price: cols[4] ? parseFloat(cols[4]) : null,
+            purchase_price: cols[5] ? parseFloat(cols[5]) : null,
+            gst_rate: cols[6] ? parseFloat(cols[6]) : null,
+            opening_stock: cols[7] ? parseFloat(cols[7]) : 0,
+            is_service: cols[8]?.toLowerCase() === "yes" || cols[8]?.toLowerCase() === "true",
+          }),
+        });
+        successCount++;
+      }
+      invalidateCache("product:create", queryClient);
+      toast.success(`Successfully imported ${successCount} products.`);
+      setIsImportOpen(false);
+      setImportCsvText("");
+    } catch (err: unknown) {
+      const error = err as Error;
+      toast.error(error.message || "Failed CSV import.");
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const handleCreateClick = () => {
     resetForm();
     setIsDialogOpen(true);
@@ -390,9 +522,19 @@ function ProductsPage() {
         title="Products"
         description="Your item catalogue with pricing, GST and stock."
         actions={
-          <Button onClick={handleCreateClick} className="gap-1.5 shadow-sm">
-            <Plus className="h-4 w-4" /> Add Product
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsImportOpen(true)}
+              className="gap-1.5 shadow-sm"
+            >
+              <Upload className="h-4 w-4" /> Import CSV
+            </Button>
+            <Button onClick={handleCreateClick} className="gap-1.5 shadow-sm">
+              <Plus className="h-4 w-4" /> Add Product
+            </Button>
+          </div>
         }
       />
 
@@ -429,12 +571,19 @@ function ProductsPage() {
               />
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <Button variant="outline" size="sm" className="gap-1.5">
-                <SlidersHorizontal className="h-4 w-4" />{" "}
-                <span className="hidden sm:inline">Filter</span>
-              </Button>
-              <Button variant="outline" size="sm" className="gap-1.5">
-                <Download className="h-4 w-4" /> <span className="hidden sm:inline">Export</span>
+              {selectedIds.size > 0 && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleBulkDeactivate}
+                  className="gap-1.5"
+                >
+                  <Trash2 className="h-4 w-4" /> Deactivate ({selectedIds.size})
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={handleExportCSV} className="gap-1.5">
+                <Download className="h-4 w-4" />{" "}
+                <span className="hidden sm:inline">Export CSV</span>
               </Button>
             </div>
           </div>
@@ -561,6 +710,12 @@ function ProductsPage() {
                                   onClick={() => handleEditClick(p)}
                                 >
                                   <Edit className="mr-2 h-4 w-4" /> Edit Product
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="cursor-pointer"
+                                  onClick={() => handleDuplicateClick(p)}
+                                >
+                                  <Copy className="mr-2 h-4 w-4" /> Duplicate Product
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
@@ -781,6 +936,42 @@ function ProductsPage() {
               Deactivate Item
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* IMPORT CSV DIALOG */}
+      <Dialog open={isImportOpen} onOpenChange={setIsImportOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileSpreadsheet className="h-5 w-5 text-primary" /> Import Products from CSV
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleImportSubmit} className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label htmlFor="csv_data">Paste CSV Content or Upload Data</Label>
+              <Textarea
+                id="csv_data"
+                rows={8}
+                value={importCsvText}
+                onChange={(e) => setImportCsvText(e.target.value)}
+                placeholder={`Name,SKU,Barcode,HSN_SAC,Selling_Price,Purchase_Price,GST_Rate,Opening_Stock,Is_Service\n"Sample Product",SKU-001,890123,3004,150.00,100.00,18,50,No`}
+                className="font-mono text-xs"
+              />
+              <p className="text-[11px] text-muted-foreground">
+                Row format: Name, SKU, Barcode, HSN_SAC, Selling_Price, Purchase_Price, GST_Rate,
+                Opening_Stock, Is_Service
+              </p>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsImportOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={importing}>
+                {importing ? "Importing..." : "Process Import"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 
