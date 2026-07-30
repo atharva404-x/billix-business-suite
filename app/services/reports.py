@@ -10,7 +10,7 @@ from sqlalchemy.orm import selectinload
 
 from app.models import Customer, InventoryTransaction, Invoice, InvoiceItem, InvoiceStatus, Payment, PaymentStatus, Product, StockMovement, Supplier
 from app.repositories.business import BusinessMemberRepository
-from app.schemas.reports import CustomerPurchaseHistoryItem, CustomerReportsResponse, DashboardResponse, DashboardSummary, InventoryReportsResponse, InventoryValuationItem, OutstandingCustomerItem, PaymentMethodDistributionItem, PaymentReportsResponse, ProductReportsResponse, ProductSalesItem, RecentInvoiceItem, SalesReportItem, SalesReportResponse, StockMovementReportItem, StockValueItem, TopCustomerItem, TopSellingProductItem
+from app.schemas.reports import CustomerPurchaseHistoryItem, CustomerReportsResponse, DashboardResponse, DashboardSummary, GstReportItem, GstReportResponse, InventoryReportsResponse, InventoryValuationItem, OutstandingCustomerItem, PaymentMethodDistributionItem, PaymentReportsResponse, ProductReportsResponse, ProductSalesItem, RecentInvoiceItem, SalesReportItem, SalesReportResponse, StockMovementReportItem, StockValueItem, TopCustomerItem, TopSellingProductItem
 
 class ReportingService:
     def __init__(self, session: AsyncSession):
@@ -947,4 +947,70 @@ class ReportingService:
                 reference_id=row.reference_id
             ) for row in rows
         ]
+
+    async def get_gst_report(
+        self, user_id: uuid.UUID, business_id: uuid.UUID
+    ) -> GstReportResponse:
+        await self._ensure_business_access(user_id, business_id)
+
+        query = (
+            select(
+                Invoice.id.label("invoice_id"),
+                Invoice.invoice_number,
+                Invoice.invoice_date,
+                Customer.name.label("customer_name"),
+                Customer.gstin.label("customer_gstin"),
+                Invoice.place_of_supply,
+                Invoice.taxable_amount,
+                Invoice.cgst_amount,
+                Invoice.sgst_amount,
+                Invoice.igst_amount,
+                Invoice.total_tax,
+                Invoice.grand_total
+            )
+            .join(Customer, Invoice.customer_id == Customer.id)
+            .where(
+                and_(
+                    Invoice.business_id == business_id,
+                    Invoice.is_active == True,
+                    Invoice.status != InvoiceStatus.CANCELLED,
+                    Invoice.status != InvoiceStatus.VOID
+                )
+            )
+            .order_by(desc(Invoice.invoice_date))
+        )
+        result = await self.session.execute(query)
+        rows = result.fetchall()
+
+        items = [
+            GstReportItem(
+                invoice_id=row.invoice_id,
+                invoice_number=row.invoice_number,
+                invoice_date=row.invoice_date,
+                customer_name=row.customer_name,
+                customer_gstin=row.customer_gstin,
+                place_of_supply=row.place_of_supply,
+                taxable_amount=float(row.taxable_amount or 0.0),
+                cgst_amount=float(row.cgst_amount or 0.0),
+                sgst_amount=float(row.sgst_amount or 0.0),
+                igst_amount=float(row.igst_amount or 0.0),
+                total_tax=float(row.total_tax or 0.0),
+                grand_total=float(row.grand_total or 0.0)
+            ) for row in rows
+        ]
+
+        total_taxable_amount = sum(item.taxable_amount for item in items)
+        total_cgst = sum(item.cgst_amount for item in items)
+        total_sgst = sum(item.sgst_amount for item in items)
+        total_igst = sum(item.igst_amount for item in items)
+        total_gst = sum(item.total_tax for item in items)
+
+        return GstReportResponse(
+            total_taxable_amount=total_taxable_amount,
+            total_cgst=total_cgst,
+            total_sgst=total_sgst,
+            total_igst=total_igst,
+            total_gst=total_gst,
+            items=items
+        )
 

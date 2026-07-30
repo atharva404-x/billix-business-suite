@@ -10,10 +10,19 @@ from app.auth.dependencies import get_current_user
 from app.auth.permissions import Permission, PermissionChecker
 from app.core.database import get_db_session
 from app.models.user import User
-from app.schemas.reports import CustomerReportsResponse, DashboardResponse, InventoryReportsResponse, PaymentReportsResponse, ProductReportsResponse, SalesReportResponse
+from app.schemas.reports import CustomerReportsResponse, DashboardResponse, GstReportResponse, InventoryReportsResponse, PaymentReportsResponse, ProductReportsResponse, SalesReportResponse
 from app.services.reports import ReportingService
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+
+@router.get("/gst", response_model=GstReportResponse)
+async def get_gst_report(
+    business_id: uuid.UUID,
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.REPORT_READ))],
+    session: AsyncSession = Depends(get_db_session)
+):
+    service = ReportingService(session)
+    return await service.get_gst_report(current_user.id, business_id)
 
 @router.get("/dashboard", response_model=DashboardResponse)
 async def get_dashboard(

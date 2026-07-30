@@ -167,3 +167,28 @@ class InventoryReportsResponse(BaseModel):
     opening_stock: Optional[List[dict]] = None
     closing_stock: Optional[List[dict]] = None
 
+# GST Reports Schemas
+class GstReportItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
+    invoice_id: UUID
+    invoice_number: str
+    invoice_date: datetime
+    customer_name: str
+    customer_gstin: Optional[str] = None
+    place_of_supply: Optional[str] = None
+    taxable_amount: float
+    cgst_amount: float
+    sgst_amount: float
+    igst_amount: float
+    total_tax: float
+    grand_total: float
+
+class GstReportResponse(BaseModel):
+    total_taxable_amount: float
+    total_cgst: float
+    total_sgst: float
+    total_igst: float
+    total_gst: float
+    items: List[GstReportItem]
+
