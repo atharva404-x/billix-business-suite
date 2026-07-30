@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import React, { useState } from "react";
 import {
   IndianRupee,
   ReceiptText,
@@ -85,6 +86,7 @@ interface SalesReportResponse {
 function Dashboard() {
   const { user } = useUser();
   const { activeBusiness, activeBusinessName } = useBusiness();
+  const [groupPeriod, setGroupPeriod] = useState<"day" | "week" | "month" | "year">("month");
 
   // 1. Fetch Core Dashboard KPI and invoice lists
   const {
@@ -94,15 +96,15 @@ function Dashboard() {
     refetch: refetchDashboard,
   } = useBusinessQuery<DashboardData>(["dashboard"], API_ENDPOINTS.dashboard);
 
-  // 2. Fetch Monthly Sales Overview graph history
+  // 2. Fetch Monthly/Period Sales Overview graph history
   const {
     data: salesData,
     isLoading: salesLoading,
     error: salesError,
     refetch: refetchSales,
   } = useBusinessQuery<SalesReportResponse>(
-    ["sales", "monthly"],
-    `${API_ENDPOINTS.reports.sales}?group_by=month`,
+    ["sales", groupPeriod],
+    `${API_ENDPOINTS.reports.sales}?group_by=${groupPeriod}`,
   );
 
   const getGreeting = () => {
@@ -153,16 +155,23 @@ function Dashboard() {
         title={`${getGreeting()}, ${user?.firstName || "Partner"}`}
         description={`Here's what's happening at ${activeBusinessName || "your business"} today.`}
         actions={
-          <>
-            <Button variant="outline" size="sm" className="gap-1.5">
-              <Calendar className="h-4 w-4" /> This month
-            </Button>
-            <Button asChild size="sm" className="gap-1.5">
+          <div className="flex items-center gap-2">
+            <select
+              value={groupPeriod}
+              onChange={(e) => setGroupPeriod(e.target.value as "day" | "week" | "month" | "year")}
+              className="flex h-9 rounded-md border border-input bg-background px-3 py-1 text-xs shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+            >
+              <option value="day">Daily View</option>
+              <option value="week">Weekly View</option>
+              <option value="month">Monthly View</option>
+              <option value="year">Yearly View</option>
+            </select>
+            <Button asChild size="sm" className="gap-1.5 shadow-sm">
               <Link to="/invoices/new">
                 <Plus className="h-4 w-4" /> New Invoice
               </Link>
             </Button>
-          </>
+          </div>
         }
       />
 
