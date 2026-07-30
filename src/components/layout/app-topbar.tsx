@@ -39,85 +39,93 @@ export function AppTopbar() {
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur-md md:px-6">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="h-6" />
+
       <div className="relative hidden max-w-md flex-1 md:block">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Search invoices, customers, products…"
-          className="h-9 rounded-lg border-muted bg-muted/50 pl-9 focus-visible:bg-background"
+          placeholder="Quick search invoices, customers, products… (⌘K)"
+          className="h-9 rounded-lg border-muted bg-muted/40 pl-9 text-xs focus-visible:bg-background focus-visible:ring-1 transition-colors"
         />
-        <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground">
+        <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded border bg-background px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground shadow-2xs">
           ⌘K
         </kbd>
       </div>
+
       <div className="ml-auto flex items-center gap-2">
-        <Button asChild size="sm" className="hidden gap-1.5 sm:inline-flex">
+        <Button asChild size="sm" className="hidden gap-1.5 font-medium shadow-sm sm:inline-flex">
           <Link to="/invoices/new">
             <Plus className="h-4 w-4" /> New Invoice
           </Link>
         </Button>
+
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setDark((v) => !v)}
           aria-label="Toggle theme"
+          className="h-9 w-9 text-muted-foreground hover:text-foreground"
         >
           {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </Button>
-        <Button variant="ghost" size="icon" aria-label="Help">
-          <HelpCircle className="h-4 w-4" />
-        </Button>
-        <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative h-9 w-9 text-muted-foreground hover:text-foreground"
+          aria-label="Notifications"
+        >
           <Bell className="h-4 w-4" />
-          <Badge className="absolute -right-0.5 -top-0.5 h-4 min-w-4 rounded-full p-0 px-1 text-[10px]">
+          <Badge className="absolute -right-0.5 -top-0.5 h-4 min-w-4 rounded-full p-0 px-1 text-[10px] bg-primary text-primary-foreground font-bold">
             3
           </Badge>
         </Button>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 rounded-full pl-1 pr-2 py-1 hover:bg-muted outline-none">
-              <Avatar className="h-7 w-7">
+            <button className="flex items-center gap-2.5 rounded-full pl-1 pr-2.5 py-1 hover:bg-muted/70 outline-none transition-colors">
+              <Avatar className="h-7 w-7 border shadow-2xs">
                 <AvatarImage src={user?.imageUrl} alt={user?.fullName || "User Avatar"} />
                 <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
               <div className="hidden text-left leading-tight sm:block">
-                <div className="text-xs font-semibold">
+                <div className="text-xs font-bold text-foreground">
                   {user?.fullName ||
                     user?.primaryEmailAddress?.emailAddress ||
                     "Authenticated User"}
                 </div>
-                <div className="text-[10px] text-muted-foreground truncate max-w-[120px]">
-                  {activeBusiness?.business_name || "No Business"}
+                <div className="text-[10px] text-muted-foreground truncate max-w-[120px] font-medium">
+                  {activeBusiness?.business_name || "No Active Business"}
                 </div>
               </div>
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuContent align="end" className="w-60 shadow-lg">
+            <DropdownMenuLabel className="font-semibold">My Workspace Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link to="/profile">Profile</Link>
+              <Link to="/profile">Profile Settings</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/settings">Settings</Link>
+              <Link to="/settings">System Preferences</Link>
             </DropdownMenuItem>
 
             {businesses.length > 0 && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                  Switch Business
+                <DropdownMenuLabel className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Switch Active Business
                 </DropdownMenuLabel>
                 {businesses.map((b) => (
                   <DropdownMenuItem
                     key={b.id}
                     onClick={() => switchBusiness(b.id)}
-                    className={`flex justify-between items-center text-xs ${
-                      b.id === activeBusinessId ? "font-semibold bg-muted" : ""
+                    className={`flex justify-between items-center text-xs py-2 ${
+                      b.id === activeBusinessId ? "font-bold bg-primary/10 text-primary" : ""
                     }`}
                   >
-                    <span className="truncate max-w-[160px]">{b.business_name}</span>
+                    <span className="truncate max-w-[170px]">{b.business_name}</span>
                     {b.id === activeBusinessId && <Check className="h-3.5 w-3.5 text-primary" />}
                   </DropdownMenuItem>
                 ))}
@@ -125,7 +133,9 @@ export function AppTopbar() {
             )}
 
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => signOut()}>Log out</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => signOut()} className="text-destructive font-medium">
+              Log out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
