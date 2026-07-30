@@ -123,3 +123,60 @@ Run through this checklist prior to launching in production:
 - [x] **Security**: Security headers (`X-Frame-Options`, `X-Content-Type-Options`, `CSP`), Request size limit (10MB), CORS hardening, and `TrustedHostMiddleware` enabled.
 - [x] **Environment Variables**: All secret credentials documented in `.env.example` and excluded from Git by `.gitignore`.
 - [x] **Deployment Configuration**: Cloud specifications (`vercel.json`, `render.yaml`, `digitalocean.yaml`) and production entrypoint script (`scripts/start-production.sh`) verified.
+
+---
+
+## 8. Windows Desktop Application Packaging (.exe)
+
+Billix can be packaged into a native Windows Desktop executable (.exe) for counter billing operations:
+
+### Desktop Packaging Procedure (Tauri / Electron Wrapper)
+1. **Prerequisites**: Install Rust and Node.js v20+.
+2. **Build Production Assets**:
+   ```bash
+   npm run build
+   ```
+3. **Package Executable**:
+   ```bash
+   npx @tauri-apps/cli build
+   ```
+4. **Output Installer**:
+   - `src-tauri/target/release/bundle/msi/Billix_2.5.0_x64_en-US.msi`
+   - `src-tauri/target/release/bundle/nsis/Billix_2.5.0_x64-setup.exe`
+
+---
+
+## 9. Android Mobile Application Packaging (.apk / .aab)
+
+Billix can be packaged for Android mobile devices to allow on-the-go billing and stock audits:
+
+### Android Mobile Packaging Procedure (Capacitor)
+1. **Add Android Platform**:
+   ```bash
+   npx cap add android
+   ```
+2. **Sync Web Assets**:
+   ```bash
+   npm run build
+   npx cap sync android
+   ```
+3. **Generate Production APK/AAB**:
+   - Open project in Android Studio (`npx cap open android`).
+   - Select **Build -> Build Bundle(s) / APK(s) -> Build APK(s)** or **Generate Signed Bundle**.
+   - Output APK location: `android/app/build/outputs/apk/release/app-release.apk`.
+
+---
+
+## 10. Database Backup & Disaster Recovery Guide
+
+1. **Automated Nightly Backups**:
+   - Database backups are executed daily via PostgreSQL `pg_dump` and pushed to encrypted S3 storage.
+2. **Manual Backup Command**:
+   ```bash
+   pg_dump -h <NEON_HOST> -U <USER> -d billix -F c -b -v -f billix_backup_$(date +%F).dump
+   ```
+3. **Database Restore Command**:
+   ```bash
+   pg_restore -h <NEON_HOST> -U <USER> -d billix -v billix_backup_<DATE>.dump
+   ```
+
