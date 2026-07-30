@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
 interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
@@ -35,14 +35,14 @@ export async function apiClient<T = unknown>(
     }
   }
 
-  // Dynamically fetch Clerk JWT token on client-side
-  if (typeof window !== "undefined") {
+  // Dynamically fetch Clerk JWT token on client-side if not explicitly provided
+  if (typeof window !== "undefined" && !headers.has("Authorization")) {
     let clerkObj = (window as unknown as { Clerk?: ClerkGlobal }).Clerk;
 
-    // Wait briefly if Clerk JS is initializing session state
+    // Wait briefly if Clerk JS is initializing
     let attempts = 0;
-    while (clerkObj && !clerkObj.session && attempts < 20) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
+    while (!clerkObj && attempts < 10) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
       clerkObj = (window as unknown as { Clerk?: ClerkGlobal }).Clerk;
       attempts++;
     }
@@ -79,10 +79,27 @@ export async function apiClient<T = unknown>(
     url += `?${queryString}`;
   }
 
+  const authHeader = headers.get("Authorization");
+  const hasAuthHeader = !!authHeader;
+  const tokenLength = authHeader ? authHeader.replace(/^Bearer\s+/, "").length : 0;
+
+  console.log("[API CLIENT REQUEST]", {
+    url,
+    authHeaderPresent: hasAuthHeader ? "YES" : "NO",
+    tokenLength,
+  });
+
   try {
     const response = await fetch(url, {
       ...customOptions,
       headers,
+    });
+
+    const responseClone = response.clone();
+    const responseBodyText = await responseClone.text();
+    console.log("[API CLIENT RESPONSE]", {
+      status: response.status,
+      responseBody: responseBodyText,
     });
 
     if (!response.ok) {

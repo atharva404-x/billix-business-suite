@@ -3,10 +3,7 @@ import {
   LayoutDashboard,
   Building2,
   Users,
-  Truck,
   Package,
-  Tags,
-  Boxes,
   FilePlus2,
   ReceiptText,
   BarChart3,
@@ -22,7 +19,6 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarHeader,
-  SidebarFooter,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -46,13 +42,8 @@ const sections = [
     ],
   },
   {
-    label: "Inventory",
-    items: [
-      { title: "Products", url: "/products", icon: Package },
-      { title: "Categories", url: "/categories", icon: Tags },
-      { title: "Stock", url: "/inventory", icon: Boxes },
-      { title: "Suppliers", url: "/suppliers", icon: Truck },
-    ],
+    label: "Catalogue",
+    items: [{ title: "Products", url: "/products", icon: Package }],
   },
   {
     label: "Account",
@@ -105,14 +96,6 @@ export function AppSidebar() {
           </SidebarGroup>
         ))}
       </SidebarContent>
-      <SidebarFooter className="border-t">
-        <div className="rounded-lg bg-gradient-to-br from-primary/10 to-accent/40 p-3 text-xs group-data-[collapsible=icon]:hidden">
-          <div className="font-semibold">Upgrade to Pro</div>
-          <div className="mt-1 text-muted-foreground">
-            Unlimited invoices, e-way bills and multi-branch.
-          </div>
-        </div>
-      </SidebarFooter>
     </Sidebar>
   );
 }

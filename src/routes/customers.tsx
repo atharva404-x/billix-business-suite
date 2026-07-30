@@ -14,7 +14,7 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import { useUser } from "@clerk/clerk-react";
+import { useUser } from "@clerk/tanstack-react-start";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useBusiness } from "@/hooks/use-business";
 import { useBusinessQuery } from "@/hooks/use-api";

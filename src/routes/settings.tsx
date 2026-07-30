@@ -1,4 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { useBusiness } from "@/hooks/use-business";
+import { useUser } from "@clerk/tanstack-react-start";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "Settings — Billix" }] }),
@@ -22,11 +25,61 @@ export const Route = createFileRoute("/settings")({
 });
 
 function SettingsPage() {
+  const { activeBusiness, updateBusiness } = useBusiness();
+  const { user } = useUser();
+
+  const [businessName, setBusinessName] = useState("");
+  const [legalName, setLegalName] = useState("");
+  const [gstin, setGstin] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [pincode, setPincode] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (activeBusiness) {
+      setBusinessName(activeBusiness.business_name || "");
+      setLegalName(activeBusiness.legal_name || activeBusiness.business_name || "");
+      setGstin(activeBusiness.gstin || "");
+      setAddress(activeBusiness.address_line1 || "");
+      setCity(activeBusiness.city || "");
+      setState(activeBusiness.state || "");
+      setPincode(activeBusiness.pincode || "");
+    }
+  }, [activeBusiness]);
+
+  const handleSaveBusiness = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeBusiness) {
+      toast.error("No active business selected");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await updateBusiness(activeBusiness.id, {
+        business_name: businessName,
+        legal_name: legalName,
+        gstin,
+        address_line1: address,
+        city,
+        state,
+        pincode,
+      });
+      toast.success("Business settings saved successfully");
+    } catch (err: unknown) {
+      const error = err as Error;
+      toast.error(error.message || "Failed to save business settings");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <AppShell>
       <PageHeader
         title="Settings"
-        description="Configure your workspace, invoicing rules and integrations."
+        description="Configure your workspace, invoicing rules and team preferences."
       />
       <Tabs defaultValue="business" className="space-y-6">
         <TabsList className="flex-wrap">
@@ -35,7 +88,6 @@ function SettingsPage() {
           <TabsTrigger value="tax">Tax & GST</TabsTrigger>
           <TabsTrigger value="team">Team</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="billing">Plan & Billing</TabsTrigger>
         </TabsList>
 
         <TabsContent value="business">
@@ -43,18 +95,77 @@ function SettingsPage() {
             <CardHeader>
               <CardTitle>Business details</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-2">
-              <Field label="Legal name" defaultValue="Sharma Retail Store" />
-              <Field label="Trade name" defaultValue="Sharma Retail" />
-              <Field label="GSTIN" defaultValue="27ABCDE1234F1Z5" />
-              <Field label="PAN" defaultValue="ABCDE1234F" />
-              <Field label="Address" defaultValue="14 Market Rd, Andheri West" />
-              <Field label="City" defaultValue="Mumbai" />
-              <Field label="State" defaultValue="Maharashtra" />
-              <Field label="Pincode" defaultValue="400058" />
-              <div className="sm:col-span-2">
-                <Button>Save changes</Button>
-              </div>
+            <CardContent>
+              <form onSubmit={handleSaveBusiness} className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="tradeName">Trade / Display Name</Label>
+                  <Input
+                    id="tradeName"
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
+                    placeholder="Business Name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="legalName">Legal Entity Name</Label>
+                  <Input
+                    id="legalName"
+                    value={legalName}
+                    onChange={(e) => setLegalName(e.target.value)}
+                    placeholder="Legal Name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="gstin">GSTIN</Label>
+                  <Input
+                    id="gstin"
+                    value={gstin}
+                    onChange={(e) => setGstin(e.target.value)}
+                    placeholder="27ABCDE1234F1Z5"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address">Address</Label>
+                  <Input
+                    id="address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Street Address"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="city">City</Label>
+                  <Input
+                    id="city"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="City"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="state">State</Label>
+                  <Input
+                    id="state"
+                    value={state}
+                    onChange={(e) => setState(e.target.value)}
+                    placeholder="State"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pincode">Pincode</Label>
+                  <Input
+                    id="pincode"
+                    value={pincode}
+                    onChange={(e) => setPincode(e.target.value)}
+                    placeholder="Pincode"
+                  />
+                </div>
+                <div className="sm:col-span-2 mt-2">
+                  <Button type="submit" disabled={isSaving}>
+                    {isSaving ? "Saving changes..." : "Save changes"}
+                  </Button>
+                </div>
+              </form>
             </CardContent>
           </Card>
         </TabsContent>
@@ -66,7 +177,7 @@ function SettingsPage() {
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <Field label="Invoice prefix" defaultValue="INV-" />
-              <Field label="Next number" defaultValue="2042" />
+              <Field label="Next number" defaultValue="1001" />
               <div className="space-y-2">
                 <Label>Currency</Label>
                 <Select defaultValue="inr">
@@ -74,7 +185,7 @@ function SettingsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="inr">₹ Indian Rupee</SelectItem>
+                    <SelectItem value="inr">₹ Indian Rupee (INR)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -87,13 +198,10 @@ function SettingsPage() {
                   <SelectContent>
                     <SelectItem value="tax">Tax Invoice</SelectItem>
                     <SelectItem value="retail">Retail (Thermal)</SelectItem>
-                    <SelectItem value="proforma">Proforma</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <Toggle label="Show HSN / SAC on invoice" defaultChecked />
-              <Toggle label="Enable e-invoice (IRN)" defaultChecked />
-              <Toggle label="Enable e-way bill" />
               <Toggle label="Round off totals" defaultChecked />
             </CardContent>
           </Card>
@@ -106,9 +214,7 @@ function SettingsPage() {
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <Field label="Default GST rate" defaultValue="18%" />
-              <Field label="Composition scheme" defaultValue="No" />
-              <Toggle label="Reverse charge applicable" />
-              <Toggle label="Include TCS in invoice" />
+              <Toggle label="Include tax in prices" />
             </CardContent>
           </Card>
         </TabsContent>
@@ -118,27 +224,20 @@ function SettingsPage() {
             <CardHeader>
               <CardTitle>Team members</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {[
-                { n: "Rahul Sharma", r: "Owner", e: "rahul@sharmaretail.in" },
-                { n: "Priya Nair", r: "Cashier", e: "priya@sharmaretail.in" },
-                { n: "Ankit Verma", r: "Accountant", e: "ankit@sharmaretail.in" },
-              ].map((t) => (
-                <div key={t.e} className="flex items-center justify-between rounded-lg border p-3">
-                  <div>
-                    <div className="font-medium">{t.n}</div>
-                    <div className="text-xs text-muted-foreground">{t.e}</div>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div>
+                  <div className="font-medium">
+                    {user?.fullName || user?.primaryEmailAddress?.emailAddress || "Workspace Owner"}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{t.r}</span>
-                    <Button size="sm" variant="outline">
-                      Manage
-                    </Button>
+                  <div className="text-xs text-muted-foreground">
+                    {user?.primaryEmailAddress?.emailAddress || "Primary Owner"}
                   </div>
                 </div>
-              ))}
-              <Separator />
-              <Button>Invite member</Button>
+                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                  Owner
+                </span>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -151,27 +250,6 @@ function SettingsPage() {
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <Toggle label="Email invoice receipts" defaultChecked />
               <Toggle label="Payment received alerts" defaultChecked />
-              <Toggle label="Low stock alerts" defaultChecked />
-              <Toggle label="Weekly summary email" />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="billing">
-          <Card>
-            <CardHeader>
-              <CardTitle>Plan & Billing</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-xl border bg-gradient-to-br from-primary/10 to-accent/40 p-5">
-                <div className="text-xs uppercase text-muted-foreground">Current plan</div>
-                <div className="mt-1 font-display text-2xl font-bold">Billix Growth · ₹999/mo</div>
-                <div className="mt-1 text-xs text-muted-foreground">Renews on 03 Aug 2026</div>
-                <div className="mt-4 flex gap-2">
-                  <Button>Upgrade plan</Button>
-                  <Button variant="outline">Manage billing</Button>
-                </div>
-              </div>
             </CardContent>
           </Card>
         </TabsContent>

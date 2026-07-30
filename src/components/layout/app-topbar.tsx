@@ -1,7 +1,7 @@
 import { Bell, Search, HelpCircle, Plus, Moon, Sun, Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { useUser, useAuth } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@clerk/tanstack-react-start";
 import { useBusiness } from "@/hooks/use-business";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -82,7 +82,11 @@ export function AppTopbar() {
                 </AvatarFallback>
               </Avatar>
               <div className="hidden text-left leading-tight sm:block">
-                <div className="text-xs font-semibold">{user?.fullName || "Rahul Sharma"}</div>
+                <div className="text-xs font-semibold">
+                  {user?.fullName ||
+                    user?.primaryEmailAddress?.emailAddress ||
+                    "Authenticated User"}
+                </div>
                 <div className="text-[10px] text-muted-foreground truncate max-w-[120px]">
                   {activeBusiness?.business_name || "No Business"}
                 </div>

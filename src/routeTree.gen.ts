@@ -12,11 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as BusinessProfilesRouteImport } from './routes/business-profiles'
-import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as CustomersRouteImport } from './routes/customers'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
-import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as InvoicesRouteImport } from './routes/invoices'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ProductsRouteImport } from './routes/products'
@@ -24,7 +22,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as SuppliersRouteImport } from './routes/suppliers'
+import { Route as SsoCallbackRouteImport } from './routes/sso-callback'
 import { Route as InvoicesIdRouteImport } from './routes/invoices.$id'
 import { Route as InvoicesNewRouteImport } from './routes/invoices.new'
 
@@ -43,11 +41,6 @@ const BusinessProfilesRoute = BusinessProfilesRouteImport.update({
   path: '/business-profiles',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CategoriesRoute = CategoriesRouteImport.update({
-  id: '/categories',
-  path: '/categories',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CustomersRoute = CustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
@@ -61,11 +54,6 @@ const DashboardRoute = DashboardRouteImport.update({
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InventoryRoute = InventoryRouteImport.update({
-  id: '/inventory',
-  path: '/inventory',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InvoicesRoute = InvoicesRouteImport.update({
@@ -103,9 +91,9 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SuppliersRoute = SuppliersRouteImport.update({
-  id: '/suppliers',
-  path: '/suppliers',
+const SsoCallbackRoute = SsoCallbackRouteImport.update({
+  id: '/sso-callback',
+  path: '/sso-callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InvoicesIdRoute = InvoicesIdRouteImport.update({
@@ -123,11 +111,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
   '/business-profiles': typeof BusinessProfilesRoute
-  '/categories': typeof CategoriesRoute
   '/customers': typeof CustomersRoute
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/inventory': typeof InventoryRoute
   '/invoices': typeof InvoicesRouteWithChildren
   '/login': typeof LoginRoute
   '/products': typeof ProductsRoute
@@ -135,7 +121,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
-  '/suppliers': typeof SuppliersRoute
+  '/sso-callback': typeof SsoCallbackRoute
   '/invoices/$id': typeof InvoicesIdRoute
   '/invoices/new': typeof InvoicesNewRoute
 }
@@ -143,11 +129,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
   '/business-profiles': typeof BusinessProfilesRoute
-  '/categories': typeof CategoriesRoute
   '/customers': typeof CustomersRoute
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/inventory': typeof InventoryRoute
   '/invoices': typeof InvoicesRouteWithChildren
   '/login': typeof LoginRoute
   '/products': typeof ProductsRoute
@@ -155,7 +139,7 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
-  '/suppliers': typeof SuppliersRoute
+  '/sso-callback': typeof SsoCallbackRoute
   '/invoices/$id': typeof InvoicesIdRoute
   '/invoices/new': typeof InvoicesNewRoute
 }
@@ -164,11 +148,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
   '/business-profiles': typeof BusinessProfilesRoute
-  '/categories': typeof CategoriesRoute
   '/customers': typeof CustomersRoute
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
-  '/inventory': typeof InventoryRoute
   '/invoices': typeof InvoicesRouteWithChildren
   '/login': typeof LoginRoute
   '/products': typeof ProductsRoute
@@ -176,7 +158,7 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
-  '/suppliers': typeof SuppliersRoute
+  '/sso-callback': typeof SsoCallbackRoute
   '/invoices/$id': typeof InvoicesIdRoute
   '/invoices/new': typeof InvoicesNewRoute
 }
@@ -186,11 +168,9 @@ export interface FileRouteTypes {
     | '/'
     | '/analytics'
     | '/business-profiles'
-    | '/categories'
     | '/customers'
     | '/dashboard'
     | '/forgot-password'
-    | '/inventory'
     | '/invoices'
     | '/login'
     | '/products'
@@ -198,7 +178,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reports'
     | '/settings'
-    | '/suppliers'
+    | '/sso-callback'
     | '/invoices/$id'
     | '/invoices/new'
   fileRoutesByTo: FileRoutesByTo
@@ -206,11 +186,9 @@ export interface FileRouteTypes {
     | '/'
     | '/analytics'
     | '/business-profiles'
-    | '/categories'
     | '/customers'
     | '/dashboard'
     | '/forgot-password'
-    | '/inventory'
     | '/invoices'
     | '/login'
     | '/products'
@@ -218,7 +196,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reports'
     | '/settings'
-    | '/suppliers'
+    | '/sso-callback'
     | '/invoices/$id'
     | '/invoices/new'
   id:
@@ -226,11 +204,9 @@ export interface FileRouteTypes {
     | '/'
     | '/analytics'
     | '/business-profiles'
-    | '/categories'
     | '/customers'
     | '/dashboard'
     | '/forgot-password'
-    | '/inventory'
     | '/invoices'
     | '/login'
     | '/products'
@@ -238,7 +214,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reports'
     | '/settings'
-    | '/suppliers'
+    | '/sso-callback'
     | '/invoices/$id'
     | '/invoices/new'
   fileRoutesById: FileRoutesById
@@ -247,11 +223,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalyticsRoute: typeof AnalyticsRoute
   BusinessProfilesRoute: typeof BusinessProfilesRoute
-  CategoriesRoute: typeof CategoriesRoute
   CustomersRoute: typeof CustomersRoute
   DashboardRoute: typeof DashboardRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
-  InventoryRoute: typeof InventoryRoute
   InvoicesRoute: typeof InvoicesRouteWithChildren
   LoginRoute: typeof LoginRoute
   ProductsRoute: typeof ProductsRoute
@@ -259,7 +233,7 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
-  SuppliersRoute: typeof SuppliersRoute
+  SsoCallbackRoute: typeof SsoCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -285,13 +259,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BusinessProfilesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/categories': {
-      id: '/categories'
-      path: '/categories'
-      fullPath: '/categories'
-      preLoaderRoute: typeof CategoriesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/customers': {
       id: '/customers'
       path: '/customers'
@@ -311,13 +278,6 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/inventory': {
-      id: '/inventory'
-      path: '/inventory'
-      fullPath: '/inventory'
-      preLoaderRoute: typeof InventoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/invoices': {
@@ -369,11 +329,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/suppliers': {
-      id: '/suppliers'
-      path: '/suppliers'
-      fullPath: '/suppliers'
-      preLoaderRoute: typeof SuppliersRouteImport
+    '/sso-callback': {
+      id: '/sso-callback'
+      path: '/sso-callback'
+      fullPath: '/sso-callback'
+      preLoaderRoute: typeof SsoCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/invoices/$id': {
@@ -411,11 +371,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyticsRoute: AnalyticsRoute,
   BusinessProfilesRoute: BusinessProfilesRoute,
-  CategoriesRoute: CategoriesRoute,
   CustomersRoute: CustomersRoute,
   DashboardRoute: DashboardRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
-  InventoryRoute: InventoryRoute,
   InvoicesRoute: InvoicesRouteWithChildren,
   LoginRoute: LoginRoute,
   ProductsRoute: ProductsRoute,
@@ -423,7 +381,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
-  SuppliersRoute: SuppliersRoute,
+  SsoCallbackRoute: SsoCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

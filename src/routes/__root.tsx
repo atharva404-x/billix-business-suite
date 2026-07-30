@@ -9,7 +9,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-import { ClerkProvider, useAuth } from "@clerk/clerk-react";
+import { ClerkProvider, useAuth } from "@clerk/tanstack-react-start";
 import { BusinessProvider, useBusiness } from "@/hooks/use-business";
 import { OnboardingModal } from "@/components/auth/onboarding-modal";
 
@@ -23,7 +23,7 @@ function NotFoundComponent() {
         <h1 className="text-7xl font-bold text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+          The page you&apos;re looking for doesn&apos;t exist or has been moved.
         </p>
         <div className="mt-6">
           <Link
@@ -129,10 +129,9 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
   return (
-    <ClerkProvider publishableKey={publishableKey}>
+    <ClerkProvider>
       <QueryClientProvider client={queryClient}>
         <BusinessProvider>
           <RootAuthWrapper />
@@ -148,18 +147,20 @@ function RootAuthWrapper() {
   const router = useRouter();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
+  const isPublicRoute = ["/", "/login", "/register", "/forgot-password", "/sso-callback"].includes(
+    pathname,
+  );
+
   useEffect(() => {
     if (!isLoaded) return;
 
-    const isPublicRoute = ["/", "/login", "/register", "/forgot-password"].includes(pathname);
     if (!userId && !isPublicRoute) {
-      router.navigate({ to: "/login" });
+      router.navigate({ to: "/login", replace: true });
     } else if (userId && (pathname === "/login" || pathname === "/register")) {
-      router.navigate({ to: "/dashboard" });
+      router.navigate({ to: "/dashboard", replace: true });
     }
-  }, [isLoaded, userId, pathname, router]);
+  }, [isLoaded, userId, pathname, isPublicRoute, router]);
 
-  const isPublicRoute = ["/", "/login", "/register", "/forgot-password"].includes(pathname);
   if (!isLoaded && !isPublicRoute) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">

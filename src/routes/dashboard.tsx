@@ -9,7 +9,7 @@ import {
   Users,
   Calendar,
 } from "lucide-react";
-import { useUser } from "@clerk/clerk-react";
+import { useUser } from "@clerk/tanstack-react-start";
 import { useBusiness } from "@/hooks/use-business";
 import { useBusinessQuery } from "@/hooks/use-api";
 import { API_ENDPOINTS } from "@/lib/api-endpoints";

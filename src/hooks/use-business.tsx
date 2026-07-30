@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/tanstack-react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { toast } from "sonner";
@@ -7,8 +7,10 @@ import { toast } from "sonner";
 export interface BusinessProfile {
   id: string;
   business_name: string;
+  legal_name?: string | null;
   gstin?: string | null;
   address?: string | null;
+  address_line1?: string | null;
   city?: string | null;
   state?: string | null;
   pincode?: string | null;
@@ -27,15 +29,19 @@ interface BusinessContextType {
   refreshBusinesses: () => Promise<void>;
   createBusiness: (data: {
     business_name: string;
-    business_type: string;
+    business_type?: string;
     gstin?: string;
     email?: string;
     phone?: string;
     address?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
     currency?: string;
     timezone?: string;
     financial_year?: number;
   }) => Promise<BusinessProfile>;
+  updateBusiness: (id: string, data: Partial<BusinessProfile>) => Promise<BusinessProfile>;
 }
 
 const BusinessContext = createContext<BusinessContextType | undefined>(undefined);
@@ -49,8 +55,15 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
   const [role, setRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  console.log("[BUSINESS PROVIDER RENDER]", {
+    authLoaded,
+    userId,
+    isLoading,
+    businessCount: businesses.length,
+  });
+
   const fetchBusinesses = useCallback(async () => {
-    console.log("[DEBUG fetchBusinesses START]", { userId });
+    console.log("[BUSINESS PROVIDER] FETCH START", { userId });
     if (!userId) {
       setBusinesses([]);
       setActiveBusiness(null);
@@ -61,13 +74,16 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
 
     try {
       setIsLoading(true);
-      console.log("[DEBUG fetchBusinesses] Calling apiClient('/api/v1/business-profiles')");
       const res = await apiClient<{ items: BusinessProfile[]; total: number }>(
         "/api/v1/business-profiles",
       );
-      console.log("[DEBUG fetchBusinesses SUCCESS]", res);
       const items = res.items || [];
       setBusinesses(items);
+
+      console.log("[BUSINESS PROVIDER] FETCH SUCCESS", {
+        status: 200,
+        businessCount: items.length,
+      });
 
       if (items.length > 0) {
         const savedId = localStorage.getItem("active_business_id");
@@ -90,7 +106,7 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (e: unknown) {
       const err = e as Error;
-      console.error("[DEBUG fetchBusinesses ERROR]", err);
+      console.error("[BUSINESS PROVIDER] FETCH FAILED", { error: err.message });
       toast.error(`Failed to load business profiles: ${err.message}`);
     } finally {
       setIsLoading(false);
@@ -126,11 +142,14 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
 
   const createBusiness = async (data: {
     business_name: string;
-    business_type: string;
+    business_type?: string;
     gstin?: string;
     email?: string;
     phone?: string;
     address?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
     currency?: string;
     timezone?: string;
     financial_year?: number;
@@ -186,6 +205,35 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateBusiness = async (
+    id: string,
+    data: Partial<BusinessProfile>,
+  ): Promise<BusinessProfile> => {
+    try {
+      setIsLoading(true);
+      const updated = await apiClient<BusinessProfile>(`/api/v1/business-profiles/${id}/settings`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          company_name: data.business_name || data.legal_name,
+          gstin: data.gstin,
+          company_address: data.address || data.address_line1,
+          city: data.city,
+          state: data.state,
+          pincode: data.pincode,
+        }),
+      });
+      toast.success("Business profile updated successfully");
+      await fetchBusinesses();
+      return updated;
+    } catch (e: unknown) {
+      const err = e as Error;
+      toast.error(`Failed to update business: ${err.message}`);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <BusinessContext.Provider
       value={{
@@ -198,6 +246,7 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
         switchBusiness,
         refreshBusinesses: fetchBusinesses,
         createBusiness,
+        updateBusiness,
       }}
     >
       {children}

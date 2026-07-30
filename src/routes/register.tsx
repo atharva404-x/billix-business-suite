@@ -1,6 +1,6 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useSignUp } from "@clerk/clerk-react";
+import { useSignUp } from "@clerk/tanstack-react-start/legacy";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +21,6 @@ export const Route = createFileRoute("/register")({
 
 function RegisterPage() {
   const { isLoaded, signUp, setActive } = useSignUp();
-  const router = useRouter();
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -38,7 +37,7 @@ function RegisterPage() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLoaded) return;
+    if (!isLoaded || !signUp) return;
     setLoading(true);
     setError("");
 
@@ -58,7 +57,9 @@ function RegisterPage() {
       setPendingVerification(true);
     } catch (err: unknown) {
       const clerkError = err as { errors?: Array<{ message: string }> };
-      setError(clerkError.errors?.[0]?.message || "Failed to create account.");
+      const errorMessage =
+        clerkError.errors?.[0]?.message || (err as Error)?.message || "Failed to create account.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -66,7 +67,7 @@ function RegisterPage() {
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLoaded) return;
+    if (!isLoaded || !signUp) return;
     setLoading(true);
     setError("");
 
@@ -76,33 +77,40 @@ function RegisterPage() {
       });
 
       if (completeSignUp.status === "complete") {
-        await setActive({ session: completeSignUp.createdSessionId });
-        router.navigate({ to: "/dashboard" });
+        if (setActive && completeSignUp.createdSessionId) {
+          await setActive({ session: completeSignUp.createdSessionId });
+        }
       } else {
         setError("Verification failed or incomplete.");
       }
     } catch (err: unknown) {
       const clerkError = err as { errors?: Array<{ message: string }> };
-      setError(clerkError.errors?.[0]?.message || "Failed to verify email code.");
+      const errorMessage =
+        clerkError.errors?.[0]?.message ||
+        (err as Error)?.message ||
+        "Failed to verify email code.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleSignUp = async () => {
-    if (!isLoaded) return;
+    if (!isLoaded || !signUp) return;
     setLoading(true);
     setError("");
 
     try {
       await signUp.authenticateWithRedirect({
         strategy: "oauth_google",
-        redirectUrl: "/dashboard",
+        redirectUrl: "/sso-callback",
         redirectUrlComplete: "/dashboard",
       });
     } catch (err: unknown) {
       const clerkError = err as { errors?: Array<{ message: string }> };
-      setError(clerkError.errors?.[0]?.message || "Google Sign-Up failed.");
+      const errorMessage =
+        clerkError.errors?.[0]?.message || (err as Error)?.message || "Google Sign-Up failed.";
+      setError(errorMessage);
       setLoading(false);
     }
   };
@@ -128,10 +136,10 @@ function RegisterPage() {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               required
-              disabled={loading}
+              disabled={loading || !isLoaded}
             />
           </div>
-          <Button className="w-full" size="lg" type="submit" disabled={loading}>
+          <Button className="w-full" size="lg" type="submit" disabled={loading || !isLoaded}>
             {loading ? "Verifying..." : "Verify & Continue"}
           </Button>
         </form>
@@ -167,7 +175,7 @@ function RegisterPage() {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required
-              disabled={loading}
+              disabled={loading || !isLoaded}
             />
           </div>
           <div className="space-y-2">
@@ -177,7 +185,7 @@ function RegisterPage() {
               placeholder="+91 98xxx xxxxx"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              disabled={loading}
+              disabled={loading || !isLoaded}
             />
           </div>
         </div>
@@ -188,13 +196,13 @@ function RegisterPage() {
             placeholder="Sharma Retail Store"
             value={businessName}
             onChange={(e) => setBusinessName(e.target.value)}
-            disabled={loading}
+            disabled={loading || !isLoaded}
           />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="type">Business type</Label>
-            <Select onValueChange={setBusinessType} disabled={loading}>
+            <Select onValueChange={setBusinessType} disabled={loading || !isLoaded}>
               <SelectTrigger>
                 <SelectValue placeholder="Select" />
               </SelectTrigger>
@@ -211,7 +219,7 @@ function RegisterPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="state">State</Label>
-            <Select onValueChange={setStateCode} disabled={loading}>
+            <Select onValueChange={setStateCode} disabled={loading || !isLoaded}>
               <SelectTrigger>
                 <SelectValue placeholder="Select" />
               </SelectTrigger>
@@ -234,7 +242,7 @@ function RegisterPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            disabled={loading}
+            disabled={loading || !isLoaded}
           />
         </div>
         <div className="space-y-2">
@@ -246,10 +254,10 @@ function RegisterPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            disabled={loading}
+            disabled={loading || !isLoaded}
           />
         </div>
-        <Button className="w-full" size="lg" type="submit" disabled={loading}>
+        <Button className="w-full" size="lg" type="submit" disabled={loading || !isLoaded}>
           {loading ? "Creating account..." : "Create account"}
         </Button>
         <div className="relative py-2">
@@ -263,7 +271,7 @@ function RegisterPage() {
           variant="outline"
           className="w-full"
           onClick={handleGoogleSignUp}
-          disabled={loading}
+          disabled={loading || !isLoaded}
         >
           Continue with Google
         </Button>

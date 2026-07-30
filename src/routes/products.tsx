@@ -58,7 +58,11 @@ import { KpiCard } from "@/components/common/kpi-card";
 import { StatusBadge } from "@/components/common/status-badge";
 import { SimplePagination } from "@/components/common/simple-pagination";
 import { ErrorState, EmptyState } from "@/components/shared/api-states";
-import type { Category } from "./categories";
+
+export interface Category {
+  id: string;
+  name: string;
+}
 
 export const Route = createFileRoute("/products")({
   head: () => ({ meta: [{ title: "Products — Billix" }] }),

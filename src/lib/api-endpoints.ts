@@ -27,20 +27,6 @@ export const API_ENDPOINTS = {
     create: "/api/v1/products",
     detail: (id: string) => `/api/v1/products/${id}`,
   },
-  categories: {
-    list: "/api/v1/categories",
-    create: "/api/v1/categories",
-    detail: (id: string) => `/api/v1/categories/${id}`,
-  },
-  suppliers: {
-    list: "/api/v1/suppliers",
-    create: "/api/v1/suppliers",
-    detail: (id: string) => `/api/v1/suppliers/${id}`,
-  },
-  inventory: {
-    list: "/api/v1/inventory",
-    adjust: "/api/v1/inventory/adjust",
-  },
   invoices: {
     list: "/api/v1/invoices",
     create: "/api/v1/invoices",

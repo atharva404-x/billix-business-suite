@@ -1,4 +1,4 @@
-import { useAuth, useUser } from "@clerk/clerk-react";
+import { useAuth, useUser } from "@clerk/tanstack-react-start";
 
 export function useAuthentication() {
   const { isLoaded: authLoaded, userId, getToken, signOut } = useAuth();
