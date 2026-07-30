@@ -467,3 +467,27 @@ class InvoiceService:
             after_values={"invoice_id": str(payment.invoice_id), "amount": str(payment.amount), "payment_method": payment.payment_method.value}
         )
         return payment
+
+    async def delete_invoice(
+        self, user_id: uuid.UUID, business_id: uuid.UUID, invoice_id: uuid.UUID
+    ) -> None:
+        await self._ensure_business_access(user_id, business_id)
+        invoice = await self.get_invoice(user_id, business_id, invoice_id)
+
+        # Reverse inventory stock if not already cancelled
+        if invoice.status not in [InvoiceStatus.CANCELLED, InvoiceStatus.VOID]:
+            await self._reverse_invoice_stock(invoice, user_id, business_id)
+
+        # Audit log
+        await self.audit_service.log_event(
+            user_id=user_id,
+            business_id=business_id,
+            entity_type="Invoice",
+            entity_id=invoice_id,
+            action=AuditAction.DELETE,
+            before_values={"invoice_number": invoice.invoice_number, "grand_total": str(invoice.grand_total)},
+            after_values=None
+        )
+
+        await self.session.delete(invoice)
+        await self.session.flush()

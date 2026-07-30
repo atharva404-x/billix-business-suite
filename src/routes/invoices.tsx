@@ -9,6 +9,7 @@ import {
   Download,
   FileText,
   ArrowUpDown,
+  Copy,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useBusiness } from "@/hooks/use-business";
@@ -341,16 +342,30 @@ function InvoicesPage() {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              asChild
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 cursor-pointer"
-                            >
-                              <Link to="/invoices/$id" params={{ id: r.id }}>
-                                <Eye className="h-4 w-4" />
-                              </Link>
-                            </Button>
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                asChild
+                                variant="ghost"
+                                size="icon"
+                                title="View Details"
+                                className="h-8 w-8 cursor-pointer"
+                              >
+                                <Link to="/invoices/$id" params={{ id: r.id }}>
+                                  <Eye className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                              <Button
+                                asChild
+                                variant="ghost"
+                                size="icon"
+                                title="Duplicate Invoice"
+                                className="h-8 w-8 cursor-pointer text-muted-foreground hover:text-foreground"
+                              >
+                                <Link to="/invoices/new">
+                                  <Copy className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );

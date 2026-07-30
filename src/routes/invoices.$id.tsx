@@ -12,6 +12,8 @@ import {
   User,
   Building2,
   FileText,
+  Trash2,
+  Copy,
 } from "lucide-react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useBusiness } from "@/hooks/use-business";
@@ -39,6 +41,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ErrorState } from "@/components/shared/api-states";
 
 import type { Invoice } from "./invoices";
@@ -80,6 +92,7 @@ function InvoiceDetails() {
 
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   // Form states for Payment Modal
   const [paymentAmount, setPaymentAmount] = useState("");
@@ -159,6 +172,23 @@ function InvoiceDetails() {
     },
     onError: (err: Error) => {
       toast.error(err.message || "Failed to cancel invoice.");
+    },
+  });
+
+  // 7. Delete Invoice Mutation
+  const deleteInvoiceMutation = useMutation({
+    mutationFn: () => {
+      return apiClient(`/api/v1/invoices/${id}`, {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => {
+      invalidateCache("invoice:delete", queryClient);
+      toast.success("Invoice deleted successfully.");
+      navigate({ to: "/invoices" });
+    },
+    onError: (err: Error) => {
+      toast.error(err.message || "Failed to delete invoice.");
     },
   });
 
@@ -246,6 +276,11 @@ function InvoiceDetails() {
               >
                 <Printer className="h-4 w-4" /> Print / PDF
               </Button>
+              <Button asChild variant="outline" size="sm" className="gap-1.5 shadow-sm">
+                <Link to="/invoices/new">
+                  <Copy className="h-4 w-4" /> Duplicate
+                </Link>
+              </Button>
               {invoice.outstanding_balance > 0 && !isCancelled && (
                 <Button size="sm" onClick={handleOpenPaymentModal} className="gap-1.5 shadow-sm">
                   <CreditCard className="h-4 w-4" /> Record Payment
@@ -253,14 +288,22 @@ function InvoiceDetails() {
               )}
               {!isCancelled && (
                 <Button
-                  variant="destructive"
+                  variant="outline"
                   size="sm"
                   onClick={() => setCancelOpen(true)}
-                  className="gap-1.5 shadow-sm"
+                  className="gap-1.5 shadow-sm text-destructive border-destructive/30 hover:bg-destructive/10"
                 >
                   <Ban className="h-4 w-4" /> Cancel Invoice
                 </Button>
               )}
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setDeleteOpen(true)}
+                className="gap-1.5 shadow-sm"
+              >
+                <Trash2 className="h-4 w-4" /> Delete
+              </Button>
             </>
           }
         />
@@ -643,6 +686,29 @@ function InvoiceDetails() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Invoice AlertDialog */}
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Invoice permanently?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete Invoice {invoice.invoice_number}? This will
+              permanently remove the invoice record and return items back to product inventory
+              stock.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteInvoiceMutation.mutate()}
+            >
+              {deleteInvoiceMutation.isPending ? "Deleting..." : "Delete Invoice"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppShell>
   );
 }

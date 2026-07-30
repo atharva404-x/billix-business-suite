@@ -6,6 +6,7 @@ export type InvalidationAction =
   | "customer:delete"
   | "invoice:create"
   | "invoice:cancel"
+  | "invoice:delete"
   | "product:create"
   | "product:update"
   | "product:delete";
@@ -29,6 +30,7 @@ export function invalidateCache(action: InvalidationAction, queryClient: QueryCl
 
     case "invoice:create":
     case "invoice:cancel":
+    case "invoice:delete":
       queryClient.invalidateQueries({ queryKey: CACHE_KEYS.dashboard });
       queryClient.invalidateQueries({ queryKey: CACHE_KEYS.reports });
       queryClient.invalidateQueries({ queryKey: CACHE_KEYS.invoices });

@@ -71,6 +71,7 @@ class Permission(str, Enum):
     INVOICE_CREATE = "invoice:create"
     INVOICE_UPDATE = "invoice:update"
     INVOICE_CANCEL = "invoice:cancel"
+    INVOICE_DELETE = "invoice:delete"
 
     # Payments
     PAYMENT_READ = "payment:read"

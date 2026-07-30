@@ -42,6 +42,7 @@ interface BusinessContextType {
     financial_year?: number;
   }) => Promise<BusinessProfile>;
   updateBusiness: (id: string, data: Partial<BusinessProfile>) => Promise<BusinessProfile>;
+  deleteBusiness: (id: string) => Promise<void>;
 }
 
 const BusinessContext = createContext<BusinessContextType | undefined>(undefined);
@@ -55,15 +56,7 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
   const [role, setRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  console.log("[BUSINESS PROVIDER RENDER]", {
-    authLoaded,
-    userId,
-    isLoading,
-    businessCount: businesses.length,
-  });
-
   const fetchBusinesses = useCallback(async () => {
-    console.log("[BUSINESS PROVIDER] FETCH START", { userId });
     if (!userId) {
       setBusinesses([]);
       setActiveBusiness(null);
@@ -80,11 +73,6 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
       const items = res.items || [];
       setBusinesses(items);
 
-      console.log("[BUSINESS PROVIDER] FETCH SUCCESS", {
-        status: 200,
-        businessCount: items.length,
-      });
-
       if (items.length > 0) {
         const savedId = localStorage.getItem("active_business_id");
         const found = items.find((b) => b.id === savedId);
@@ -93,8 +81,6 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
         setActiveBusiness(selected);
         localStorage.setItem("active_business_id", selected.id);
         localStorage.setItem("active_business_name", selected.business_name);
-
-        // Default membership role to Owner as user is loaded under list_by_user
         setRole("owner");
         localStorage.setItem("active_business_role", "owner");
       } else {
@@ -114,7 +100,6 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
   }, [userId]);
 
   useEffect(() => {
-    console.log("[DEBUG BusinessProvider useEffect]", { authLoaded, userId });
     if (authLoaded) {
       if (userId) {
         fetchBusinesses();
@@ -135,8 +120,6 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("active_business_role", "owner");
 
     toast.success(`Switched to business: ${selected.business_name}`);
-
-    // Invalidate and refresh React Query cache queries
     queryClient.invalidateQueries();
   };
 
@@ -165,6 +148,9 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
           address: data.address || null,
           email: data.email || null,
           phone: data.phone || null,
+          city: data.city || null,
+          state: data.state || null,
+          pincode: data.pincode || null,
         }),
       });
 
@@ -177,23 +163,11 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
           gstin: data.gstin || null,
           currency: data.currency || "INR",
           timezone: data.timezone || "Asia/Kolkata",
-          financial_year_start: data.financial_year || 4, // 4 = April
-        }),
-      });
-
-      // 3. PATCH preferences for business type
-      await apiClient(`/api/v1/business-profiles/${profile.id}/preferences`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          report_preferences: {
-            business_type: data.business_type,
-          },
+          financial_year_start: data.financial_year || 4,
         }),
       });
 
       toast.success(`Business ${data.business_name} created successfully!`);
-
-      // Refresh profiles list and auto-select new business
       await fetchBusinesses();
       return profile;
     } catch (e: unknown) {
@@ -211,15 +185,17 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
   ): Promise<BusinessProfile> => {
     try {
       setIsLoading(true);
-      const updated = await apiClient<BusinessProfile>(`/api/v1/business-profiles/${id}/settings`, {
+      const updated = await apiClient<BusinessProfile>(`/api/v1/business-profiles/${id}`, {
         method: "PATCH",
         body: JSON.stringify({
-          company_name: data.business_name || data.legal_name,
+          business_name: data.business_name,
           gstin: data.gstin,
-          company_address: data.address || data.address_line1,
+          address: data.address || data.address_line1,
           city: data.city,
           state: data.state,
           pincode: data.pincode,
+          phone: data.phone,
+          email: data.email,
         }),
       });
       toast.success("Business profile updated successfully");
@@ -228,6 +204,23 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
     } catch (e: unknown) {
       const err = e as Error;
       toast.error(`Failed to update business: ${err.message}`);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deleteBusiness = async (id: string): Promise<void> => {
+    try {
+      setIsLoading(true);
+      await apiClient(`/api/v1/business-profiles/${id}`, {
+        method: "DELETE",
+      });
+      toast.success("Business profile deleted successfully");
+      await fetchBusinesses();
+    } catch (e: unknown) {
+      const err = e as Error;
+      toast.error(err.message || "Failed to delete business profile");
       throw err;
     } finally {
       setIsLoading(false);
@@ -247,6 +240,7 @@ export function BusinessProvider({ children }: { children: React.ReactNode }) {
         refreshBusinesses: fetchBusinesses,
         createBusiness,
         updateBusiness,
+        deleteBusiness,
       }}
     >
       {children}

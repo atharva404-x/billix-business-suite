@@ -84,6 +84,16 @@ async def cancel_invoice(
     service = InvoiceService(session)
     return await service.cancel_invoice(current_user.id, business_id, invoice_id, cancel_data)
 
+@router.delete("/{invoice_id}", status_code=204)
+async def delete_invoice(
+    business_id: uuid.UUID,
+    invoice_id: uuid.UUID,
+    current_user: Annotated[User, Depends(PermissionChecker(Permission.INVOICE_DELETE))],
+    session: AsyncSession = Depends(get_db_session)
+):
+    service = InvoiceService(session)
+    await service.delete_invoice(current_user.id, business_id, invoice_id)
+
 @router.post("/payments", response_model=PaymentResponse, status_code=201)
 async def record_payment(
     business_id: uuid.UUID,

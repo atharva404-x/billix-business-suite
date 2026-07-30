@@ -59,7 +59,7 @@ class BusinessProfileService:
         business = await self.get_business_by_id(user_id, business_id)
         # Capture before values
         before_values = {
-            "name": business.name,
+            "business_name": business.business_name,
             "gstin": business.gstin,
             "address": business.address,
             "city": business.city,
@@ -71,7 +71,7 @@ class BusinessProfileService:
         updated_business = await self.repo.update(business, **update_data.model_dump(exclude_unset=True))
         # Capture after values
         after_values = {
-            "name": updated_business.name,
+            "business_name": updated_business.business_name,
             "gstin": updated_business.gstin,
             "address": updated_business.address,
             "city": updated_business.city,
@@ -95,7 +95,33 @@ class BusinessProfileService:
     async def deactivate_business(
         self, user_id: uuid.UUID, business_id: uuid.UUID
     ) -> BusinessProfile:
+        from sqlalchemy import select, func
+        from app.models.invoice import Invoice
+        from app.models.customer import Customer
+        from app.models.product import Product
+
         business = await self.get_business_by_id(user_id, business_id)
+
+        # Safety Check: Prevent deletion if active child records exist
+        inv_stmt = select(func.count(Invoice.id)).where(Invoice.business_id == business_id, Invoice.is_active == True)
+        inv_count = (await self.repo.session.execute(inv_stmt)).scalar() or 0
+
+        cust_stmt = select(func.count(Customer.id)).where(Customer.business_id == business_id, Customer.is_active == True)
+        cust_count = (await self.repo.session.execute(cust_stmt)).scalar() or 0
+
+        prod_stmt = select(func.count(Product.id)).where(Product.business_id == business_id, Product.is_active == True)
+        prod_count = (await self.repo.session.execute(prod_stmt)).scalar() or 0
+
+        if inv_count > 0 or cust_count > 0 or prod_count > 0:
+            details = []
+            if inv_count > 0: details.append(f"{inv_count} invoice(s)")
+            if cust_count > 0: details.append(f"{cust_count} customer(s)")
+            if prod_count > 0: details.append(f"{prod_count} product(s)")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot delete business. Active records exist: {', '.join(details)}. Please clear or archive dependent items first."
+            )
+
         deactivated_business = await self.repo.deactivate(business)
         # Audit log
         await self.audit_service.log_event(

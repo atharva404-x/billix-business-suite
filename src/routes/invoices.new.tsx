@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import React, { useState } from "react";
-import { Plus, Trash2, Save, Send, ArrowLeft, Info } from "lucide-react";
+import { Plus, Trash2, Save, Send, ArrowLeft, Info, Copy } from "lucide-react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useBusiness } from "@/hooks/use-business";
 import { useBusinessQuery } from "@/hooks/use-api";
@@ -193,6 +193,19 @@ function NewInvoicePage() {
     }
     const updated = itemRows.filter((_, i) => i !== index);
     setItemRows(updated);
+  };
+
+  const handleDuplicateRow = (index: number) => {
+    const target = itemRows[index];
+    if (!target) return;
+    const duplicated: FormItemRow = {
+      ...target,
+      tempId: `row-${Date.now()}-${Math.random()}`,
+    };
+    const updated = [...itemRows];
+    updated.splice(index + 1, 0, duplicated);
+    setItemRows(updated);
+    toast.success("Item row duplicated.");
   };
 
   const validateForm = () => {
@@ -442,16 +455,29 @@ function NewInvoicePage() {
                                 maximumFractionDigits: 2,
                               })}
                             </TableCell>
-                            <TableCell>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive hover:bg-destructive/10 cursor-pointer"
-                                onClick={() => handleRemoveRow(index)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                            <TableCell className="w-16">
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  title="Duplicate Row"
+                                  className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer"
+                                  onClick={() => handleDuplicateRow(index)}
+                                >
+                                  <Copy className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  title="Remove Row"
+                                  className="h-8 w-8 text-destructive hover:bg-destructive/10 cursor-pointer"
+                                  onClick={() => handleRemoveRow(index)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         );
